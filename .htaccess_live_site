@@ -1,0 +1,20 @@
+
+
+# BEGIN WPSuperCache
+# END WPSuperCache
+
+# BEGIN WordPress
+<IfModule mod_rewrite.c>
+RewriteEngine On
+RewriteBase /
+RewriteRule ^index\.php$ - [L]
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule . /index.php [L]
+</IfModule>
+
+# END WordPress
+<IfModule mod_php5.c>
+php_value max_execution_time 600
+max_allowed_packet = 256M
+</IfModule>
