@@ -6548,5 +6548,7 @@ add_action( 'wp_enqueue_scripts', 'add_theme_scripts_fastselect' );
 // function add_theme_scripts_boostrap() {
 // }
 // add_action( 'wp_enqueue_scripts', 'add_theme_scripts_boostrap' );
-
+add_filter( 'wp_mail_from', function( $email ) {
+	return get_bloginfo( 'admin_email');
+});
 ?>
