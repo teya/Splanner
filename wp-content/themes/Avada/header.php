@@ -6573,7 +6573,7 @@ endif; ?>
 						$person = $wpdb->get_row("SELECT * FROM {$table_name_person} WHERE person_fullname = '$current_user_fullname'");
 						$person_firstname = $person->person_first_name;
 				?>
-				<h3><?php the_title(); ?> - Welcome <?php echo $person_firstname; ?>!</h3>
+				<h3><?php the_title(); ?> - Welcome <?php echo $person_firstname; ?>! <div style="float: right;"><span id="splan_hours"><?php echo date('h'); ?></span>:<span id="splan_minutes"><?php echo date('i'); ?></span> <span id="splan_ampm"><?php echo date('A'); ?></span></span></div></h3>
 				<?php } ?>
 				</div>
 			</div>
