@@ -15,7 +15,7 @@ if(isset($_GET['deleteID'])) {
 }
 ?>
 <div class="persons">
-	<a id="create_person" class="button_1" href="/add-people/">+ Add Person</a>
+	<a id="create_person" class="button_1" href="<?php echo get_site_url(); ?>/add-people/">+ Add Person</a>
 </div>
 <div class="display_main persons">
 <?php 
