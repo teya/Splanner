@@ -61,6 +61,7 @@ $client_satisfaction_array = array('Happy', 'Satisfied', 'Not Satisfied', 'Upset
 			<div class="right">
 				<select class="client_monthly_plan" name="client_monthly_plan">
 					<option selected value="">- Select -</option>
+					<option  value="NONE">NONE</option>
 					<?php 
 						$client_monthly_plan_array = array();
 						foreach ($monthly_plans as $monthly_plan){

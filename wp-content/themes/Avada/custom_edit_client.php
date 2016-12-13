@@ -99,6 +99,7 @@ $results_edit = $wpdb->get_row($query);
 					<?php if(isset($results_edit->client_monthly_plan)){ ?>
 						<option value="<?php echo $results_edit->client_monthly_plan; ?>"><?php echo $results_edit->client_monthly_plan; ?></option>
 						<option value="">- Select -</option>
+						<option  value="NONE">NONE</option>
 						<?php }else{ ?>
 						<option value="">- Select -</option>
 					<?php } ?>
