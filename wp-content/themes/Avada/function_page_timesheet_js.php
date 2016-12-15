@@ -33,7 +33,9 @@ jQuery(document).on('click', '.import_kanban_task', function(){
 			'date_hour_day_week' : date_hour_day_week
 		},
 		success: function (data) {
-			var parsed = jQuery.parseJSON(data);			
+			var parsed = jQuery.parseJSON(data);	
+			// console.log(parsed);
+			// return false;		
 			jQuery.each(parsed, function(index, value){
 				var task_name = (value.task_name == "") ? "--" : value.task_name;
 				var task_hour = (value.task_hour == "") ? "--" : value.task_hour;

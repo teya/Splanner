@@ -31,6 +31,7 @@ function import_task_kanban($date_hour_day_week){
 	$person_kb_user_id = $person_detail->person_kb_user_id;
 	
 	$url= "https://kanbanflow.com/api/v1/board/events?from=".$format_import_date."T00:00Z&to=".$format_import_date."T23:59Z&" . $token;
+
 	$result = file_get_contents($url);	
 	$result_array = json_decode($result, true);
 	// print_Var($result_array);
