@@ -20,6 +20,7 @@ if(isset($_GET['deleteID'])) {
 <div class="display_main persons">
 <?php 
 	$table_name = $wpdb->prefix . "custom_person"; 
+	$invoice_tablename = $wpdb->prefix . "custom_invoice_table";
 	$active_people = $wpdb->get_results("SELECT * FROM {$table_name} WHERE person_status='0'");
 	$inactive_people = $wpdb->get_results("SELECT * FROM {$table_name} WHERE person_status='1'");
 	$active_people_count = (count($active_people));	
@@ -44,6 +45,14 @@ if(isset($_GET['deleteID'])) {
 					<?php if($current_user_name == $person_fullname || $current_user_role == 'administrator'){ ?>
 						<div id="delete_person_<?php echo $person->ID; ?>" class="button_2 display_button float_right delete_person_button delete_ajax">Delete</div>
 						<div id="archive_person_<?php echo $person->ID; ?>" class="button_2 display_button float_right archive_person_button">Archive</div>
+					<?php } ?>
+					<?php if($person->wp_user_id == $current_user->ID){ ?>
+						<?php
+							$get_invoice_last_month = $wpdb->get_row('SELECT id, person_id, active_viewing FROM '.$invoice_tablename.' WHERE active_viewing = 1 AND person_id = '.$current_user->ID);
+							if($get_invoice_last_month->active_viewing == 1){
+						?>	
+								<a  href="<?php echo get_site_url();  ?>/view-invoice/?id=<?php echo $get_invoice_last_month->id; ?>" class="button_2 display_button float_right delete_person_button delete_ajax">View Invoice</a>
+							<?php } ?>
 					<?php } ?>
 				</div>
 				<div class="display_separator"></div>
