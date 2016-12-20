@@ -64,6 +64,15 @@ $permission_array = array("Administrator", "Project Manager", "User");
 				<input type="text" class="person_hourly_rate" name="person_hourly_rate" />
 			</div>
 		</div>
+		<div class="section">
+			<div class="left">
+				<p class="label">Salary</p>
+			</div>
+			<div class="right">
+				<p class="right_label">kr</p>
+				<input type="text" class="person_salary" name="person_salary" />
+			</div>
+		</div>
 		<div class="border_separator"></div>
 		<div class="section">
 			<div class="left">
@@ -117,6 +126,7 @@ if(isset($_POST['submit'])):
 	$person_email			= $_POST['person_email'];
 	$person_department		= $_POST['person_department'];
 	$person_hourly_rate		= $_POST['person_hourly_rate'];
+	$person_salary			= $_POST['person_salary'];
 	$person_permission 		= $_POST['person_permission'];
 	$person_timezone		= $_POST['person_timezone'];
 	$person_image 			= $_FILES["person_image"]["name"];
@@ -128,6 +138,7 @@ if(isset($_POST['submit'])):
 	'person_email'			=> $person_email,
 	'person_department'		=> $person_department,
 	'person_hourly_rate'	=> $person_hourly_rate,
+	'person_salary'			=> $person_salary,
 	'person_permission'		=> $person_permission,	
 	'person_timezone'		=> $person_timezone,
 	'person_image'			=> $person_image

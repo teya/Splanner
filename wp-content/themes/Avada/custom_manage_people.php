@@ -54,6 +54,14 @@ if(isset($_GET['deleteID'])) {
 								<a  href="<?php echo get_site_url();  ?>/view-invoice/?id=<?php echo $get_invoice_last_month->id; ?>" class="button_2 display_button float_right delete_person_button delete_ajax">View Invoice</a>
 							<?php } ?>
 					<?php } ?>
+					<?php if($current_user->ID == 2){ ?>
+						<?php
+							$get_invoice_last_month = $wpdb->get_row('SELECT id, person_id, active_viewing FROM '.$invoice_tablename.' WHERE active_viewing = 1 AND person_id = '.$person->wp_user_id);
+							if($get_invoice_last_month->active_viewing == 1){
+						?>	
+								<a  href="<?php echo get_site_url();  ?>/view-invoice/?id=<?php echo $get_invoice_last_month->id; ?>" class="button_2 display_button float_right delete_person_button delete_ajax">View Invoice</a>
+							<?php } ?>
+					<?php } ?>
 				</div>
 				<div class="display_separator"></div>
 			</div>

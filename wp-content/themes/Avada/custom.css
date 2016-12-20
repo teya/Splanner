@@ -6739,3 +6739,75 @@ body.single .post-content li{
 .please-select-client-err{
 	color: #FF0509;
 }
+#invoice-wrapper{
+	max-width: 630px;
+	margin:0px auto;
+}
+#invoice-wrapper .invoice-pc-icon{
+	float: left;
+}
+#invoice-wrapper h1{
+	margin:0px;
+}
+#invoice-wrapper .email{
+	color: #e02d2d;
+}
+#invoice-wrapper .invoice_total_hours{
+	font-weight: 600;
+}
+#invoice-table{
+	min-width: 630px;
+	margin:0px auto;
+}
+#invoice-wrapper .invoice-top-table{
+	width: 100%;
+	margin-bottom: 5px;
+	vertical-align: text-top;
+}
+#invoice-wrapper .invoice-top-table td{
+	vertical-align: text-top;
+}
+#invoice-wrapper .invoice-top-table p{
+	border-bottom: 1px solid #000000;
+	margin-right: 5px;
+}
+#invoice-table tr td, #invoice-table tr th{
+	padding: 2px;
+}
+#invoice-table tr th{
+	font-weight: 600;
+	background-color: #c0c0c0;
+	border: 2px solid #000000;
+}
+#invoice-table tr:nth-child(1) td{
+	border-top: 0px;
+}
+#invoice-table tr td{
+	border: 1px solid #000000;
+}
+#invoice-table tr td:nth-child(2){
+	text-align: center;
+	width:40%;
+}
+#invoice-table tr td:nth-child(3){
+	text-align: right;
+	width:20%;
+}
+.update_client_total_hours{
+	background-image: url("img/check.png");
+	background-size: 20px auto;
+	height: 20px;
+	width: 20px;
+	cursor: pointer;
+	margin-left: 3px;
+	float: right;
+}
+.invoice-row-update-loader{
+	background: rgba(0, 0, 0, 0) url("img/loader.gif") repeat scroll 0 0;
+	height: 16px;
+	margin-bottom: -5px;
+	margin-left: 10px;
+	width: 16px;
+	float: right;
+	margin-top: 5px;
+}

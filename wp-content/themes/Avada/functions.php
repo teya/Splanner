@@ -6551,4 +6551,59 @@ add_action( 'wp_enqueue_scripts', 'add_theme_scripts_fastselect' );
 add_filter( 'wp_mail_from', function( $email ) {
 	return get_bloginfo( 'admin_email');
 });
+
+function UpdateInvoiceTable($data){
+	global $wpdb;
+	extract($data);
+
+	$invoice_tablename = $wpdb->prefix . "custom_invoice_table";
+
+	$invoice_info = $wpdb->get_row('SELECT * FROM ' . $invoice_tablename . ' WHERE id =' . $invoice_id);
+
+	$clients_invoices_table = unserialize($invoice_info->clients_invoices_table);
+
+	$clients_invoices_table_orig = $clients_invoices_table;
+
+	foreach($clients_invoices_table as $key => $value){
+		if($clients_invoices_table[$key]['clientname'] == $clientname){
+			$clients_invoices_table[$key]['total_hours'] = $update_hours;
+		}
+	}
+
+	$result = array_diff($clients_invoices_table_orig,$clients_invoices_table);
+
+	if(!empty($result)){
+		$update_status = $wpdb->update(
+			$invoice_tablename, 
+			array( 
+				'clients_invoices_table' => serialize($clients_invoices_table)
+			),
+			array( 
+				'id' => $invoice_id 
+			),
+			array( '%s' ) 
+		);
+
+		if($update_status == 1){
+			$response = array(
+				'update_status' => 'successfully_updated_invoice',
+				'clientname' => $clientname,
+				'update_hours' =>$update_hours
+			);
+		}else{
+			$response = array(
+				'update_status' => 'failed_updated_invoice'
+			);
+		}		
+	}else{
+			$response = array(
+				'update_status' => 'successfully_updated_invoice',
+				'clientname' => $clientname,
+				'update_hours' =>$update_hours
+			);		
+	}
+
+
+	return $response;
+}
 ?>

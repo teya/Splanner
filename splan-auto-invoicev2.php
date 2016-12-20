@@ -38,7 +38,7 @@
 				echo '<h2>'. $person->person_fullname . "</h2><br />";
 				$total_client_hours = 0;
 				// $timesheet_month_stats = $wpdb->get_results("SELECT * FROM {$table_name} WHERE task_person = '$person_name' AND STR_TO_DATE(date_now, '%d/%m/%Y') BETWEEN STR_TO_DATE('01/$month_number/$year', '%d/%m/%Y') AND STR_TO_DATE('31/$month_number/$year', '%d/%m/%Y')"); 	
-				$timesheets = $wpdb->get_results('SELECT SUM(TIME_TO_SEC(task_hour)/3600) as totalhours, task_label FROM '.SPLAN_TIMESHEET.' WHERE task_person = "'.$person->person_fullname.'" AND STR_TO_DATE(date_now, "%d/%m/%Y") BETWEEN STR_TO_DATE("01/'.$month.'/'.$year.'", "%d/%m/%Y") AND STR_TO_DATE("31/'.$month.'/'.$year.'", "%d/%m/%Y") GROUP BY  task_label');
+				$timesheets = $wpdb->get_results('SELECT SUM(TIME_TO_SEC(task_hour)/3600) as totalhours, task_label FROM '.SPLAN_TIMESHEET.' WHERE task_person = "'.$person->person_fullname.'" AND STR_TO_DATE(date_now, "%d/%m/%Y") BETWEEN STR_TO_DATE("21/11/2016", "%d/%m/%Y") AND STR_TO_DATE("20/12/2016", "%d/%m/%Y") GROUP BY  task_label');
 				foreach($timesheets as $timesheet){
 					echo round($timesheet->totalhours, 2) . " - " . $timesheet->task_label . "<br>";
 					$total_client_hours += round($timesheet->totalhours, 2);

@@ -87,7 +87,7 @@ function import_task_kanban($date_hour_day_week){
 			$task_name = $task_details['name'];		
 			$task_label = $task_label_details[0]['name'];
 			$task_person = $current_user_fullname;
-			$task_description = $task_details['description'];
+			$task_description = htmlentities($task_details['description']);
 			$task_project_name = $colors->project_category;	
 
 			$task_label_explode = explode(' ', $task_label);

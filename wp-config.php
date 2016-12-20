@@ -26,7 +26,7 @@ define('WP_SITEURL','http://localhost/splan/');
 //define( 'WPCACHEHOME', '/home/seoweb91/public_html/admin/wp-content/plugins/wp-super-cache/' ); //Added by WP-Cache Manager
 define('WP_MEMORY_LIMIT', '256M');
 //define('WP_CACHE', true); //Added by WP-Cache Manager
-define('DB_NAME', 'splan_db');
+define('DB_NAME', 'splan_dec2016_2');
 
 /** MySQL database username */
 define('DB_USER', 'root');
