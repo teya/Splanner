@@ -33,9 +33,9 @@ if(isset($_GET['deleteID'])) {
 					$person_fullname = $person->person_first_name . ' ' . $person->person_last_name;
 			?>
 			<div class="display_section display_section_archive_<?php echo $person->ID; ?> delete_ajax_<?php echo $person->ID; ?>">
-				<div class="display_list" onclick="window.open('/person-information/?id=<?php echo $person->ID ?>');">
+				<div class="display_list" onclick="window.open('<?php echo get_site_url(); ?>/person-information/?id=<?php echo $person->ID ?>');">
 					<?php if($current_user_name == $person_fullname || $current_user_role == 'administrator'){ ?>
-					<a class="button_2 display_button" href="/edit-people/?editID=<?php echo $person->ID ?>">Edit</a>
+					<a class="button_2 display_button" href="<?php echo get_site_url(); ?>/edit-people/?editID=<?php echo $person->ID ?>">Edit</a>
 					<?php } ?>
 					<h3 id="name_<?php echo $person->ID; ?>" class="display_subtitle float_left"><?php echo $person_fullname; ?></h3>
 					<p class="display_hourly_rate">(kr <?php echo $person->person_hourly_rate; ?>/hr)</p>
@@ -56,8 +56,8 @@ if(isset($_GET['deleteID'])) {
 					<?php } ?>
 					<?php if($current_user->ID == 2){ ?>
 						<?php
-							$get_invoice_last_month = $wpdb->get_row('SELECT id, person_id, active_viewing FROM '.$invoice_tablename.' WHERE active_viewing = 1 AND person_id = '.$person->wp_user_id);
-							if($get_invoice_last_month->active_viewing == 1){
+							$get_invoice_last_month = $wpdb->get_row('SELECT id, person_id, active_viewing, person_approval FROM '.$invoice_tablename.' WHERE active_viewing = 1 AND person_id = '.$person->wp_user_id);
+							if($get_invoice_last_month->person_approval == 1){
 						?>	
 								<a  href="<?php echo get_site_url();  ?>/view-invoice/?id=<?php echo $get_invoice_last_month->id; ?>" class="button_2 display_button float_right delete_person_button delete_ajax">View Invoice</a>
 							<?php } ?>

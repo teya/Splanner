@@ -157,6 +157,15 @@ $birthmonths = array('January', 'February','March','April','May','June','July','
 				<input type="text" class="person_monthly_rate" name="person_monthly_rate" />
 			</div>
 		</div>
+		<div class="section">
+			<div class="left">
+				<p class="label">Monthly Salary</p>
+			</div>
+			<div class="right">
+				<p class="right_label">kr</p>
+				<input type="text" class="person_monthly_salary" name="person_monthly_salary" />
+			</div>
+		</div>
 		<div class="border_separator"></div>
 		<div class="section">
 			<div class="left">
@@ -233,6 +242,7 @@ if(isset($_POST['submit'])):
 	$person_hourly_rate			= (isset($_POST['person_hourly_rate']) ? $_POST['person_hourly_rate'] : '');
 	$person_time_track			= (isset($_POST['person_time_track']) ? 1 : 0);	
 	$person_monthly_rate		= (isset($_POST['person_monthly_rate']) ? $_POST['person_monthly_rate'] : '');
+	$person_monthly_salary		= (isset($_POST['person_monthly_salary']) ? $_POST['person_monthly_salary'] : '');
 	$person_permission 			= (isset($_POST['person_permission']) ? $_POST['person_permission'] : '');
 	$person_timezone			= (isset($_POST['person_timezone']) ? $_POST['person_timezone'] : '');
 	$person_image 				= (isset($_FILES["person_image"]["name"]) ? $_FILES["person_image"]["name"] : '');
@@ -257,6 +267,7 @@ if(isset($_POST['submit'])):
 	'person_time_track'			=> $person_time_track,
 	'person_hourly_rate'		=> $person_hourly_rate,
 	'person_monthly_rate'		=> $person_monthly_rate,
+	'person_monthly_salary'		=> $person_monthly_salary,
 	'person_permission'			=> $person_permission,	
 	'person_timezone'			=> $person_timezone,
 	'person_image'				=> $person_image,

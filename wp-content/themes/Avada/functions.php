@@ -6606,4 +6606,169 @@ function UpdateInvoiceTable($data){
 
 	return $response;
 }
+function SubmitCommentInvoice($data){
+	global $wpdb;
+	extract($data);
+
+	$invoice_tablename = $wpdb->prefix . "custom_invoice_table";
+
+	$invoice_info = $wpdb->get_row('SELECT comments FROM ' . $invoice_tablename . ' WHERE id =' . $invoice_id);
+
+	$comments_array = unserialize($invoice_info->comments);
+
+	$new_comment_array = array(
+		'person_name' => $person_name,
+		'datetime' => date("Y-m-d H:i"),
+		'comment'	  => $comment
+	);
+
+
+	if(empty($comments_array)){
+		$comments_array = array($new_comment_array);
+	}else{
+		array_push($comments_array, $new_comment_array);
+	}
+
+	$post_comment_result = $wpdb->update(
+		$invoice_tablename,
+		array(
+			'comments' => serialize($comments_array)
+		),
+		array(
+			'id' => $invoice_id
+		),
+		array(
+			'%s'
+		)
+	);
+
+	if($post_comment_result == 1){
+		$response = array(
+			'post-comment-status' => 'successfully-post-a-comment',
+			'person_name' => $person_name,
+			'datetime' => date("Y-m-d H:i"),
+			'comment'	  => $comment
+		);
+
+	}else{
+		die('FAILED POST A COMMENT!');
+	}
+	return $response;
+}
+function countDays($year, $month, $ignore) {
+    $count = 0;
+    $counter = mktime(0, 0, 0, $month, 1, $year);
+    while (date("n", $counter) == $month) {
+        if (in_array(date("w", $counter), $ignore) == false) {
+            $count++;
+        }
+        $counter = strtotime("+1 day", $counter);
+    }
+    return $count;
+}
+function ApprovePersonInvoice($data){
+	global $wpdb;
+	extract($data);
+
+	$invoice_tablename = $wpdb->prefix . "custom_invoice_table";
+	$persons_tablename = $wpdb->prefix . "custom_person";
+
+	$approve_by_person_invoice_status = $wpdb->update(
+		$invoice_tablename,
+		array(
+			'person_approval' => 1,
+			'status'		 => 'Pending'
+		),
+		array(
+			'id' => $invoice_id
+		),
+		array(
+			'%d',
+			'%s'
+		)
+	);
+
+	if($approve_by_person_invoice_status == 1){
+
+		$admin_info = $wpdb->get_row('SELECT * FROM '. $persons_tablename . ' WHERE wp_user_id = 2');
+		$person_info = $wpdb->get_row('SELECT * FROM '. $persons_tablename . ' WHERE wp_user_id = '. $invoice_person_id);
+		$invoice_info = $wpdb->get_row('SELECT * FROM '. $invoice_tablename . ' WHERE id = '.$invoice_id);
+
+		$dates = explode("-", $invoice_info->date);
+
+
+		$body = "
+		<h1>Hello ".$admin_info->person_fullname.",</h1>
+		<p>".$person_info->person_fullname."'s Invoice  for the ". date("F", mktime(0, 0, 0, $dates[0], 10))." ". $dates[1] ." is now available to view</p>
+		<p>And Awaiting for approval</p>
+		<p><a href='http://admin.seowebsolutions.com/' target='_blank'>Log In Here to Splan</a></p>";
+
+		// $to = $admin_info->person_email;
+		$to = "gray.greecos@gmail.com";
+		$subject = "".$person_info->person_fullname."'s Invoice for ".date("F", mktime(0, 0, 0, $dates[0], 10))." ". $dates[1];
+		$headers = array('Content-Type: text/html; charset=UTF-8');
+					 
+		$email_status = wp_mail( $to, $subject, $body, $headers );	
+
+		$response = array(
+			'invoice_status' => 'Pending'
+		);	
+	}
+
+	return $response;
+	
+}
+function ApprovePersonInvoiceByAdmin($invoice_id){
+	global $wpdb;
+
+	$invoice_tablename = $wpdb->prefix . "custom_invoice_table";
+	$person_tablename = $wpdb->prefix . "custom_person";
+
+	$invoice_info =  $wpdb->get_row("SELECT * FROM ".$invoice_tablename." WHERE id = ". $invoice_id);
+
+	$person_info = $wpdb->get_row("SELECT * FROM ". $invoice_tablename ." WHERE wp_user_id = ". $invoice_info->wp_user_id );
+
+	$dates = explode("-", $invoice_info->date);
+
+	$approve_by_person_invoice_status = $wpdb->update(
+		$invoice_tablename,
+		array(
+			'admin_approval' => 1,
+			'status'		 => 'Approved'
+		),
+		array(
+			'id' => $invoice_id
+		),
+		array(
+			'%d',
+			'%s'
+		)
+	);
+
+	if($approve_by_person_invoice_status == 1){
+
+
+		$response = array(
+			'invoice_approve_by_admin_status' => 'approved'
+		);
+
+		$body = "
+		<h1>Hello ".$person_info->person_fullname.",</h1>
+		<p>".$person_info->person_fullname."'s Invoice  for the ". date("F", mktime(0, 0, 0, $dates[0], 10))." ". $dates[1] ." is now available to view</p>
+		<p>And Awaiting for approval</p>
+		<p><a href='http://admin.seowebsolutions.com/' target='_blank'>Log In Here to Splan</a></p>";
+
+		// print_r($body);
+
+		$to = $admin_info->person_email;
+		// $to = "gray.greecos@gmail.com";
+		$subject = " Your Invoice for ".date("F", mktime(0, 0, 0, $dates[0], 10))." ". $dates[1] ." was been approved by Patrik.";
+		$headers = array('Content-Type: text/html; charset=UTF-8');
+					 
+		$email_status = wp_mail( $to, $subject, $body, $headers );	
+	}else{
+		die('FAILED INVOICE APPROVE BY ADMIN');
+	}
+	return $response;
+}
 ?>

@@ -57,7 +57,8 @@
 						'total_hours'				=> $total_client_hours,
 						'active_viewing'			=> 1,
 						'person_approval'			=> 0,
-						'admin_approval'			=> 0
+						'admin_approval'			=> 0,
+						'status'					=> 'Reviewing'
 					),
 					array(
 						'%s',
@@ -66,7 +67,8 @@
 						'%d',
 						'%d',
 						'%d',		
-						'%d'								
+						'%d',
+						'%s'								
 					)
 				);
 				$wpdb->show_errors();
@@ -75,7 +77,7 @@
 					$body = '
 					<h1>Hello '.$person->person_fullname.',</h1>
 					<p>Your Invoice for the last month is now available for viewing</p>
-					<p><a href="http://dplan.seowebsolutions.com/" target="_blank">Log In Here to Dplan</a></p>
+					<p><a href="http://admin.seowebsolutions.com/" target="_blank">Log In Here to Splan</a></p>
 					';
 
 					$to = $person->person_email;
