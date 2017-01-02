@@ -6755,6 +6755,9 @@ body.single .post-content li{
 #invoice-wrapper .invoice_total_hours{
 	font-weight: 600;
 }
+#invoice-wrapper .person_total_hours{
+	font-weight: 600;
+}
 #invoice-table{
 	min-width: 630px;
 	margin:0px auto;
@@ -6793,6 +6796,9 @@ body.single .post-content li{
 	text-align: right;
 	width:20%;
 }
+#invoice-table tr td:nth-child(4), #invoice-table tr td:nth-child(5){
+	text-align: right;;
+}
 .update_client_total_hours{
 	background-image: url("img/check.png");
 	background-size: 20px auto;
@@ -6802,7 +6808,7 @@ body.single .post-content li{
 	margin-left: 3px;
 	float: right;
 }
-.invoice-row-update-loader, .invoice-comment-loader{
+.invoice-row-update-loader, .invoice-comment-loader, .invoice_add_new_entry_loader{
 	background: rgba(0, 0, 0, 0) url("img/loader.gif") repeat scroll 0 0;
 	height: 16px;
 	margin-bottom: -5px;
@@ -6850,5 +6856,17 @@ body.single .post-content li{
 	float: right;
     margin-top: 20px;
     margin-right: 10px;	
+}
+.middle-invoice-table{
+	margin-top: 10px;
+}
+.invoice_new_row_entry{
+	width: 180px;
+}
+.invoice_new_row_entry_total, .invoice_new_row_entry_price{
+	float: right;
+}
+.invoice_add_new_entry_loader{
+	float: none !important;
 }
 

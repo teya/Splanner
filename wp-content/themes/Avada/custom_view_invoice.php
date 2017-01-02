@@ -33,9 +33,7 @@
 	$invoice_comments = unserialize($invoice_info->comments);
 	$total_client_hours = 0;
 
-	// echo "<pre>";
-	// print_r($invoice_comments);
-	// echo "</pre>";
+
 ?>
 
 <div id="invoice-wrapper">
@@ -60,7 +58,7 @@
 				<td><p>SEOWEB Solutions</p></td>
 				<td></td>
 				<td>Invoice No:</td>
-				<td>4</td>
+				<td><p><?php echo $year ."-". $month_in_num ."-". $invoice_info->person_id; ?></p></td>
 			</tr>
 			<tr>
 				<td>Address:</td>
@@ -87,8 +85,8 @@
 					<td></td>
 					<td class="clientname"><?php echo $row['clientname']; ?></td>
 					<td><span class="total_hours_edit"><?php echo $row['total_hours']; ?></span></td>
-					<td></td>
-					<td></td>
+					<td><?php echo $row['price']; ?></td>
+					<td><?php echo $row['total']; ?></td>
 				</tr>
 			<?php 
 
@@ -112,6 +110,11 @@
 			?>
 		</tbody>
 	</table>
+	<div class="middle-invoice-table">
+		<div id="add_row_invoice" class="button_1">Add</div>
+		<div id="remove_add_row_invoice" class="button_1"  style="display: none;">Cancel</div>
+		<div class="invoice_add_new_entry_loader" style="display: none;"></div>
+	</div>
 	<div class="bottom-invoice-table">
 		<div class="pull-left">
 			<?php if($invoice_info->person_approval == 1){ ?>
@@ -126,8 +129,9 @@
 		</div>
 		<div class="pull-right">
 			<p>Total Hours: <span class="invoice_total_hours"><?php echo $total_client_hours; ?></span></p>
-			<p>Total Salary: <?php // echo $percent; ?></p>
-			<p>Invoice Status: <span id="invoice_status"><?php echo $invoice_info->status ?></span></p>
+			<p>Total Non-Working Hours: <span class="person_total_hours"><?php echo $invoice_info->non_working_hrs; ?></span></p>
+			<p>Total Salary: <span class="person_total_hours"><?php echo $invoice_info->salary; ?></span></p>
+			<p>Invoice Status: <span class="person_total_hours"><?php echo $invoice_info->status; ?></span></p>
 		</div>
 	</div>
 	<div id="invoice-comment-section">
@@ -182,6 +186,76 @@
 </div>
 <script type="text/javascript">
 	jQuery(document).ready(function(){
+
+		//Add new row Entry
+		jQuery(document).on('click', '#add_row_invoice', function(){
+			jQuery("#invoice-table tbody tr:last").after("<tr id='new_entry_invoice_row'><td></td><td class='clientname'><input name='invoice_new_row_entry' class='invoice_new_row_entry'></td><td class='invoice_new_hours'><input name='invoice_new_row_entry_hours' class='invoice_new_row_entry_hours'></td><td class='invoice_new_price'><input name='invoice_new_row_entry_price' class='invoice_new_row_entry_price'></td><td class='invoice_new_total'><input name='invoice_new_row_entry_total' class='invoice_new_row_entry_total'></td></tr>"); 
+
+			jQuery(this).text('Save').unbind().attr('id', 'save_new_invoice_row');
+			jQuery("#remove_add_row_invoice").show();
+		});
+
+		//cancel new row entry
+		jQuery(document).on('click', '#remove_add_row_invoice', function(){
+			jQuery(this).hide();
+			jQuery("#save_new_invoice_row").text('Add').unbind().attr('id', 'add_row_invoice');
+			jQuery("#new_entry_invoice_row").remove();
+		});
+
+		//Save the new row entry
+		jQuery(document).on('click', '#save_new_invoice_row', function(){
+			jQuery(".invoice_add_new_entry_loader").css('display', 'inline-block');
+			var current_row = jQuery("#new_entry_invoice_row");
+			var new_entry_name = current_row.find(".invoice_new_row_entry").val();
+			var invoice_new_row_entry_hours = current_row.find(".invoice_new_row_entry_hours").val();
+			var invoice_new_row_entry_price = current_row.find(".invoice_new_row_entry_price").val();
+			var invoice_new_row_entry_total = current_row.find(".invoice_new_row_entry_total").val();
+			var invoice_id = jQuery("#invoice_id").val();
+			var logged_in_id = jQuery("#invoice_person_id").val();
+
+			var data = {
+				'new_entry_name' : new_entry_name,
+				'invoice_new_row_entry_hours' : invoice_new_row_entry_hours,
+				'invoice_new_row_entry_price' : invoice_new_row_entry_price,
+				'invoice_new_row_entry_total' : invoice_new_row_entry_total,
+				'invoice_id' : invoice_id,
+				'logged_in_id' : logged_in_id
+
+			}
+
+			jQuery.ajax({				
+				type: "POST",
+				url: '<?php bloginfo("template_directory"); ?>/custom_ajax-functions.php',
+				data: {
+						'data_info' : data,
+						'type' : 'edit_invoice_data_table',
+				},
+				success: function (data) {
+					var parsed = jQuery.parseJSON(data);
+
+					if(parsed.editing_invoice_table_status == 'successfully_editing_invoice_table'){
+						jQuery(".invoice_add_new_entry_loader").hide();
+						var current_row = jQuery("#new_entry_invoice_row");
+						current_row.find(".clientname").text(parsed.clientname);
+						current_row.find(".invoice_new_hours").text(parsed.total_hours)
+						current_row.find(".invoice_new_price").text(parsed.price)
+						current_row.find(".invoice_new_total").text(parsed.total)
+						current_row.unbind().removeAttr('id');
+
+						jQuery("#save_new_invoice_row").text('Add').unbind().attr('id', 'add_row_invoice');
+						jQuery("#remove_add_row_invoice").hide();
+						jQuery(".invoice_add_new_entry_loader").css('display', 'none');
+					}
+
+				},
+				error: function (data) {
+					alert('error');
+				}				
+			});		
+
+
+		});
+
 		jQuery('#confirmed_approve_invoice_by_admin').click(function(){
 			jQuery(".approve_invoice_by_admin_ajax_loader").show();
 			var invoice_id = jQuery('#invoice_id').val();
@@ -309,11 +383,11 @@
 
 
 		//SHow input text for udpating client total hours
-		jQuery(document).on('dblclick', '.total_hours_edit', function(){
-			var hours = jQuery(this).text();
-			jQuery(this).html('<input type="text" class="update_client_hours" name="edit_hours" value="'+hours+'"><div class="update_client_total_hours" id=""></div><div class="invoice-row-update-loader" id="" style="display: none;"></div>');
-			jQuery(this).find('.update_client_hours').focus();
-		});
+		// jQuery(document).on('dblclick', '.total_hours_edit', function(){
+		// 	var hours = jQuery(this).text();
+		// 	jQuery(this).html('<input type="text" class="update_client_hours" name="edit_hours" value="'+hours+'"><div class="update_client_total_hours" id=""></div><div class="invoice-row-update-loader" id="" style="display: none;"></div>');
+		// 	jQuery(this).find('.update_client_hours').focus();
+		// });
 
 		//Updating the client total hours
 		jQuery(document).on('click', '.update_client_total_hours', function(){
@@ -364,6 +438,8 @@
 					});
 					console.log(total_hours);
 					jQuery('.invoice_total_hours').text(total_hours);
+
+
 				},
 				error: function (data) {
 					alert('error');

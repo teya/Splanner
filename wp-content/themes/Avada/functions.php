@@ -6655,6 +6655,7 @@ function SubmitCommentInvoice($data){
 	}
 	return $response;
 }
+
 function countDays($year, $month, $ignore) {
     $count = 0;
     $counter = mktime(0, 0, 0, $month, 1, $year);
@@ -6666,6 +6667,7 @@ function countDays($year, $month, $ignore) {
     }
     return $count;
 }
+
 function ApprovePersonInvoice($data){
 	global $wpdb;
 	extract($data);
@@ -6770,5 +6772,58 @@ function ApprovePersonInvoiceByAdmin($invoice_id){
 		die('FAILED INVOICE APPROVE BY ADMIN');
 	}
 	return $response;
+}
+
+function EditInvoiceDataTable($data){
+	global $wpdb;
+
+	extract($data);
+
+	$invoice_tablename = $wpdb->prefix . "custom_invoice_table";
+
+	$invoice_info = $wpdb->get_row("SELECT clients_invoices_table, total_hours, salary FROM ". $invoice_tablename ." WHERE id = ". $invoice_id);
+
+	$invoice_table_array = unserialize($invoice_info->clients_invoices_table);
+
+	$total_hours = round($invoice_info->total_hours + $invoice_new_row_entry_hours, 2);
+
+	$new_invoice_row_array  = array(
+		'clientname' => $new_entry_name,
+		'total_hours' => $invoice_new_row_entry_hours,
+		'price' => $invoice_new_row_entry_price,
+		'total' => $invoice_new_row_entry_total
+	);
+
+	array_push($invoice_table_array, $new_invoice_row_array);
+
+	$update_invoice_table_status = $wpdb->update(
+		$invoice_tablename,
+		array(
+			'clients_invoices_table'		 => serialize($invoice_table_array)
+		),
+		array(
+			'id' => $invoice_id
+		),
+		array(
+			'%s'
+		)
+	);
+
+	if($update_invoice_table_status == 1){
+	$response = array(
+		'editing_invoice_table_status' => 'successfully_editing_invoice_table',
+		'clientname'	=> $new_entry_name,
+		'total_hours' => $invoice_new_row_entry_hours,
+		'price' => $invoice_new_row_entry_price,
+		'total' => $invoice_new_row_entry_total
+		);
+	}else{
+		die('ERROR EDITING INVOICE TABLE');
+	}
+
+
+	return $response;
+
+
 }
 ?>
