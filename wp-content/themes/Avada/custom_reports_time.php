@@ -136,88 +136,12 @@ jQuery(document).ready(function(){
 			<div class="border_separator"></div>
 			<div class="top_reports">
 				<?php
-					$total_hour_decimal = "";
-					$billable_id_array = array();
-					$unbillable_id_array = array();
-					foreach($import_data as $timesheet_data){
-						$task_hour = $timesheet_data->task_hour;
-						$task_hour_decimal = round(decimalHours($task_hour), 2);					
-						$total_hour_decimal += $task_hour_decimal;
-						$task_project_name = $timesheet_data->task_project_name;
-						$task_client_name = $timesheet_data->task_label;
-						$project_data = $wpdb->get_row("SELECT * FROM {$table_name_project} WHERE project_name = '$task_project_name' AND project_client = '$task_client_name'");
-						//////// if($task_project_name == $project_data->project_name && $task_client_name == $project_data->project_client && $project_data->project_invoice_method == 1){											
-							//////// $timesheet_items = $wpdb->get_results("SELECT * FROM {$table_name} WHERE $filter_month AND task_project_name = '$task_project_name' AND task_label = '$task_client_name'");
-							//////// foreach($timesheet_items as $timesheet_item){
-								//////// $task_id = $timesheet_item->ID;
-								//////// array_push($id_array,$task_id);
-							//////// }						
-						//////// }
-						
-						if($task_project_name == $project_data->project_name && $task_client_name == $project_data->project_client && $project_data->project_invoice_method == 1){											
-							$timesheet_items = $wpdb->get_results("SELECT * FROM {$table_name} WHERE $filter_month AND task_project_name = '$task_project_name' AND task_label = '$task_client_name'");
-							foreach($timesheet_items as $timesheet_item){
-								$task_name = format_task_name($timesheet_item->task_name);
-								$timesheet_id = $timesheet_item->ID;
-								$tasks = $wpdb->get_row("SELECT * FROM {$table_name_task} WHERE task_name='$task_name'");													
-								if($tasks->task_billable == 1){
-									array_push($billable_id_array,$timesheet_id);
-								}else{
-									array_push($unbillable_id_array,$timesheet_id);
-								}
-							}
-						}
-						
-						if($task_project_name == $project_data->project_name && $task_client_name == $project_data->project_client && $project_data->project_invoice_method == 0){											
-							$timesheet_items = $wpdb->get_results("SELECT * FROM {$table_name} WHERE $filter_month AND task_project_name = '$task_project_name' AND task_label = '$task_client_name'");												
-							foreach($timesheet_items as $timesheet_item){
-								$task_name = format_task_name($timesheet_item->task_name);
-								$timesheet_id = $timesheet_item->ID;
-								$tasks = $wpdb->get_row("SELECT * FROM {$table_name_task} WHERE task_name='$task_name'");													
-								if($tasks->task_billable == 1){													
-									array_push($billable_id_array,$timesheet_id);
-									}else{
-									array_push($unbillable_id_array,$timesheet_id);
-								}
-							}
-						}
-					}	
-					$billable_ids = array_unique($billable_id_array);
-					$billable_total_hour_decimal = "";
-					$total_billable_amount = "";
-					foreach($billable_ids as $id){					
-						$billable_timesheet_data = $wpdb->get_row("SELECT * FROM {$table_name} WHERE $filter_month AND ID = '$id'");				
-						$billable_task_hour = $billable_timesheet_data->task_hour;
-						$billable_task_hour_decimal = round(decimalHours($billable_task_hour), 2);
-						$billable_total_hour_decimal += $billable_task_hour_decimal;
-						$fullname = $billable_timesheet_data->task_person;						
-						$persons = $wpdb->get_row("SELECT * FROM {$table_name_person} WHERE person_fullname ='$fullname'");					
-						$person_full_name = $persons->person_first_name ." ". $persons->person_last_name;
-						$persons_person_hourly_rate = $persons->person_hourly_rate;
-						$task_billable_amount = $billable_task_hour_decimal * $persons_person_hourly_rate;
-						$total_billable_amount += $task_billable_amount;
-					}
-					
-					$unbillable_ids = array_unique($unbillable_id_array);
-					$unbillable_total_hour_decimal = "";
-					$total_unbillable_amount = "";
-					foreach($unbillable_ids as $id){
-						$unbillable_timesheet_data = $wpdb->get_row("SELECT * FROM {$table_name} WHERE $filter_month AND ID = '$id'");
-						$unbillable_task_hour = $unbillable_timesheet_data->task_hour;
-						$unbillable_task_hour_decimal = round(decimalHours($unbillable_task_hour), 2);											
-						$unbillable_total_hour_decimal += $unbillable_task_hour_decimal;											
-						$fullname = $unbillable_timesheet_data->task_person;																						
-						$persons = $wpdb->get_row("SELECT * FROM {$table_name_person} WHERE person_fullname ='$fullname'");					
-						$person_full_name = $persons->person_first_name ." ". $persons->person_last_name;											
-						$persons_person_hourly_rate = $persons->person_hourly_rate;
-						$task_unbillable_amount = $unbillable_task_hour_decimal * $persons_person_hourly_rate;
-						$total_unbillable_amount += $task_unbillable_amount;
-					}
+					$top_reports_results = filter_report_time_top_query($filter_month);
 				?>
-				<div class="one_fourth"><p class="top_reports_label">Hours Tracked</p><h1 class="top_hours_tracked"><?php echo round_quarter($total_hour_decimal); ?></h1></div>
-				<div class="one_fourth"><p class="top_reports_label">Billable Hours</p><h1 class="top_billable_hours"><?php echo round_quarter($billable_total_hour_decimal); ?></h1></div>
-				<div class="one_fourth"><p class="top_reports_label">Billable Amount</p><h1 class="top_billable_amount">kr&nbsp;<?php echo $total_billable_amount; ?></h1></div>
-				<div class="one_fourth last"><p class="top_reports_label">Unbillable Hours</p><h1 class="top_unbillable_hours"><?php echo round_quarter($unbillable_total_hour_decimal); ?></h1></div>
+				<div class="one_fourth"><p class="top_reports_label">Hours Tracked</p><h1 class="top_hours_tracked"><?php echo round_quarter($top_reports_results->total_hours); ?></h1></div>
+				<div class="one_fourth"><p class="top_reports_label">Billable Hours</p><h1 class="top_billable_hours"><?php echo round_quarter($top_reports_results->billable_hours); ?></h1></div>
+				<div class="one_fourth"><p class="top_reports_label">Billable Amount</p><h1 class="top_billable_amount">kr&nbsp;<?php echo $top_reports_results->billable_amount; ?></h1></div>
+				<div class="one_fourth last"><p class="top_reports_label">Unbillable Hours</p><h1 class="top_unbillable_hours"><?php echo round_quarter($top_reports_results->unbillable_hours); ?></h1></div>
 			</div>
 			<div class="table_container">
 				<div class="tab-holder">

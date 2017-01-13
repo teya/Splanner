@@ -14,13 +14,14 @@
 
 	global $wpdb;
 	$current_user = wp_get_current_user();
-	$invoice_id = $_GET['id'];
 	$persons_tablename = $wpdb->prefix.'custom_person';
 	$invoice_tablename = $wpdb->prefix.'custom_invoice_table';
-	$invoice_info = $wpdb->get_row('SELECT * FROM '.$invoice_tablename.' WHERE id = '.$invoice_id);
-	$month = date('F', strtotime('-1 Month'));
-	$month_in_num = date('n', strtotime('-1 Month'));
-	$year = date('Y', strtotime('-1 Month'));
+	// $invoice_id = $_GET['id'];
+
+	$last_month_date = date('Y-m-d', strtotime("-1 month"));
+
+	$month =  date("m", strtotime($last_month_date));
+	$year =  date("Y", strtotime($last_month_date));
 
 	// print_r($current_user->id);
 	if($current_user->id == 2){
@@ -28,7 +29,13 @@
 	}else{
 		$person_info = $wpdb->get_row('SELECT * FROM '.$persons_tablename.' WHERE wp_user_id = '.$current_user->ID);
 	}
-	
+
+	$month = date('m', strtotime('-1 Month'));
+	$month_in_num = date('n', strtotime('-1 Month'));
+	$year = date('Y', strtotime('-1 Month'));
+
+	$invoice_info = $wpdb->get_row('SELECT * FROM '.$invoice_tablename.' WHERE date = "'.$month.'-'.$year.'" AND person_id = '. $person_info->wp_user_id);
+
 	$client_list_table = unserialize($invoice_info->clients_invoices_table);
 	$invoice_comments = unserialize($invoice_info->comments);
 	$total_client_hours = 0;
@@ -234,6 +241,8 @@
 					var parsed = jQuery.parseJSON(data);
 
 					if(parsed.editing_invoice_table_status == 'successfully_editing_invoice_table'){
+
+						console.log(parsed);
 						jQuery(".invoice_add_new_entry_loader").hide();
 						var current_row = jQuery("#new_entry_invoice_row");
 						current_row.find(".clientname").text(parsed.clientname);

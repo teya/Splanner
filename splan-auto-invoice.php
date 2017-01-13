@@ -45,6 +45,13 @@
 				$timesheets = $wpdb->get_results('SELECT SUM(IF(task_name = "holiday", TIME_TO_SEC(task_hour)/3600, 0 )) as holiday, SUM(IF(task_name = "sickness", TIME_TO_SEC(task_hour)/3600, 0 )) as sickness, SUM(IF(task_name = "electric / internet problems", TIME_TO_SEC(task_hour)/3600, 0 )) as electric, SUM(TIME_TO_SEC(task_hour)/3600) as totalhours, task_label FROM '.SPLAN_TIMESHEET.' WHERE task_person = "'.$person->person_fullname.'" AND STR_TO_DATE(date_now, "%d/%m/%Y") BETWEEN STR_TO_DATE("01/'.$month.'/'.$year.'", "%d/%m/%Y") AND STR_TO_DATE("31/'.$month.'/'.$year.'", "%d/%m/%Y") GROUP BY  task_label');
 
 
+					echo "<pre>";
+					print_r('SELECT SUM(IF(task_name = "holiday", TIME_TO_SEC(task_hour)/3600, 0 )) as holiday, SUM(IF(task_name = "sickness", TIME_TO_SEC(task_hour)/3600, 0 )) as sickness, SUM(IF(task_name = "electric / internet problems", TIME_TO_SEC(task_hour)/3600, 0 )) as electric, SUM(TIME_TO_SEC(task_hour)/3600) as totalhours, task_label FROM '.SPLAN_TIMESHEET.' WHERE task_person = "'.$person->person_fullname.'" AND STR_TO_DATE(date_now, "%d/%m/%Y") BETWEEN STR_TO_DATE("01/'.$month.'/'.$year.'", "%d/%m/%Y") AND STR_TO_DATE("31/'.$month.'/'.$year.'", "%d/%m/%Y") GROUP BY  task_label');
+					echo "</pre>";
+
+					die();
+
+
 				foreach($timesheets as $timesheet){
 				// 	// echo round($timesheet->totalhours, 2) . " - " . $timesheet->task_label . "<br>";
 					$total_holiday_hours += $timesheet->holiday;
