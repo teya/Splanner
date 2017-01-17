@@ -6869,4 +6869,7 @@ body.single .post-content li{
 .invoice_add_new_entry_loader{
 	float: none !important;
 }
+.ui-datepicker-title .ui-datepicker-month, .ui-datepicker-title .ui-datepicker-year{
+	color: #000000;
+}
 

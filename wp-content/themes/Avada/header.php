@@ -2536,179 +2536,180 @@ function filter_ajax_function(filter_details){
 		}
 	});
 	
-	// jQuery.ajax({
-	// 	type: "POST",
-	// 	url: '<?php bloginfo("template_directory"); ?>/custom_ajax-functions.php',
-	// 	data:{
-	// 		'type' : 'report_time_filter_client',
-	// 		'filter_details' : filter_details				
-	// 	},
-	// 	success: function (data) {
-	// 		jQuery('.client_detail_loader').hide();
-	// 		jQuery('#clients .sort_name_container').empty();
-	// 		var parsed = jQuery.parseJSON(data);
-	// 		var client_tab_counter = 1;
-	// 		jQuery.each(parsed.client_details, function(index, value){
-	// 			var client_details_split = value.split("_");
-	// 			var client_name = client_details_split[0];
-	// 			var total_client_hours = client_details_split[1];
-	// 			var billable_total_hour_decimal = client_details_split[2];
-	// 			var total_billable_amount = client_details_split[3];
-	// 			var unbillable_total_hour_decimal = client_details_split[4];
+	jQuery.ajax({
+		type: "POST",
+		url: '<?php bloginfo("template_directory"); ?>/custom_ajax-functions.php',
+		data:{
+			'type' : 'report_time_filter_client',
+			'filter_details' : filter_details				
+		},
+		success: function (data) {
+			jQuery('.client_detail_loader').hide();
+			jQuery('#clients .sort_name_container').empty();
+			var parsed = jQuery.parseJSON(data);
+			var client_tab_counter = 1;
+			jQuery.each(parsed.client_details, function(index, value){
+				var client_details_split = value.split("_");
+				var client_name = client_details_split[0];
+				var total_client_hours = client_details_split[1];
+				var billable_total_hour_decimal = client_details_split[2];
+				var total_billable_amount = client_details_split[3];
+				var unbillable_total_hour_decimal = client_details_split[4];
 				
-	// 			jQuery('#clients .sort_name_container').append('<div id="info_div_'+client_tab_counter+'" class="info_div">'
-	// 			+'<div class="first_column"><li>'+client_name+'</li></div>'
-	// 			+'<div class="second_column"><li>'+total_client_hours+'</li></div>'
-	// 			+'<div class="third_column"><li>'+billable_total_hour_decimal+'</li></div>'
-	// 			+'<div class="fourth_column"><li>'+total_billable_amount+'</li></div>'
-	// 			+'<div class="fifth_column"><li>'+unbillable_total_hour_decimal+'</li></div>'
-	// 			+'</div>');
+				jQuery('#clients .sort_name_container').append('<div id="info_div_'+client_tab_counter+'" class="info_div">'
+				+'<div class="first_column"><li>'+client_name+'</li></div>'
+				+'<div class="second_column"><li>'+total_client_hours+'</li></div>'
+				+'<div class="third_column"><li>'+billable_total_hour_decimal+'</li></div>'
+				+'<div class="fourth_column"><li>'+total_billable_amount+'</li></div>'
+				+'<div class="fifth_column"><li>'+unbillable_total_hour_decimal+'</li></div>'
+				+'</div>');
 				
-	// 			client_tab_counter++;
-	// 		});
-	// 		jQuery('#clients .info_div_total .second_column p').text(parsed.client_tab_total_hour);
-	// 		jQuery('#clients .info_div_total .third_column p').text(parsed.client_tab_total_billable_hour);
-	// 		jQuery('#clients .info_div_total .fourth_column p').text(parsed.client_tab_total_billable_amount);
-	// 		jQuery('#clients .info_div_total .fifth_column p').text(parsed.client_tab_total_unbillable_hour);		
-	// 	},		
-	// 	error: function (data) {
-	// 		alert('error');
-	// 	}
-	// });
-	// jQuery.ajax({
-	// 	type: "POST",
-	// 	url: '<?php bloginfo("template_directory"); ?>/custom_ajax-functions.php',
-	// 	data:{
-	// 		'type' : 'report_time_filter_project',
-	// 		'filter_details' : filter_details				
-	// 	},
-	// 	success: function (data) {
-	// 		jQuery('.project_detail_loader').hide();
-	// 		jQuery('#projects .sort_name_container').empty();
-	// 		var parsed = jQuery.parseJSON(data);
-	// 		var project_tab_counter = 1; 
-	// 		jQuery.each(parsed.project_details, function(index, value){
-	// 			var project_details_split = value.split("_");
-	// 			var project_name_title = project_details_split[0];
-	// 			var project_client_name = project_details_split[1];
-	// 			var total_project_hour = project_details_split[2];
-	// 			var billable_total_hour_decimal = project_details_split[3];
-	// 			var total_billable_amount = project_details_split[4];
-	// 			var unbillable_total_hour_decimal = project_details_split[5];
+				client_tab_counter++;
+			});
+			jQuery('#clients .info_div_total .second_column p').text(parsed.client_tab_total_hour);
+			jQuery('#clients .info_div_total .third_column p').text(parsed.client_tab_total_billable_hour);
+			jQuery('#clients .info_div_total .fourth_column p').text(parsed.client_tab_total_billable_amount);
+			jQuery('#clients .info_div_total .fifth_column p').text(parsed.client_tab_total_unbillable_hour);		
+		},		
+		error: function (data) {
+			alert('error');
+		}
+	});
+	
+	jQuery.ajax({
+		type: "POST",
+		url: '<?php bloginfo("template_directory"); ?>/custom_ajax-functions.php',
+		data:{
+			'type' : 'report_time_filter_project',
+			'filter_details' : filter_details				
+		},
+		success: function (data) {
+			jQuery('.project_detail_loader').hide();
+			jQuery('#projects .sort_name_container').empty();
+			var parsed = jQuery.parseJSON(data);
+			var project_tab_counter = 1; 
+			jQuery.each(parsed.project_details, function(index, value){
+				var project_details_split = value.split("_");
+				var project_name_title = project_details_split[0];
+				var project_client_name = project_details_split[1];
+				var total_project_hour = project_details_split[2];
+				var billable_total_hour_decimal = project_details_split[3];
+				var total_billable_amount = project_details_split[4];
+				var unbillable_total_hour_decimal = project_details_split[5];
 				
-	// 			jQuery('#projects .sort_name_container').append('<div id="info_div_'+project_tab_counter+'" class="info_div">'
-	// 			+'<div class="first_column"><li>'+project_name_title+'</li></div>'
-	// 			+'<div class="second_column"><li>'+project_client_name+'</li></div>'
-	// 			+'<div class="third_column"><li>'+total_project_hour+'</li></div>'
-	// 			+'<div class="fourth_column"><li>'+billable_total_hour_decimal+'</li></div>'
-	// 			+'<div class="fifth_column"><li>'+total_billable_amount+'</li></div>'
-	// 			+'<div class="sixth_column"><li>'+unbillable_total_hour_decimal+'</li></div>'
-	// 			+'</div>');
+				jQuery('#projects .sort_name_container').append('<div id="info_div_'+project_tab_counter+'" class="info_div">'
+				+'<div class="first_column"><li>'+project_name_title+'</li></div>'
+				+'<div class="second_column"><li>'+project_client_name+'</li></div>'
+				+'<div class="third_column"><li>'+total_project_hour+'</li></div>'
+				+'<div class="fourth_column"><li>'+billable_total_hour_decimal+'</li></div>'
+				+'<div class="fifth_column"><li>'+total_billable_amount+'</li></div>'
+				+'<div class="sixth_column"><li>'+unbillable_total_hour_decimal+'</li></div>'
+				+'</div>');
 					
-	// 			project_tab_counter++;
-	// 		});
-	// 		jQuery('#projects .info_div_total .third_column p').text(parsed.project_tab_total_hour);
-	// 		jQuery('#projects .info_div_total .fourth_column p').text(parsed.project_tab_total_billable_hour);
-	// 		jQuery('#projects .info_div_total .fifth_column p').text(parsed.project_tab_total_billable_amount);
-	// 		jQuery('#projects .info_div_total .sixth_column p').text(parsed.project_tab_total_unbillable_hour);
-	// 	},		
-	// 	error: function (data) {
-	// 		alert('error');
-	// 	}
-	// });
+				project_tab_counter++;
+			});
+			jQuery('#projects .info_div_total .third_column p').text(parsed.project_tab_total_hour);
+			jQuery('#projects .info_div_total .fourth_column p').text(parsed.project_tab_total_billable_hour);
+			jQuery('#projects .info_div_total .fifth_column p').text(parsed.project_tab_total_billable_amount);
+			jQuery('#projects .info_div_total .sixth_column p').text(parsed.project_tab_total_unbillable_hour);
+		},		
+		error: function (data) {
+			alert('error');
+		}
+	});
 	
-	// jQuery.ajax({
-	// 	type: "POST",
-	// 	url: '<?php bloginfo("template_directory"); ?>/custom_ajax-functions.php',
-	// 	data:{
-	// 		'type' : 'report_time_filter_task',
-	// 		'filter_details' : filter_details				
-	// 	},
-	// 	success: function (data) {
-	// 		jQuery('.task_detail_loader').hide();
-	// 		jQuery('#tasks .sort_name_container').empty();
-	// 		var parsed = jQuery.parseJSON(data);
-	// 		var task_tab_counter = 1;
-	// 		jQuery.each(parsed.task_details, function(index, value){
-	// 			var task_details_split = value.split("_");
-	// 			var task_name_title = task_details_split[0];
-	// 			var total_task_hour = task_details_split[1];
-	// 			var billable_total_hour_decimal = task_details_split[2];
-	// 			var total_billable_amount = task_details_split[3];
-	// 			var unbillable_total_hour_decimal = task_details_split[4]
+	jQuery.ajax({
+		type: "POST",
+		url: '<?php bloginfo("template_directory"); ?>/custom_ajax-functions.php',
+		data:{
+			'type' : 'report_time_filter_task',
+			'filter_details' : filter_details				
+		},
+		success: function (data) {
+			jQuery('.task_detail_loader').hide();
+			jQuery('#tasks .sort_name_container').empty();
+			var parsed = jQuery.parseJSON(data);
+			var task_tab_counter = 1;
+			jQuery.each(parsed.task_details, function(index, value){
+				var task_details_split = value.split("_");
+				var task_name_title = task_details_split[0];
+				var total_task_hour = task_details_split[1];
+				var billable_total_hour_decimal = task_details_split[2];
+				var total_billable_amount = task_details_split[3];
+				var unbillable_total_hour_decimal = task_details_split[4]
 				
-	// 			jQuery('#tasks .sort_name_container').append('<div id="info_div_'+task_tab_counter+'" class="info_div">'
-	// 			+'<div class="first_column"><li>'+task_name_title+'</li></div>'
-	// 			+'<div class="second_column"><li>'+total_task_hour+'</li></div>'
-	// 			+'<div class="third_column"><li>'+billable_total_hour_decimal+'</li></div>'
-	// 			+'<div class="fourth_column"><li>'+total_billable_amount+'</li></div>'
-	// 			+'<div class="fifth_column"><li>'+unbillable_total_hour_decimal+'</li></div>'
-	// 			+'</div>');
+				jQuery('#tasks .sort_name_container').append('<div id="info_div_'+task_tab_counter+'" class="info_div">'
+				+'<div class="first_column"><li>'+task_name_title+'</li></div>'
+				+'<div class="second_column"><li>'+total_task_hour+'</li></div>'
+				+'<div class="third_column"><li>'+billable_total_hour_decimal+'</li></div>'
+				+'<div class="fourth_column"><li>'+total_billable_amount+'</li></div>'
+				+'<div class="fifth_column"><li>'+unbillable_total_hour_decimal+'</li></div>'
+				+'</div>');
 				
-	// 			task_tab_counter++;
-	// 		});
-	// 		jQuery('#tasks .info_div_total .second_column p').text(parsed.task_tab_total_hour);
-	// 		jQuery('#tasks .info_div_total .third_column p').text(parsed.task_tab_total_billable_hour);
-	// 		jQuery('#tasks .info_div_total .fourth_column p').text(parsed.task_tab_total_billable_amount);
-	// 		jQuery('#tasks .info_div_total .fifth_column p').text(parsed.task_tab_total_unbillable_hour);
-	// 	},		
-	// 	error: function (data) {
-	// 		alert('error');
-	// 	}
-	// });
+				task_tab_counter++;
+			});
+			jQuery('#tasks .info_div_total .second_column p').text(parsed.task_tab_total_hour);
+			jQuery('#tasks .info_div_total .third_column p').text(parsed.task_tab_total_billable_hour);
+			jQuery('#tasks .info_div_total .fourth_column p').text(parsed.task_tab_total_billable_amount);
+			jQuery('#tasks .info_div_total .fifth_column p').text(parsed.task_tab_total_unbillable_hour);
+		},		
+		error: function (data) {
+			alert('error');
+		}
+	});
 	
-	// jQuery.ajax({
-	// 	type: "POST",
-	// 	url: '<?php bloginfo("template_directory"); ?>/custom_ajax-functions.php',
-	// 	data:{
-	// 		'type' : 'report_time_filter_staff',
-	// 		'filter_details' : filter_details				
-	// 	},
-	// 	success: function (data) {
-	// 		jQuery('.staff_detail_loader').hide();
-	// 		jQuery('#staff .sort_name_container').empty();
-	// 		var parsed = jQuery.parseJSON(data);
-	// 		var staff_tab_counter = 1;
-	// 		jQuery.each(parsed.person_details, function(index, value){
-	// 			var person_details_split = value.split("_");
-	// 			var person_name_title = person_details_split[0];
-	// 			var total_person_hour = person_details_split[1];
-	// 			var billable_total_hour_decimal = person_details_split[2];
-	// 			var total_billable_amount = person_details_split[3];
-	// 			var unbillable_total_hour_decimal = person_details_split[4];
-	// 			var holiday_total_hour_decimal = person_details_split[5];
-	// 			var vacation_total_hour_decimal = person_details_split[6];
-	// 			var sickness_total_hour_decimal = person_details_split[7];
-	// 			var electric_internet_total_hour_decimal = person_details_split[8];
+	jQuery.ajax({
+		type: "POST",
+		url: '<?php bloginfo("template_directory"); ?>/custom_ajax-functions.php',
+		data:{
+			'type' : 'report_time_filter_staff',
+			'filter_details' : filter_details				
+		},
+		success: function (data) {
+			jQuery('.staff_detail_loader').hide();
+			jQuery('#staff .sort_name_container').empty();
+			var parsed = jQuery.parseJSON(data);
+			var staff_tab_counter = 1;
+			jQuery.each(parsed.person_details, function(index, value){
+				var person_details_split = value.split("_");
+				var person_name_title = person_details_split[0];
+				var total_person_hour = person_details_split[1];
+				var billable_total_hour_decimal = person_details_split[2];
+				var total_billable_amount = person_details_split[3];
+				var unbillable_total_hour_decimal = person_details_split[4];
+				var holiday_total_hour_decimal = person_details_split[5];
+				var vacation_total_hour_decimal = person_details_split[6];
+				var sickness_total_hour_decimal = person_details_split[7];
+				var electric_internet_total_hour_decimal = person_details_split[8];
 				
-	// 			jQuery('#staff .sort_name_container').append('<div id="info_div_'+staff_tab_counter+'" class="info_div">'
-	// 			+'<div class="first_column"><li>'+person_name_title+'</li></div>'
-	// 			+'<div class="second_column"><li>'+total_person_hour+'</li></div>'
-	// 			+'<div class="third_column"><li>'+billable_total_hour_decimal+'</li></div>'
-	// 			+'<div class="fourth_column"><li>'+total_billable_amount+'</li></div>'
-	// 			+'<div class="fifth_column"><li>'+unbillable_total_hour_decimal+'</li></div>'
-	// 			+'<div class="sixth_column"><li>'+holiday_total_hour_decimal+'</li></div>'
-	// 			+'<div class="seventh_column"><li>'+vacation_total_hour_decimal+'</li></div>'
-	// 			+'<div class="eight_column"><li>'+sickness_total_hour_decimal+'</li></div>'
-	// 			+'<div class="ninth_column"><li>'+electric_internet_total_hour_decimal+'</li></div>'
-	// 			+'</div>');
+				jQuery('#staff .sort_name_container').append('<div id="info_div_'+staff_tab_counter+'" class="info_div">'
+				+'<div class="first_column"><li>'+person_name_title+'</li></div>'
+				+'<div class="second_column"><li>'+total_person_hour+'</li></div>'
+				+'<div class="third_column"><li>'+billable_total_hour_decimal+'</li></div>'
+				+'<div class="fourth_column"><li>'+total_billable_amount+'</li></div>'
+				+'<div class="fifth_column"><li>'+unbillable_total_hour_decimal+'</li></div>'
+				+'<div class="sixth_column"><li>'+holiday_total_hour_decimal+'</li></div>'
+				+'<div class="seventh_column"><li>'+vacation_total_hour_decimal+'</li></div>'
+				+'<div class="eight_column"><li>'+sickness_total_hour_decimal+'</li></div>'
+				+'<div class="ninth_column"><li>'+electric_internet_total_hour_decimal+'</li></div>'
+				+'</div>');
 				
-	// 			staff_tab_counter++;
-	// 		});
-	// 		jQuery('#staff .info_div_total .second_column p').text(parsed.person_tab_total_hour);
-	// 		jQuery('#staff .info_div_total .third_column p').text(parsed.person_tab_total_billable_hour);
-	// 		jQuery('#staff .info_div_total .fourth_column p').text(parsed.person_tab_total_billable_amount);
-	// 		jQuery('#staff .info_div_total .fifth_column p').text(parsed.person_tab_total_unbillable_hour);
-	// 		jQuery('#staff .info_div_total .sixth_column p').text(parsed.person_tab_total_holiday_hour);
-	// 		jQuery('#staff .info_div_total .seventh_column p').text(parsed.person_tab_total_vacation_hour);
-	// 		jQuery('#staff .info_div_total .eight_column p').text(parsed.person_tab_total_sickness_hour);
-	// 		jQuery('#staff .info_div_total .ninth_column p').text(parsed.person_tab_total_electric_internet_hour);
+				staff_tab_counter++;
+			});
+			jQuery('#staff .info_div_total .second_column p').text(parsed.person_tab_total_hour);
+			jQuery('#staff .info_div_total .third_column p').text(parsed.person_tab_total_billable_hour);
+			jQuery('#staff .info_div_total .fourth_column p').text(parsed.person_tab_total_billable_amount);
+			jQuery('#staff .info_div_total .fifth_column p').text(parsed.person_tab_total_unbillable_hour);
+			jQuery('#staff .info_div_total .sixth_column p').text(parsed.person_tab_total_holiday_hour);
+			jQuery('#staff .info_div_total .seventh_column p').text(parsed.person_tab_total_vacation_hour);
+			jQuery('#staff .info_div_total .eight_column p').text(parsed.person_tab_total_sickness_hour);
+			jQuery('#staff .info_div_total .ninth_column p').text(parsed.person_tab_total_electric_internet_hour);
 			
-	// 	},		
-	// 	error: function (data) {
-	// 		alert('error');
-	// 	}
-	// });
+		},		
+		error: function (data) {
+			alert('error');
+		}
+	});
 }
 
 /*  WAIT TILL ELEMENT EXIST */
