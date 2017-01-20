@@ -6752,12 +6752,14 @@ body.single .post-content li{
 #invoice-wrapper .email{
 	color: #e02d2d;
 }
-#invoice-wrapper .invoice_total_hours{
+#invoice-wrapper #bottom_invoice_total_hours, 
+#invoice-wrapper #bottom_person_total_no_work_hours,
+#invoice-wrapper #bottom_person_total_salary,
+#invoice-wrapper #bottom_person_invoice_status
+{
 	font-weight: 600;
 }
-#invoice-wrapper .person_total_hours{
-	font-weight: 600;
-}
+
 #invoice-table{
 	min-width: 630px;
 	margin:0px auto;
@@ -6871,5 +6873,36 @@ body.single .post-content li{
 }
 .ui-datepicker-title .ui-datepicker-month, .ui-datepicker-title .ui-datepicker-year{
 	color: #000000;
+}
+.top-invoice-navigation .invoice-nav-left, .top-invoice-navigation .invoice-nav-left{
+	clear: both;
+	display: block;
+}
+.top-invoice-navigation{
+	height: 40px;
+}
+.disabled-invoice-nav{
+	background-color: #4CAD1E;
+	background: -moz-linear-gradient(center bottom , #738a6c 0%, #a6c599 70%) repeat scroll 0 0 rgba(0, 0, 0, 0) !important; 	
+	background:	-webkit-gradient(linear, 0% 100%, 0% 0%, color-stop(0, #719467), color-stop(0.7, #a0c094)) !important;     
+	border: 1px solid #73906b;    
+	box-shadow: 0 1px 0 rgba(255, 255, 255, 0.3) inset;    
+	color: #FFFFFF;    
+	font-weight: bold;    
+	text-shadow: 0 0 2px #2E8D11;	
+	border-radius: 4px;	
+	cursor: pointer;    
+	display: inline-block;    
+	font-family: "Helvetica Neue",Arial,Verdana,"Nimbus Sans L",sans-serif !important;    
+	font-size: 11px !important;    
+	height: 25px;    
+	line-height: 25px;    
+	margin: 0 3px 0 0;    
+	outline: medium none;    
+	padding: 0 12px;    
+	text-align: center;    
+	text-decoration: none;    
+	white-space: nowrap;	
+	width: auto !important;	
 }
 

@@ -157,15 +157,6 @@ $birthmonths = array('January', 'February','March','April','May','June','July','
 				<input type="text" class="person_monthly_rate" name="person_monthly_rate" />
 			</div>
 		</div>
-		<div class="section">
-			<div class="left">
-				<p class="label">Monthly Salary</p>
-			</div>
-			<div class="right">
-				<p class="right_label">kr</p>
-				<input type="text" class="person_monthly_salary" name="person_monthly_salary" />
-			</div>
-		</div>
 		<div class="border_separator"></div>
 		<div class="section">
 			<div class="left">

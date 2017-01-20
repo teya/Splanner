@@ -74,14 +74,13 @@ if(isset($_POST['submit'])){
 	'person_hourly_rate'		=> $person_hourly_rate,
 	'person_time_track'			=> $person_time_track,
 	'person_monthly_rate'		=> $person_monthly_rate,
-	'person_monthly_salary'		=> $person_monthly_salary,
 	'person_permission'			=> $person_permission,	
 	'person_timezone'			=> $person_timezone,
 	'person_image'				=> $person_image
 	),
 	array( 'ID' => $id ),
 	array( '%s', '%s' ));	
-	
+
 	$update_wp = $wpdb->update( $table_name_wp_user , array(
 	'display_name'			=> $person_fullname,
 	'user_email'			=> $person_email
@@ -266,14 +265,6 @@ if(isset($_POST['submit'])){
 			<div class="right">
 				<p class="right_label">kr</p>
 				<input type="text" class="person_monthly_rate" name="person_monthly_rate" value="<?php echo (isset($results_edit->person_monthly_rate)) ? $results_edit->person_monthly_rate : '';  ?>"/>
-			</div>
-		</div>
-		<div class="section">
-			<div class="left">
-				<p class="label">Monthly Salary</p>
-			</div>
-			<div class="right">
-				<input type="text" class="person_monthly_salary" name="person_monthly_salary" value="<?php echo (isset($results_edit->person_monthly_salary)) ? $results_edit->person_monthly_salary : '';  ?>"/>
 			</div>
 		</div>
 		<div class="border_separator"></div>

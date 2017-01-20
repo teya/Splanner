@@ -5595,7 +5595,7 @@ function SubmitCommentInvoice($data){
 
 	$invoice_tablename = $wpdb->prefix . "custom_invoice_table";
 
-	$invoice_info = $wpdb->get_row('SELECT comments FROM ' . $invoice_tablename . ' WHERE id =' . $invoice_id);
+	$invoice_info = $wpdb->get_row('SELECT comments, date, person_id FROM ' . $invoice_tablename . ' WHERE id =' . $invoice_id);
 
 	$comments_array = unserialize($invoice_info->comments);
 
@@ -5604,6 +5604,7 @@ function SubmitCommentInvoice($data){
 		'datetime' => date("Y-m-d H:i"),
 		'comment'	  => $comment
 	);
+
 
 
 	if(empty($comments_array)){
@@ -5632,6 +5633,38 @@ function SubmitCommentInvoice($data){
 			'datetime' => date("Y-m-d H:i"),
 			'comment'	  => $comment
 		);
+
+		if($logged_user_id == 2){
+			$invoice_user = get_user_by('ID', $invoice_info->person_id);
+			$admin_user = get_user_by( 'ID', 2);
+
+			$invoice_date_string = split('-', $invoice_info->date);
+
+			$body = '
+			<h1>Hello '.$invoice_user->display_name.',</h1>
+			<p><strong>'.$person_name.'</strong> made a comments on the invoice for the month of '.date("F", mktime(0, 0, 0, $invoice_date_string[0], 10)).'-'.$invoice_date_string[1].'.</p>
+			<p style="font-style: italic;">'.$comment.'</p><br />
+			<p><a href="http://admin.seowebsolutions.com/" target="_blank">Log In Here to Splan</a></p>';
+			$to = $invoice_user->user_email;
+			$subject = $admin_user->display_name .' made a comments on Splan Invoice';
+
+
+		}else{
+			$invoice_user = get_user_by('ID', $invoice_info->person_id);
+			$admin_user = get_user_by( 'ID', 2);
+
+			$invoice_date_string = split('-', $invoice_info->date);
+
+			$body = '
+			<h1>Hello '.$admin_user->display_name.',</h1>
+			<p><strong>'.$person_name.'</strong> made a comments on his invoice for the month of '.date("F", mktime(0, 0, 0, $invoice_date_string[0], 10)).'-'.$invoice_date_string[1].'.</p>
+			<p style="font-style: italic;">'.$comment.'</p><br />
+			<p><a href="http://admin.seowebsolutions.com/" target="_blank">Log In Here to Splan</a></p>';
+			$to = $admin_user->user_email;
+			$subject = $person_name .' made a comments on Splan Invoice';
+		}
+		$headers = array('Content-Type: text/html; charset=UTF-8','From: Splan Auto Invoice Comments <info@seowebsolutions.se');
+		$email_status = wp_mail( $to, $subject, $body, $headers );
 
 	}else{
 		die('FAILED POST A COMMENT!');
@@ -5684,14 +5717,13 @@ function ApprovePersonInvoice($data){
 
 		$body = "
 		<h1>Hello ".$admin_info->person_fullname.",</h1>
-		<p>".$person_info->person_fullname."'s Invoice  for the ". date("F", mktime(0, 0, 0, $dates[0], 10))." ". $dates[1] ." is now available to view</p>
+		<p>".$person_info->person_fullname."'s Invoice  for the ". date("F", mktime(0, 0, 0, $dates[0], 10))." ". $dates[1] ." has been approved/p>
 		<p>And Awaiting for approval</p>
 		<p><a href='http://admin.seowebsolutions.com/' target='_blank'>Log In Here to Splan</a></p>";
 
-		// $to = $admin_info->person_email;
-		$to = "gray.greecos@gmail.com";
+		$to = $admin_info->person_email;
 		$subject = "".$person_info->person_fullname."'s Invoice for ".date("F", mktime(0, 0, 0, $dates[0], 10))." ". $dates[1];
-		$headers = array('Content-Type: text/html; charset=UTF-8');
+		$headers = array('Content-Type: text/html; charset=UTF-8','From: Splan Auto Invoice <info@seowebsolutions.se');
 					 
 		$email_status = wp_mail( $to, $subject, $body, $headers );	
 
@@ -5715,7 +5747,7 @@ function ApprovePersonInvoiceByAdmin($invoice_id){
 
 	$dates = explode("-", $invoice_info->date);
 
-	$approve_by_person_invoice_status = $wpdb->update(
+	$approve_by_admin_invoice_status = $wpdb->update(
 		$invoice_tablename,
 		array(
 			'admin_approval' => 1,
@@ -5730,25 +5762,22 @@ function ApprovePersonInvoiceByAdmin($invoice_id){
 		)
 	);
 
-	if($approve_by_person_invoice_status == 1){
+	if($approve_by_admin_invoice_status == 1){
 
 
 		$response = array(
-			'invoice_approve_by_admin_status' => 'approved'
+			'invoice_approve_by_admin_status' => 'Approved'
 		);
 
 		$body = "
 		<h1>Hello ".$person_info->person_fullname.",</h1>
-		<p>".$person_info->person_fullname."'s Invoice  for the ". date("F", mktime(0, 0, 0, $dates[0], 10))." ". $dates[1] ." is now available to view</p>
+		<p>Your Invoice  for the ". date("F", mktime(0, 0, 0, $dates[0], 10))." ". $dates[1] ." is now Approved by Patrik.</p>
 		<p>And Awaiting for approval</p>
 		<p><a href='http://admin.seowebsolutions.com/' target='_blank'>Log In Here to Splan</a></p>";
 
-		// print_r($body);
-
 		$to = $admin_info->person_email;
-		// $to = "gray.greecos@gmail.com";
 		$subject = " Your Invoice for ".date("F", mktime(0, 0, 0, $dates[0], 10))." ". $dates[1] ." was been approved by Patrik.";
-		$headers = array('Content-Type: text/html; charset=UTF-8');
+		$headers = array('Content-Type: text/html; charset=UTF-8','From: Splan Auto Invoice <info@seowebsolutions.se');
 					 
 		$email_status = wp_mail( $to, $subject, $body, $headers );	
 	}else{
@@ -5768,7 +5797,7 @@ function EditInvoiceDataTable($data){
 
 	$invoice_table_array = unserialize($invoice_info->clients_invoices_table);
 
-	$total_hours = round($invoice_info->total_hours + $invoice_new_row_entry_hours, 2);
+	$total_hours = $invoice_info->total_hours + $invoice_new_row_entry_hours;
 
 	$total_salary = round($invoice_info->salary + $invoice_new_row_entry_price, 2);
 
@@ -5785,6 +5814,7 @@ function EditInvoiceDataTable($data){
 		$invoice_tablename,
 		array(
 			'clients_invoices_table'		 => serialize($invoice_table_array),
+			'total_hours'					 => $total_hours,
 			'salary'						 => $total_salary
 		),
 		array(
@@ -5792,6 +5822,7 @@ function EditInvoiceDataTable($data){
 		),
 		array(
 			'%s',
+			'%d',
 			'%d'
 		)
 	);
@@ -5803,60 +5834,154 @@ function EditInvoiceDataTable($data){
 		'total_hours' => $total_hours,
 		'price' => $invoice_new_row_entry_price,
 		'total' => $invoice_new_row_entry_total,
-		'total_salary' => $total_salary
+		'total_salary' => round($total_salary, 2)
 		);
 	}else{
 		die('ERROR EDITING INVOICE TABLE');
 	}
+	return $response;
+}
+function PreviousInvoiceRecord($data){
+	global $wpdb;
+	extract($data);
+
+	$current_date = '01/'.$month.'/'.$year;
+
+	$prev_month_string = date("Y-m-d", strtotime($year.'-'.$month.'-20 -1 month'));
+
+	$prev_month = split('-', $prev_month_string);
+
+	$prev_month2_string = date("Y-m-d", strtotime($prev_month_string.' -1 month'));
+
+	$prev_month2 = split('-', $prev_month2_string);
+
+	$previous_invoice_info = $wpdb->get_row("SELECT * FROM wp_custom_invoice_table WHERE date = '".$prev_month[1]."-".$prev_month[0]."' AND person_id = ".$person_id);
+
+	$previous_invoice_info->clients_invoices_table = unserialize($previous_invoice_info->clients_invoices_table);
+	$comments_array = unserialize($previous_invoice_info->comments);
+	$comment_strings = "";
 
 
+	if(!empty($comments_array)){
+		foreach($comments_array as $comment){
+			$comment_strings .= "<li>";
+			$comment_strings .= "<div class='person-profile'>".$comment['person_name'].":</div>";
+			$comment_strings .= "<div class='comment-date'>".$comment['datetime']."</div>";
+			$comment_strings .= "<div class='comment-date'>".$comment['comment']."</div>";
+			$comment_strings .= "</li>";
+		}
+	}else{
+		$comment_strings = "<li class='no-comments'>No Comments Yet.</li>";
+	}
+
+
+	$previous_invoice_info->comments = $comment_strings;
+
+	$previous_invoice_info2 = $wpdb->get_row("SELECT * FROM wp_custom_invoice_table WHERE date = '".$prev_month2[1]."-".$prev_month2[0]."' AND person_id = ".$person_id);
+
+	$end_previous = (!empty($previous_invoice_info2))? 1 : 0;
+
+
+	$response  = array(
+		'invoice_info' => $previous_invoice_info,
+		'end_previous' => $end_previous,
+		'person_approve' => $previous_invoice_info->person_approval,
+		'admin_approve' => $previous_invoice_info->admin_approval
+	);
+	return $response;
+}
+function NextInvoiceRecord($data){
+	global $wpdb;
+	extract($data);
+
+	$current_date = '01/'.$month.'/'.$year;
+
+	$next_month_string = date("Y-m-d", strtotime($year.'-'.$month.'-20 +1 month'));
+
+	$next_month = split('-', $next_month_string);
+
+	$next_month2_string = date("Y-m-d", strtotime($next_month_string.' +1 month'));
+
+	$next_month2 = split('-', $next_month2_string);
+
+	$next_invoice_info = $wpdb->get_row("SELECT * FROM wp_custom_invoice_table WHERE date = '".$next_month[1]."-".$next_month[0]."' AND person_id = ".$person_id);
+
+	$next_invoice_info->clients_invoices_table = unserialize($next_invoice_info->clients_invoices_table);
+	$comments_array = unserialize($next_invoice_info->comments);
+	$comment_strings = "";
+
+
+	if(!empty($comments_array)){
+		foreach($comments_array as $comment){
+			$comment_strings .= "<li>";
+			$comment_strings .= "<div class='person-profile'>".$comment['person_name'].":</div>";
+			$comment_strings .= "<div class='comment-date'>".$comment['datetime']."</div>";
+			$comment_strings .= "<div class='comment-date'>".$comment['comment']."</div>";
+			$comment_strings .= "</li>";
+		}
+	}else{
+		$comment_strings = "<li class='no-comments'>No Comments Yet.</li>";
+	}
+
+
+	$next_invoice_info->comments = $comment_strings;
+
+	$next_invoice_info2 = $wpdb->get_row("SELECT * FROM wp_custom_invoice_table WHERE date = '".$next_month2[1]."-".$next_month2[0]."' AND person_id = ".$person_id);
+
+	$end_next = (!empty($next_invoice_info2))? 1 : 0;
+
+
+	$response  = array(
+		'invoice_info' => $next_invoice_info,
+		'end_next' => $end_next
+	);
 	return $response;
 }
 function filter_report_time_top_query($filter){
 	global $wpdb;
 	return $wpdb->get_row("SELECT 
-		ROUND(SUM(time_to_sec(t.task_hour) / (60 * 60)), 2) as total_hours, 
-		ROUND(SUM(if(ts.task_billable = 1, time_to_sec(t.task_hour) / (60 * 60), 0)), 2) as billable_hours, 
-		SUM(if(t.task_label = c.client_name, if(ts.task_billable = 1, time_to_sec(t.task_hour) / (60 * 60), 0), 0) * p.person_hourly_rate) as billable_amount, 
-		ROUND(SUM(if(ts.task_billable = 0, time_to_sec(t.task_hour) / (60 * 60), 0)), 2) as unbillable_hours
-		FROM wp_custom_timesheet as t 
-		lEFT OUTER JOIN wp_custom_task as ts ON t.task_name = ts.task_name 
-		lEFT OUTER JOIN wp_custom_person as p ON t.task_person = p.person_fullname 
-        lEFT OUTER JOIN wp_custom_client as c ON t.task_label = c.client_name 
-		WHERE ". $filter); 
+	ROUND(SUM(time_to_sec(t.task_hour) / (60 * 60)), 2) as total_hours, 
+	ROUND(SUM(if(ts.task_billable = 1, time_to_sec(t.task_hour) / (60 * 60), 0)), 2) as billable_hours, 
+	SUM(if(t.task_label = c.client_name, if(ts.task_billable = 1, time_to_sec(t.task_hour) / (60 * 60), 0), 0) * p.person_hourly_rate) as billable_amount, 
+	ROUND(SUM(if(ts.task_billable = 0, time_to_sec(t.task_hour) / (60 * 60), 0)), 2) as unbillable_hours
+	FROM wp_custom_timesheet as t 
+	lEFT OUTER JOIN wp_custom_task as ts ON t.task_name = ts.task_name 
+	lEFT OUTER JOIN wp_custom_person as p ON t.task_person = p.person_fullname 
+    lEFT OUTER JOIN wp_custom_client as c ON t.task_label = c.client_name 
+	WHERE ". $filter); 
 }
 function filter_report_time_client_query($filter){
 	global $wpdb;
 	return $wpdb->get_results("SELECT 
-		t.task_label, 
-		ROUND(SUM(time_to_sec(t.task_hour) / (60 * 60)), 2) as total_hours, 
-		ROUND(SUM(if(ts.task_billable = 1, time_to_sec(t.task_hour) / (60 * 60), 0)), 2) as billable_hours, 
-		ROUND(SUM(if(ts.task_billable = 0, time_to_sec(t.task_hour) / (60 * 60), 0)), 2) as unbillable_hours, 
-		SUM(if(t.task_label = c.client_name, if(ts.task_billable = 1, time_to_sec(t.task_hour) / (60 * 60), 0), 0) * p.person_hourly_rate) as billable_amount, 
-		SUM(if(t.task_label = c.client_name, if(ts.task_billable = 0, time_to_sec(t.task_hour) / (60 * 60), 0), 0) * p.person_hourly_rate) as unbillable_amount
-		FROM  wp_custom_timesheet as t 
-		lEFT OUTER JOIN wp_custom_task as ts ON  ts.task_name = t.task_name 
-		lEFT OUTER JOIN wp_custom_person as p ON t.task_person = p.person_fullname 
-		lEFT OUTER JOIN wp_custom_client as c ON t.task_label = c.client_name 
-		WHERE ".$filter." 
-		GROUP BY t.task_label");
+	t.task_label, 
+	ROUND(SUM(time_to_sec(t.task_hour) / (60 * 60)), 2) as total_hours, 
+	ROUND(SUM(if(ts.task_billable = 1, time_to_sec(t.task_hour) / (60 * 60), 0)), 2) as billable_hours, 
+	ROUND(SUM(if(ts.task_billable = 0, time_to_sec(t.task_hour) / (60 * 60), 0)), 2) as unbillable_hours, 
+	SUM(if(t.task_label = c.client_name, if(ts.task_billable = 1, time_to_sec(t.task_hour) / (60 * 60), 0), 0) * p.person_hourly_rate) as billable_amount, 
+	SUM(if(t.task_label = c.client_name, if(ts.task_billable = 0, time_to_sec(t.task_hour) / (60 * 60), 0), 0) * p.person_hourly_rate) as unbillable_amount
+	FROM  wp_custom_timesheet as t 
+	lEFT OUTER JOIN wp_custom_task as ts ON  ts.task_name = t.task_name 
+	lEFT OUTER JOIN wp_custom_person as p ON t.task_person = p.person_fullname 
+	lEFT OUTER JOIN wp_custom_client as c ON t.task_label = c.client_name 
+	WHERE ".$filter." 
+	GROUP BY t.task_label");
 }
 function filter_report_time_project_query($filter){
 	global $wpdb;
 	return $wpdb->get_results("SELECT 
-		t.task_project_name, 
-		t.task_label, 
-		ROUND(SUM(time_to_sec(t.task_hour) / (60 * 60)), 2) as total_hours, 
-		ROUND(SUM(if(ts.task_billable = 1, time_to_sec(t.task_hour) / (60 * 60), 0)), 2) as billable_hours,
-		ROUND(SUM(if(ts.task_billable = 0, time_to_sec(t.task_hour) / (60 * 60), 0)), 2) as unbillable_hours, 
-		SUM(if(t.task_label = c.client_name, if(ts.task_billable = 1, time_to_sec(t.task_hour) / (60 * 60), 0), 0) * p.person_hourly_rate) as billable_amount,
-		SUM(if(t.task_label = c.client_name, if(ts.task_billable = 0, time_to_sec(t.task_hour) / (60 * 60), 0), 0) * p.person_hourly_rate) as unbillable_amount
-		FROM  wp_custom_timesheet as t 
-		lEFT OUTER JOIN wp_custom_task as ts ON  ts.task_name = t.task_name 
-		lEFT OUTER JOIN wp_custom_person as p ON t.task_person = p.person_fullname 
-		lEFT OUTER JOIN wp_custom_client as c ON t.task_label = c.client_name 
-		WHERE ".$filter. " 
-		GROUP BY t.task_project_name, t.task_label");	
+	t.task_project_name, 
+	t.task_label, 
+	ROUND(SUM(time_to_sec(t.task_hour) / (60 * 60)), 2) as total_hours, 
+	ROUND(SUM(if(ts.task_billable = 1, time_to_sec(t.task_hour) / (60 * 60), 0)), 2) as billable_hours,
+	ROUND(SUM(if(ts.task_billable = 0, time_to_sec(t.task_hour) / (60 * 60), 0)), 2) as unbillable_hours, 
+	SUM(if(t.task_label = c.client_name, if(ts.task_billable = 1, time_to_sec(t.task_hour) / (60 * 60), 0), 0) * p.person_hourly_rate) as billable_amount,
+	SUM(if(t.task_label = c.client_name, if(ts.task_billable = 0, time_to_sec(t.task_hour) / (60 * 60), 0), 0) * p.person_hourly_rate) as unbillable_amount
+	FROM  wp_custom_timesheet as t 
+	lEFT OUTER JOIN wp_custom_task as ts ON  ts.task_name = t.task_name 
+	lEFT OUTER JOIN wp_custom_person as p ON t.task_person = p.person_fullname 
+	lEFT OUTER JOIN wp_custom_client as c ON t.task_label = c.client_name 
+	WHERE ".$filter. " 
+	GROUP BY t.task_project_name, t.task_label");	
 }
 function filter_report_time_task_query($filter){
 	global $wpdb;

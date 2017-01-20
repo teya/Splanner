@@ -47,9 +47,14 @@ if(isset($_GET['deleteID'])) {
 						<div id="archive_person_<?php echo $person->ID; ?>" class="button_2 display_button float_right archive_person_button">Archive</div>
 					<?php } ?>
 
-					<?php if($person->wp_user_id != 2 AND $person->person_status == 0){ ?>
+					<?php if($current_user->ID == 2 OR $current_user->ID == $person->wp_user_id){ 
+							if($person->wp_user_id != 2){
+					?>
 						<a  href="<?php echo get_site_url();  ?>/view-invoice/?user_id=<?php echo $person->wp_user_id; ?>" class="button_2 display_button float_right delete_person_button delete_ajax">View Invoice</a>
-					<?php } ?>
+					<?php 
+						}
+					} 
+					?>
 				</div>
 				<div class="display_separator"></div>
 			</div>
@@ -64,7 +69,7 @@ if(isset($_GET['deleteID'])) {
 				<div class="display_section display_section_unarchive_<?php echo $person->ID; ?> delete_ajax_<?php echo $person->ID; ?>">
 					<div class="display_list" onclick="window.open('/person-information/?id=<?php echo $person->ID ?>');">
 						<?php if($current_user_name == $person_fullname || $current_user_role == 'administrator'){ ?>
-							<a class="button_2 display_button" href="/edit-people/?editID=<?php echo $person->ID ?>">Edit</a>
+							<a class="button_2 display_button" href="<?php echo get_site_url(); ?>/edit-people/?editID=<?php echo $person->ID ?>">Edit</a>
 						<?php } ?>
 						<h3 id="name_<?php echo $person->ID; ?>" class="display_subtitle float_left"><?php echo $person_fullname; ?></h3>
 						<p class="display_hourly_rate">(kr <?php echo $person->person_hourly_rate; ?>/hr)</p>

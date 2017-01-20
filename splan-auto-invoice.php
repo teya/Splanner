@@ -27,8 +27,8 @@
 
 		
 		// Get All Person
-		$persons = $wpdb->get_results('SELECT ID, wp_user_id, person_hours_per_day, person_fullname, person_email_notification, person_monthly_salary FROM '. SPLAN_PERSONS . ' WHERE wp_user_id NOT IN (2)');
-
+		$persons = $wpdb->get_results('SELECT ID, wp_user_id, person_hours_per_day, person_fullname, person_email_notification, person_monthly_rate FROM '. SPLAN_PERSONS . ' WHERE wp_user_id NOT IN (2)');
+		
 		foreach($persons as $person){
 			$total_client_hours = 0;
 			$total_holiday_hours = 0;
@@ -43,13 +43,6 @@
 				$client_list_array = array();
 	
 				$timesheets = $wpdb->get_results('SELECT SUM(IF(task_name = "holiday", TIME_TO_SEC(task_hour)/3600, 0 )) as holiday, SUM(IF(task_name = "sickness", TIME_TO_SEC(task_hour)/3600, 0 )) as sickness, SUM(IF(task_name = "electric / internet problems", TIME_TO_SEC(task_hour)/3600, 0 )) as electric, SUM(TIME_TO_SEC(task_hour)/3600) as totalhours, task_label FROM '.SPLAN_TIMESHEET.' WHERE task_person = "'.$person->person_fullname.'" AND STR_TO_DATE(date_now, "%d/%m/%Y") BETWEEN STR_TO_DATE("01/'.$month.'/'.$year.'", "%d/%m/%Y") AND STR_TO_DATE("31/'.$month.'/'.$year.'", "%d/%m/%Y") GROUP BY  task_label');
-
-
-					echo "<pre>";
-					print_r('SELECT SUM(IF(task_name = "holiday", TIME_TO_SEC(task_hour)/3600, 0 )) as holiday, SUM(IF(task_name = "sickness", TIME_TO_SEC(task_hour)/3600, 0 )) as sickness, SUM(IF(task_name = "electric / internet problems", TIME_TO_SEC(task_hour)/3600, 0 )) as electric, SUM(TIME_TO_SEC(task_hour)/3600) as totalhours, task_label FROM '.SPLAN_TIMESHEET.' WHERE task_person = "'.$person->person_fullname.'" AND STR_TO_DATE(date_now, "%d/%m/%Y") BETWEEN STR_TO_DATE("01/'.$month.'/'.$year.'", "%d/%m/%Y") AND STR_TO_DATE("31/'.$month.'/'.$year.'", "%d/%m/%Y") GROUP BY  task_label');
-					echo "</pre>";
-
-					die();
 
 
 				foreach($timesheets as $timesheet){
@@ -90,13 +83,13 @@
 
 				//Salary Deduction if current hour not sufficient.
 				if($person_total_hr > $total_client_hours){
-					$salary_per_day = $person->person_monthly_salary / $total_working_days;
+					$salary_per_day = $person->person_monthly_rate / $total_working_days;
 					$salary_per_hr = $salary_per_day / $person->person_hours_per_day;
 					$remaining_hrs = $person_total_hr - $total_client_hours;
 					$salary_deduction = $remaining_hrs * $salary_per_hr;
-					$total_salary = $person->person_monthly_salary - $salary_deduction;
+					$total_salary = $person->person_monthly_rate - $salary_deduction;
 				}else{
-					$total_salary = $person->person_monthly_salary;
+					$total_salary = $person->person_monthly_rate;
 				}
 
 				$insert_invoice_table = $wpdb->insert(
@@ -131,33 +124,32 @@
 
 				// $wpdb->show_errors();
 				// $wpdb->print_error();
-				// if($insert_invoice_table == 1){
-				// 	$body = '
-				// 	<h1>Hello '.$person->person_fullname.',</h1>
-				// 	<p>Your Invoice for the last month is now available for viewing</p>
-				// 	<p><a href="http://admin.seowebsolutions.com/" target="_blank">Log In Here to Splan</a></p>
-				// 	';
-
-				// 	$to = $person->person_email;
-				// 	$subject = 'Splan Invoice Reminder';
-				// 	$headers = array('Content-Type: text/html; charset=UTF-8');
-					 
-				// 	// $email_status = wp_mail( $to, $subject, $body, $headers );
-					
-				// }else{
-				// 	print_r('NOT SAVE');
+				$dateObj   = DateTime::createFromFormat('!m', $month);
+				$monthName = $dateObj->format('F');
 				
-				// }
-			// echo '<pre>';
-			// print_r($arry);
-			// echo '</pre>';				
+				if($insert_invoice_table == 1){
+					$body = '
+					<h1>Hello '.$person->person_fullname.',</h1>
+					<p>Your Invoice for the month of '. $monthName . '-' . $year .' is now available for viewing</p>
+					<p><a href="http://admin.seowebsolutions.com/" target="_blank">Log In Here to Splan</a></p>
+					';
+
+					$user = get_user_by( 'ID', $person->wp_user_id );
+
+					$to = $user->user_email;
+					$subject = 'Splan Invoice Reminder';
+					$headers = array('Content-Type: text/html; charset=UTF-8','From: Splan Auto Invoice <info@seowebsolutions.se');
+					 
+					$email_status = wp_mail( $to, $subject, $body, $headers );
+					$email_message = ($email_status == 1)? 'Success Email Sent' : 'Failed Email Send';
+					print_r($user->user_email . '<br />');
+					print_r($email_message);
+					
+				}else{
+					print_r('NOT SAVE');
+				
+				}			
 			}
-
-
-	
-
-
-
 		}		
 	}
 
