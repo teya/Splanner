@@ -50,7 +50,9 @@ if(isset($_GET['deleteID'])) {
 					<?php if($current_user->ID == 2 OR $current_user->ID == $person->wp_user_id){ 
 							if($person->wp_user_id != 2){
 					?>
+						<div id="invoice_person_<?php echo $person->ID; ?>" class="regenerate-invoice" title="Regenerate Invoice"><i class="fa fa-repeat" aria-hidden="true"></i></div>
 						<a  href="<?php echo get_site_url();  ?>/view-invoice/?user_id=<?php echo $person->wp_user_id; ?>" class="button_2 display_button float_right delete_person_button delete_ajax">View Invoice</a>
+
 					<?php 
 						}
 					} 
@@ -118,4 +120,104 @@ if(isset($_GET['deleteID'])) {
 		<input type="hidden" class="delete_type" name="delete_type" value="Person" />		
 	</form>
 </div>
+<!-- show comfirm regenerate invoice -->
+<div style="display:none;" class="confirm_regenerate_invoice_dialog" id="confirm_regenerate_invoice_dialog" title="Regenerate Invoice">
+	<form class="delete_action_ajax" id="delete_project">
+		<p class="label">
+			Are you sure you want to regenerate <span id="invoice-name-person"></span> Invoice's for the Month of <span id="regenerate-invoice-month"></span>?<br />
+		</p>
+		<input id="invoice_person_id" type="hidden">	
+		<div id="confirmed_regenerate_invoice" class="button_1">Regenerate Invoice</div>
+		<div style="display:none;" class="loader approve_invoice_by_admin_ajax_loader regenerate_invoice_loader"></div>		
+	</form>
+</div>
+<!-- show successfully regenerate invoice message-->
+<div style="display:none;" class="show_successfully_regenerate_invoice" id="show_successfully_regenerate_invoice" title="Regenerate Invoice">
+	<form class="delete_action_ajax" id="delete_project">
+		<p class="label">
+			You have successfully Regenerate Invoice.
+		</p>
+		<div id="show_successfully_regenerate_invoice_close" class="button_1">OK</div>
+		<div style="display:none;" class="loader approve_invoice_by_admin_ajax_loader"></div>		
+	</form>
+</div>
+<script type="text/javascript">
+ 	jQuery(document).ready(function(){
+ 		jQuery(document).on('click','#confirmed_regenerate_invoice', function(){
+ 			jQuery(this).prop('disabled', true);
+ 			var person_id = jQuery('#invoice_person_id').val();
+ 			jQuery('.approve_invoice_by_admin_ajax_loader').show();
+
+ 			var data = {
+ 				'person_id' : person_id
+ 			}
+
+ 			jQuery.ajax({				
+				type: "POST",
+				url: '<?php bloginfo("template_directory"); ?>/custom_ajax-functions.php',
+				data: {
+						'data_info' : data,
+						'type' : 'regenerate_invoice',
+				},
+				success: function (data) {
+					var parsed = jQuery.parseJSON(data);
+
+
+					if(parsed.status == 'successfully-regenerate-invoice'){
+						jQuery('#confirm_regenerate_invoice_dialog').dialog('close');
+						jQuery('#show_successfully_regenerate_invoice').dialog('open');
+						jQuery('.approve_invoice_by_admin_ajax_loader').hide();
+					}else{
+						jQuery('#confirm_regenerate_invoice_dialog').dialog('close');
+					}
+
+					jQuery("#confirmed_regenerate_invoice").prop('disabled', false);
+				},
+				error: function (data) {
+					alert('error');
+				}				
+			});	
+
+ 		});
+ 		
+ 		//Show confirmmation Regeneration dialog box.
+ 		jQuery(document).on('click', '.regenerate-invoice', function(){
+ 			var months = [ "January", "February", "March", "April", "May", "June", 
+               "July", "August", "September", "October", "November", "December" ];
+ 			var string_id = jQuery(this).attr('id').split("_");
+ 			var name = jQuery('#name_'+string_id[2]).text();
+ 			jQuery('#invoice-name-person').text(name);
+ 			jQuery('#confirm_regenerate_invoice_dialog').dialog('open');	
+			var makeDate = new Date();
+			makeDate = new Date(makeDate.setMonth(makeDate.getMonth() - 1));
+			var month = makeDate.getMonth();
+			var year = makeDate.getFullYear();
+			jQuery('#invoice_person_id').val(string_id[2]);
+			jQuery('#regenerate-invoice-month').text(months[month]+"-"+year);
+ 		});
+
+ 		jQuery(document).on('click', '#show_successfully_regenerate_invoice_close', function(){
+ 			jQuery('#show_successfully_regenerate_invoice').dialog('close');
+ 		});
+		//Show successfully Invoice dialog box
+		jQuery( ".show_successfully_regenerate_invoice" ).dialog({
+			autoOpen: false,
+			height: 170,
+			width: 350,
+			modal: true,
+			close: function() {
+			}
+		});	
+		//Confirm Invoice
+		jQuery( ".confirm_regenerate_invoice_dialog" ).dialog({
+			autoOpen: false,
+			height: 170,
+			width: 350,
+			modal: true,
+			close: function() {
+			}
+		});	
+ 	});
+
+</script>
 <?php get_footer(); ?>

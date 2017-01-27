@@ -27,6 +27,8 @@
 	global $wpdb;
 	$current_user = wp_get_current_user();
 
+
+
 	$persons_tablename = $wpdb->prefix.'custom_person';
 	$invoice_tablename = $wpdb->prefix.'custom_invoice_table';
 
@@ -52,11 +54,15 @@
 
 	$hide_prev = ($count_invoice->count == 1)? 'hide' : '';
 
+	$download_pdf = $invoice_info->person_approval + $invoice_info->admin_approval;
+
 	$client_list_table = unserialize($invoice_info->clients_invoices_table);
 	$invoice_comments = unserialize($invoice_info->comments);
 	$total_client_hours = 0;
 
 ?>
+
+
 <?php if(!empty($invoice_info)){ ?>
 	<div id="invoice-wrapper">
 		<div class="top-invoice-navigation">
@@ -86,14 +92,14 @@
 					<td><p>SEOWEB Solutions</p></td>
 					<td></td>
 					<td>Invoice No:</td>
-					<td><p><?php echo $year ."-". $month_in_num ."-". $invoice_info->person_id; ?></p></td>
+					<td><p><?php echo $year ." ". $month_in_num ." ". $invoice_info->person_id; ?></p></td>
 				</tr>
 				<tr>
 					<td>Address:</td>
 					<td><p>Gärdsåsgatan 55A</p><p>415 16 Gothenburg, Sweden</p></td>
 					<td></td>
 					<td>Date:</td>
-					<td><p id="invoice_date"><?php echo $month . '-' . $year; ?></p></td>
+					<td><p id="invoice_date"><?php echo $month . ' ' . $year; ?></p></td>
 				</tr>
 			</table>
 		</div>
@@ -130,10 +136,17 @@
 			</tbody>
 		</table>
 		<div class="middle-invoice-table">
-			<?php if($invoice_info->person_approval != 1 OR $current_user->id == 2){ ?>
+			<?php // if($invoice_info->person_approval != 1 OR $current_user->id == 2){ ?>
 				<div id="add_row_invoice" class="button_1">Add</div>
-			<?php } ?>
+			<?php // } ?>
 			<div id="remove_add_row_invoice" class="button_1"  style="display: none;">Cancel</div>
+			<div id="download_pdf_invoice_wrapper">
+			<?php 
+				$filter_download_pdf = ($download_pdf == 2)? '' : 'style="display:none;"';
+			?>
+					<a id="download_pdf_invoice" target="_blank" <?php echo $filter_download_pdf; ?> class="button_1" href="<?php echo get_site_url(); ?>/download-invoice-pdf/download-invoice-pdf.php?id=<?php echo $invoice_info->id; ?>">Download PDF</a>
+
+			</div>
 			<div class="invoice_add_new_entry_loader" style="display: none;"></div>
 		</div>
 		<div class="bottom-invoice-table">
@@ -141,20 +154,28 @@
 				<?php if($invoice_info->person_approval == 1){ ?>
 					<?php if($current_user->id == 2) { ?>
 						<?php // if($invoice_info->admin_approval == 0){ ?>
-							<div id="approve_invoice_by_admin" class="button_1">Approve Invoice</div>
+						 <!--	<div id="approve_invoice_by_admin" class="button_1">Approve Invoice</div> -->
 						<?php } ?>
 					<?php // } ?>
 				<?php }else if($invoice_info->person_approval == 0){ ?>
 					<?php  if($current_user->id != 2) { ?>
-						<div id="approve_invoice" class="button_1">Approve Invoice</div>
+					<!--	<div id="approve_invoice" class="button_1">Approve Invoice</div> -->
 					<?php } ?>
 				<?php } ?>
+				<ul id="approval-checboxes">
+					<?php 
+						$checked = ($invoice_info->person_approval == 1)? 'checked' : '';
+						$admin_checked = ($invoice_info->admin_approval == 1)? 'checked' : '';
+					?>
+					<li><input id="approved_by_person" <?php echo $checked; ?> type="checkbox" <?php echo ($current_user->ID == 2)? 'disabled="disabled"' : ''; ?> name="person_approval"><?php echo $person_info->person_fullname; ?> </li>
+					<li><input id="approved_by_admin" <?php echo $admin_checked; ?> type="checkbox" <?php echo ($current_user->ID != 2)? 'disabled="disabled"' : ''; ?> name="admin_approval">Admin Approval</li>
+				</ul>			
 			</div>
 			<div class="pull-right">
 				<p>Total Hours: <span id="bottom_invoice_total_hours"><?php echo $invoice_info->total_hours; ?></span></p>
 				<p>Total Non-Working Hours: <span id="bottom_person_total_no_work_hours"><?php echo $invoice_info->non_working_hrs; ?></span></p>
-				<p>Total Salary: <span id="bottom_person_total_salary"><?php echo $invoice_info->salary; ?></span></p>
-				<p>Invoice Status: <span id="bottom_person_invoice_status"><?php echo $invoice_info->status; ?></span></p>
+				<p>Total Salary: <span id="bottom_person_total_salary"><?php echo $invoice_info->salary; ?></span> USD</p>
+				<p class="hide">Invoice Status: <span id="bottom_person_invoice_status"><?php echo $invoice_info->status; ?></span></p>
 			</div>
 		</div>
 		<div id="invoice-comment-section">
@@ -204,15 +225,140 @@
 <!-- COnfirm dialog box on admin -->
 <div style="display:none;" class="confirm_approval_invoice_by_admin" id="confirm_approval_invoice_by_admin" title="Approve Invoice">
 	<form class="delete_action_ajax" id="delete_project">
-		<p class="label">
-			Are you sure you want to Approve this Invoice?<br />
-		</p>	
+		<p class="label">Are you sure you want to Approve this Invoice?<br /></p>	
 		<div id="confirmed_approve_invoice_by_admin" class="button_1">Approve</div>
 		<div style="display:none" class="loader approve_invoice_by_admin_ajax_loader"></div>		
 	</form>
 </div>
 <script type="text/javascript">
 	jQuery(document).ready(function(){
+
+		//Checkbox for person approval.
+		jQuery(document).on('click', '#approved_by_person', function(){
+			var checked = jQuery(this).is(':checked');
+			if(checked) {
+				var confirm_approve = confirm('Are sure you want to approve this invoice?');
+				if(confirm_approve){
+					var invoice_id = jQuery('#invoice_id').val();
+		            var data = {
+		            	'invoice_id' : invoice_id
+		            }
+		            //Checked approval
+					jQuery.ajax({				
+						type: "POST",
+						url: '<?php bloginfo("template_directory"); ?>/custom_ajax-functions.php',
+						data: {
+								'data_info' : data,
+								'type' : 'checked_approval_by_person',
+						},
+						success: function (data) {
+							var parsed = jQuery.parseJSON(data);
+
+							if(parsed.filter_download_pdf == 2){
+								jQuery('#download_pdf_invoice').show();
+							}
+
+						},
+						error: function (data) {
+							alert('error');
+						}				
+					});	
+
+				}else if(confirm_approve == false){
+					jQuery('#approved_by_person').removeAttr('checked');
+				}
+			}else{
+				var confirm_disapprove = confirm('Are you sure you want to cancel the approval of this invoice');
+				if(confirm_disapprove){
+		            var invoice_id = jQuery('#invoice_id').val();
+		            var data = {
+		            	'invoice_id' : invoice_id
+		            }
+		            //Checked approval
+					jQuery.ajax({				
+						type: "POST",
+						url: '<?php bloginfo("template_directory"); ?>/custom_ajax-functions.php',
+						data: {
+								'data_info' : data,
+								'type' : 'unchecked_approval_by_person',
+						},
+						success: function (data) {
+							var parsed = jQuery.parseJSON(data);
+						},
+						error: function (data) {
+							alert('error');
+						}				
+					});	
+					jQuery('#download_pdf_invoice').hide();
+
+				}else if(confirm_disapprove == false){
+					jQuery('#approved_by_person').prop('checked', true);
+				}
+			}
+		});
+		
+		//Checkbox for admin approval.
+		jQuery(document).on('click', '#approved_by_admin', function(){
+			var checked = jQuery(this).is(':checked');
+			if(checked){
+				var confirm_approval = confirm('Are sure you want to approve this invoice?');
+				if(confirm_approval){
+		            var invoice_id = jQuery('#invoice_id').val();
+		            var data = {
+		            	'invoice_id' : invoice_id
+		            }
+		            //Checked approval
+					jQuery.ajax({				
+						type: "POST",
+						url: '<?php bloginfo("template_directory"); ?>/custom_ajax-functions.php',
+						data: {
+								'data_info' : data,
+								'type' : 'checked_approval_by_admin',
+						},
+						success: function (data) {
+							var parsed = jQuery.parseJSON(data);
+							console.log(parsed);
+							if(parsed.filter_download_pdf == 2){
+								jQuery('#download_pdf_invoice').show();
+							}
+						},
+						error: function (data) {
+							alert('error');
+						}				
+					});	
+				}else if(confirm_approval == false){
+					jQuery('#approved_by_admin').removeAttr('checked');
+				}
+			}else{
+
+				var confirm_disapprove = confirm('Are you sure you want to cancel the approval of this invoice');
+				if(confirm_disapprove){
+		            var invoice_id = jQuery('#invoice_id').val();
+		            var data = {
+		            	'invoice_id' : invoice_id
+		            }
+		            //Checked approval
+					jQuery.ajax({				
+						type: "POST",
+						url: '<?php bloginfo("template_directory"); ?>/custom_ajax-functions.php',
+						data: {
+								'data_info' : data,
+								'type' : 'unchecked_approval_by_admin',
+						},
+						success: function (data) {
+							var parsed = jQuery.parseJSON(data);
+						},
+						error: function (data) {
+							alert('error');
+						}				
+					});	
+					jQuery('#download_pdf_invoice').hide();
+				}else if(confirm_disapprove == false){
+					jQuery('#approved_by_admin').prop('checked', true);
+				}
+			
+			}
+		});
 
 		//Next Button for invoice
 		jQuery(document).on('click', '#invoice-nav-right-btn', function(){
@@ -223,6 +369,7 @@
 			jQuery('#add_row_invoice').hide();
 			jQuery('#approve_invoice').hide();
 			jQuery('#submit-comment').hide();
+			jQuery('#download_pdf_invoice').hide();
 			
 			jQuery('#invoice-table tbody tr').fadeOut(2000);
 
@@ -243,7 +390,7 @@
 				},
 				success: function (data) {
 					var parsed = jQuery.parseJSON(data);
-					// console.log(parsed);
+					console.log(parsed);
 					jQuery('#invoice_date').html(parsed.invoice_info.date);
 
 					jQuery('#invoice_id').val(parsed.invoice_info.id);
@@ -268,13 +415,33 @@
 						rows_string += "<td></td><td class='clientname'>"+valueObj.clientname+"</td><td><span class='total_hours_edit'>"+valueObj.total_hours+"</span></td><td>"+valueObj.price+"</td><td>"+valueObj.total+"</td>";
 						rows_string += "</tr>";
 					});
-					console.log(parsed.person_approve);
-					if(parsed.person_approve == 1){
-						jQuery('#add_row_invoice').hide();
-						jQuery('#approve_invoice').hide();
+					jQuery('#download_pdf_invoice').attr('href', '<?php echo get_site_url(); ?>/download-invoice-pdf/download-invoice-pdf.php?id='+parsed.invoice_id);
+
+					console.log(parsed.invoice_id);
+
+					if(parsed.filter_download_pdf == 2){
+						jQuery('#download_pdf_invoice').show();
 					}else{
-						jQuery('#add_row_invoice').show();
-						jQuery('#approve_invoice').show();
+						jQuery('#download_pdf_invoice').hide();
+					}
+					// if(parsed.person_approve == 1){
+					// 	jQuery('#add_row_invoice').hide();
+					// 	jQuery('#approve_invoice').hide();
+					// }else{
+					// 	jQuery('#add_row_invoice').show();
+					// 	jQuery('#approve_invoice').show();
+					// }
+
+					if(parsed.person_approve == 1){
+						jQuery('#approved_by_person').prop('checked', true);
+					}else{
+						jQuery('#approved_by_person').removeAttr('checked');
+
+					}
+					if(parsed.admin_approve == 1){
+						jQuery('#approved_by_admin').prop('checked', true);
+					}else{
+						jQuery('#approved_by_admin').removeAttr('checked');
 					}
 
 					jQuery('#invoice-table tbody').html(rows_string);
@@ -284,6 +451,9 @@
 					jQuery('#bottom_person_total_no_work_hours').text(parsed.invoice_info.non_working_hrs);
 					jQuery('.invoices-comments').html(parsed.invoice_info.comments);
 
+
+					jQuery('#add_row_invoice').show();
+					jQuery('#approve_invoice').show();
 					jQuery('#submit-comment').show();
 				},
 				error: function (data) {
@@ -303,6 +473,7 @@
 			jQuery('#add_row_invoice').hide();
 			jQuery('#approve_invoice').hide();
 			jQuery('#submit-comment').hide();
+			jQuery('#download_pdf_invoice').hide();
 
 			jQuery('#invoice-table tbody tr').fadeOut(2000);
 
@@ -356,17 +527,28 @@
 
 					// jQuery('#add_row_invoice').show();
 					// jQuery('#approve_invoice').show();
-					console.log(parsed.person_approve);
-					jQuery('#submit-comment').show();
-
-					if(parsed.person_approve == 1){
-						jQuery('#add_row_invoice').hide();
-						jQuery('#approve_invoice').hide();
+			
+					jQuery('#download_pdf_invoice').attr('href', '<?php echo get_site_url(); ?>/download-invoice-pdf/download-invoice-pdf.php?id='+parsed.invoice_id);
+	
+					if(parsed.filter_download_pdf == 2){
+						jQuery('#download_pdf_invoice').show();
 					}else{
-						jQuery('#add_row_invoice').show();
-						jQuery('#approve_invoice').show();
+						jQuery('#download_pdf_invoice').hide();
+					}
+					if(parsed.person_approve == 1){
+						jQuery('#approved_by_person').prop('checked', true);
+					}else{
+						jQuery('#approved_by_person').removeAttr('checked');
 
 					}
+					if(parsed.admin_approve == 1){
+						jQuery('#approved_by_admin').prop('checked', true);
+					}else{
+						jQuery('#approved_by_admin').removeAttr('checked');
+					}
+
+					jQuery('#add_row_invoice').show();
+					jQuery('#approve_invoice').show();
 					jQuery('#submit-comment').show();
 				},
 				error: function (data) {
@@ -407,7 +589,7 @@
 				'invoice_new_row_entry_price' : invoice_new_row_entry_price,
 				'invoice_new_row_entry_total' : invoice_new_row_entry_total,
 				'invoice_id' : invoice_id,
-				'logged_in_id' : logged_in_id
+				'logged_in_id' : <?php echo $current_user->ID; ?>
 
 			}
 
@@ -423,7 +605,6 @@
 
 					if(parsed.editing_invoice_table_status == 'successfully_editing_invoice_table'){
 
-						console.log(parsed);
 						jQuery(".invoice_add_new_entry_loader").hide();
 						var current_row = jQuery("#new_entry_invoice_row");
 						current_row.find(".clientname").text(parsed.clientname);
@@ -434,13 +615,14 @@
 						jQuery('#bottom_invoice_total_hours').text(parsed.total_hours);
 						jQuery('#bottom_person_total_salary').text(parsed.total_salary);
 
-
-
 						current_row.unbind().removeAttr('id');
 
 						jQuery("#save_new_invoice_row").text('Add').unbind().attr('id', 'add_row_invoice');
 						jQuery("#remove_add_row_invoice").hide();
+						jQuery('#approved_by_person').removeAttr('checked');
+						jQuery('#approved_by_admin').removeAttr('checked');
 						jQuery(".invoice_add_new_entry_loader").css('display', 'none');
+						jQuery("#download_pdf_invoice").hide();
 					}
 
 				},
@@ -448,8 +630,6 @@
 					alert('error');
 				}				
 			});		
-
-
 		});
 
 		jQuery('#confirmed_approve_invoice_by_admin').click(function(){
@@ -497,7 +677,6 @@
 				},
 				success: function (data) {
 					var parsed = jQuery.parseJSON(data);
-					console.log(parsed);
 					jQuery('#bottom_person_invoice_status').text(parsed.invoice_status.toUpperCase());
 					jQuery(".confirm_approval_invoice").dialog("close");
 					jQuery("#approve_invoice").hide();
@@ -518,7 +697,8 @@
 			modal: true,
 			close: function() {
 			}
-		});		
+		});	
+
 		jQuery("#approve_invoice").click(function(){
 			jQuery(".confirm_approval_invoice").dialog("open");
 		});

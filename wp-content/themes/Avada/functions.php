@@ -5562,7 +5562,7 @@ function UpdateInvoiceTable($data){
 				'clients_invoices_table' => serialize($clients_invoices_table)
 			),
 			array( 
-				'id' => $invoice_id 
+				'id' => $invoice_id
 			),
 			array( '%s' ) 
 		);
@@ -5793,13 +5793,24 @@ function EditInvoiceDataTable($data){
 
 	$invoice_tablename = $wpdb->prefix . "custom_invoice_table";
 
-	$invoice_info = $wpdb->get_row("SELECT clients_invoices_table, total_hours, salary FROM ". $invoice_tablename ." WHERE id = ". $invoice_id);
+	$invoice_info = $wpdb->get_row("SELECT clients_invoices_table, total_hours, salary, person_id, date FROM ". $invoice_tablename ." WHERE id = ". $invoice_id);
+
+	$dates = explode("-", $invoice_info->date);
+
+	$person_info = $wpdb->get_row("SELECT * FROM wp_custom_person WHERE wp_user_id = ". $invoice_info->person_id);
+	$admin_info = $wpdb->get_row("SELECT * FROM wp_custom_person WHERE wp_user_id = 2");
 
 	$invoice_table_array = unserialize($invoice_info->clients_invoices_table);
 
 	$total_hours = $invoice_info->total_hours + $invoice_new_row_entry_hours;
 
-	$total_salary = round($invoice_info->salary + $invoice_new_row_entry_price, 2);
+
+	if($invoice_new_row_entry_price < 1){
+		// str_replace("world","Peter","Hello world!");
+		$total_salary = round($invoice_info->salary - str_replace("-", "",$invoice_new_row_entry_price), 2);
+	}else{
+		$total_salary = round($invoice_info->salary + $invoice_new_row_entry_price, 2);
+	}
 
 	$new_invoice_row_array  = array(
 		'clientname' => $new_entry_name,
@@ -5815,7 +5826,9 @@ function EditInvoiceDataTable($data){
 		array(
 			'clients_invoices_table'		 => serialize($invoice_table_array),
 			'total_hours'					 => $total_hours,
-			'salary'						 => $total_salary
+			'salary'						 => $total_salary,
+			'person_approval'				 => 0,
+			'admin_approval'				 => 0
 		),
 		array(
 			'id' => $invoice_id
@@ -5823,11 +5836,36 @@ function EditInvoiceDataTable($data){
 		array(
 			'%s',
 			'%d',
+			'%d',
+			'%d',
 			'%d'
 		)
 	);
 
 	if($update_invoice_table_status == 1){
+		if($logged_in_id == 2){
+			$body = "
+			<h1>Hello ".$person_info->person_fullname.",</h1>
+			<p>".$admin_info->person_fullname.", Edited your Invoice for the ". date("F", mktime(0, 0, 0, $dates[0], 10))." ". $dates[1] .".</p>
+			<p><a href='http://admin.seowebsolutions.com/' target='_blank'>Log In Here to Splan</a></p>";
+
+			$to = $person_info->person_email;
+			$subject = "".$admin_info->person_fullname." Edited your Invoice for ".date("F", mktime(0, 0, 0, $dates[0], 10))." ". $dates[1] .".";
+			$headers = array('Content-Type: text/html; charset=UTF-8','From: Splan Auto Invoice <info@seowebsolutions.se');
+						 
+			$email_status = wp_mail( $to, $subject, $body, $headers );
+		}else{
+			$body = "
+			<h1>Hello ".$admin_info->person_fullname.",</h1>
+			<p>".$person_info->person_fullname."'s Invoice for the ". date("F", mktime(0, 0, 0, $dates[0], 10))." ". $dates[1] ." was been edited.</p>
+			<p><a href='http://admin.seowebsolutions.com/' target='_blank'>Log In Here to Splan</a></p>";
+
+			$to = $admin_info->person_email;
+			$subject = "".$person_info->person_fullname."'s Invoice for ".date("F", mktime(0, 0, 0, $dates[0], 10))." ". $dates[1] ." was been edited.";
+			$headers = array('Content-Type: text/html; charset=UTF-8','From: Splan Auto Invoice <info@seowebsolutions.se');
+						 
+			$email_status = wp_mail( $to, $subject, $body, $headers );			
+		}
 	$response = array(
 		'editing_invoice_table_status' => 'successfully_editing_invoice_table',
 		'clientname'	=> $new_entry_name,
@@ -5856,6 +5894,7 @@ function PreviousInvoiceRecord($data){
 	$prev_month2 = split('-', $prev_month2_string);
 
 	$previous_invoice_info = $wpdb->get_row("SELECT * FROM wp_custom_invoice_table WHERE date = '".$prev_month[1]."-".$prev_month[0]."' AND person_id = ".$person_id);
+	$filter_download_pdf = $previous_invoice_info->person_approval + $previous_invoice_info->admin_approval;
 
 	$previous_invoice_info->clients_invoices_table = unserialize($previous_invoice_info->clients_invoices_table);
 	$comments_array = unserialize($previous_invoice_info->comments);
@@ -5886,7 +5925,9 @@ function PreviousInvoiceRecord($data){
 		'invoice_info' => $previous_invoice_info,
 		'end_previous' => $end_previous,
 		'person_approve' => $previous_invoice_info->person_approval,
-		'admin_approve' => $previous_invoice_info->admin_approval
+		'admin_approve' => $previous_invoice_info->admin_approval,
+		'filter_download_pdf' => $filter_download_pdf,
+		'invoice_id' => $previous_invoice_info->id
 	);
 	return $response;
 }
@@ -5907,6 +5948,7 @@ function NextInvoiceRecord($data){
 	$next_invoice_info = $wpdb->get_row("SELECT * FROM wp_custom_invoice_table WHERE date = '".$next_month[1]."-".$next_month[0]."' AND person_id = ".$person_id);
 
 	$next_invoice_info->clients_invoices_table = unserialize($next_invoice_info->clients_invoices_table);
+	$filter_download_pdf = $next_invoice_info->person_approval + $next_invoice_info->admin_approval;
 	$comments_array = unserialize($next_invoice_info->comments);
 	$comment_strings = "";
 
@@ -5933,7 +5975,11 @@ function NextInvoiceRecord($data){
 
 	$response  = array(
 		'invoice_info' => $next_invoice_info,
-		'end_next' => $end_next
+		'end_next' => $end_next,
+		'person_approve' => $next_invoice_info->person_approval,
+		'admin_approve' => $next_invoice_info->admin_approval,
+		'filter_download_pdf' => $filter_download_pdf,
+		'invoice_id' => $next_invoice_info->id
 	);
 	return $response;
 }
@@ -6018,5 +6064,279 @@ function filter_report_time_staff_query($filter){
 	lEFT OUTER JOIN wp_custom_client as c ON t.task_label = c.client_name 
 	WHERE ".$filter. " 
 	GROUP BY t.task_person");
+}
+function RegenerateInvoice($data){
+
+	global $wpdb;
+	extract($data);
+
+	$person_tablename = $wpdb->prefix . 'custom_person';
+	$invoice_tablename = $wpdb->prefix . 'custom_invoice_table';
+	$timesheet_tablename = $wpdb->prefix . 'custom_timesheet';
+	//Get last month date.
+	$last_month_date = date('Y-m-d', strtotime("-1 month"));
+	$month =  date("m", strtotime($last_month_date));
+	$year =  date("Y", strtotime($last_month_date));
+
+	$person_info = $wpdb->get_row("SELECT ID, wp_user_id, person_hours_per_day, person_fullname, person_email_notification, person_monthly_rate  FROM ".$person_tablename." WHERE ID = ". $person_id);
+
+	$invoice_old_info = $wpdb->get_row("SELECT comments FROM ".$invoice_tablename." WHERE person_id = ". $person_info->wp_user_id ." AND date = '" . $month ."-". $year."'");
+	$delete_old_invoice = $wpdb->query("DELETE FROM ".$invoice_tablename." WHERE person_id = ". $person_info->wp_user_id ." AND date = '" . $month ."-". $year."'");
+
+	if($delete_old_invoice == 1){
+		$timesheets = $wpdb->get_results('SELECT SUM(IF(task_name = "holiday", TIME_TO_SEC(task_hour)/3600, 0 )) as holiday, SUM(IF(task_name = "sickness", TIME_TO_SEC(task_hour)/3600, 0 )) as sickness, SUM(IF(task_name = "electric / internet problems", TIME_TO_SEC(task_hour)/3600, 0 )) as electric, SUM(TIME_TO_SEC(task_hour)/3600) as totalhours, task_label FROM '.$timesheet_tablename.' WHERE task_person = "'.$person_info->person_fullname.'" AND STR_TO_DATE(date_now, "%d/%m/%Y") BETWEEN STR_TO_DATE("01/'.$month.'/'.$year.'", "%d/%m/%Y") AND STR_TO_DATE("31/'.$month.'/'.$year.'", "%d/%m/%Y") GROUP BY  task_label');
+
+		$client_list_array = array();
+
+		foreach($timesheets as $timesheet){
+
+			$total_holiday_hours += $timesheet->holiday;
+			$total_sickness_hours += $timesheet->sickness;
+			$total_electric_hours += $timesheet->electric;
+
+
+			array_push($client_list_array, array('clientname' => $timesheet->task_label, 'total_hours' =>  round($timesheet->totalhours, 2), 'price' => '', 'total' => ''));
+			$total_client_hours += round($timesheet->totalhours, 2);
+		}
+
+		$total_non_working_hours = $total_holiday_hours + $total_sickness_hours + $total_electric_hours;
+
+		if($total_non_working_hours > 0){
+
+			foreach($client_list_array as $key => $value){
+				if($client_list_array[$key]['clientname'] == 'SEOWeb Solutions'){
+					$client_list_array[$key]['total_hours'] = round($client_list_array[$key]['total_hours'] - $total_non_working_hours, 2);
+				}
+			}
+
+			if($total_holiday_hours > 0){
+				array_push($client_list_array, array('clientname' => 'Holidays', 'total_hours' =>  round($total_holiday_hours, 2), 'price' => '', 'total' => '' ));
+			}
+			if($total_sickness_hours > 0){
+				array_push($client_list_array, array('clientname' => 'Sickness', 'total_hours' =>  round($total_sickness_hours, 2), 'price' => '', 'total' => '' ));
+			}
+			if($total_electric_hours > 0){
+				array_push($client_list_array, array('clientname' => 'Electric & Internet Problem', 'total_hours' =>  round($total_electric_hours, 2), 'price' => '', 'total' => '' ));
+			}
+		}
+
+		$total_working_days = countDays($year, $month, array(0, 6));
+
+		$person_total_hr = $person_info->person_hours_per_day * $total_working_days; 
+
+		//Salary Deduction if current hour not sufficient.
+		if($person_total_hr > $total_client_hours){
+			$salary_per_day = $person_info->person_monthly_rate / $total_working_days;
+			$salary_per_hr = $salary_per_day / $person_info->person_hours_per_day;
+			$remaining_hrs = $person_total_hr - $total_client_hours;
+			$salary_deduction = $remaining_hrs * $salary_per_hr;
+			$total_salary = $person_info->person_monthly_rate - $salary_deduction;
+		}else{
+			$total_salary = $person_info->person_monthly_rate;
+		}
+
+		$insert_invoice_table = $wpdb->insert(
+				$invoice_tablename,
+				array(
+					'person_id' 				=> $person_info->wp_user_id,
+					'clients_invoices_table'	=> serialize($client_list_array),
+					'date'						=> $month . '-' . $year,
+					'active_viewing'			=> 1,
+					'person_approval'			=> 0,
+					'comments'					=> $invoice_old_info->comments,
+					'admin_approval'			=> 0,
+					'status'					=> 'Reviewing',
+					'total_hours'				=> $total_client_hours,
+					'person_total_hr'			=> $person_total_hr,
+					'non_working_hrs'			=> $total_non_working_hours,
+					'salary'					=> $total_salary
+				),
+				array(
+					'%s',
+					'%s',
+					'%s',
+					'%d',
+					'%d',
+					'%s',
+					'%d',		
+					'%s',
+					'%s',
+					'%d',
+					'%d',
+					'%d'								
+				)
+			);
+
+		if($insert_invoice_table == 1){
+			$response = array(
+				'status' => 'successfully-regenerate-invoice'
+			);
+
+		}else{
+			die('Failed Regenerate new invoice');
+		}
+	}else{
+		die('Failed delete old invoices.');
 	}
+
+	return $response;
+}
+function CheckedApprovalByPerson($data){
+	extract($data);
+	global $wpdb;
+	$invoice_tablename = $wpdb->prefix . "custom_invoice_table";
+	$invoice_info = $wpdb->get_row("SELECT * FROM wp_custom_invoice_table WHERE id = ". $invoice_id);
+	$dates = explode("-", $invoice_info->date);
+
+	$admin_info = $wpdb->get_row("SELECT * FROM wp_custom_person WHERE ID = 2");
+	$person_info = $wpdb->get_row("SELECT * FROM wp_custom_person WHERE wp_user_id = ". $invoice_info->person_id);
+
+	
+
+	$approved_by_person_status = $wpdb->update(
+		$invoice_tablename,
+		array(
+			'person_approval'		 => 1
+		),
+		array(
+			'id' => $invoice_id
+		),
+		array(
+			'%d'
+		)
+	);
+
+	if($approved_by_person_status == 1){
+		$body = "
+		<h1>Hello ".$admin_info->person_fullname.",</h1>
+		<p>".$person_info->person_fullname."'s Invoice for the ". date("F", mktime(0, 0, 0, $dates[0], 10))." ". $dates[1] ." is now Approved.</p>
+		<p><a href='http://admin.seowebsolutions.com/' target='_blank'>Log In Here to Splan</a></p>";
+
+		$to = $admin_info->person_email;
+		$subject = "".$person_info->person_fullname."'s Invoice for ".date("F", mktime(0, 0, 0, $dates[0], 10))." ". $dates[1] ." is now approved.";
+		$headers = array('Content-Type: text/html; charset=UTF-8','From: Splan Auto Invoice <info@seowebsolutions.se');
+					 
+		$email_status = wp_mail( $to, $subject, $body, $headers );
+		$filter_download_pdf = $invoice_info->admin_approval + 1;
+	}else{
+		die("FAILED APPROVE BY PERSON!");
+	}
+
+	return $repsonse = array('filter_download_pdf' => $filter_download_pdf);
+}
+function CheckedApprovalByAdmin($data){
+	extract($data);
+	global $wpdb;
+	$invoice_tablename = $wpdb->prefix . "custom_invoice_table";
+	$invoice_info = $wpdb->get_row("SELECT * FROM wp_custom_invoice_table WHERE id = ". $invoice_id);
+	$dates = explode("-", $invoice_info->date);
+
+	$admin_info = $wpdb->get_row("SELECT * FROM wp_custom_person WHERE ID = 2");
+	$person_info = $wpdb->get_row("SELECT * FROM wp_custom_person WHERE wp_user_id = ". $invoice_info->person_id);
+
+	$approved_by_admin_status = $wpdb->update(
+		$invoice_tablename,
+		array(
+			'admin_approval'		 => 1
+		),
+		array(
+			'id' => $invoice_id
+		),
+		array(
+			'%d'
+		)
+	);
+
+	if($approved_by_admin_status == 1){
+		$body = "
+		<h1>Hello ".$person_info->person_fullname.",</h1>
+		<p>Your Invoice for the ". date("F", mktime(0, 0, 0, $dates[0], 10))." ". $dates[1] ." is now Approved by ".$admin_info->person_fullname.".</p>
+		<p><a href='http://admin.seowebsolutions.com/' target='_blank'>Log In Here to Splan</a></p>";
+
+		$to = $person_info->person_email;
+		$subject = "Your Invoice for ".date("F", mktime(0, 0, 0, $dates[0], 10))." ". $dates[1] ." is now approved by ".$admin_info->person_fullname.".";
+		$headers = array('Content-Type: text/html; charset=UTF-8','From: Splan Auto Invoice <info@seowebsolutions.se');
+					 
+		$email_status = wp_mail( $to, $subject, $body, $headers );
+		$filter_download_pdf = $invoice_info->person_approval + 1;
+	}else{
+		die("FAILED APPROVE BY ADMIN!");
+	}
+	return $repsonse = array('filter_download_pdf' => $filter_download_pdf);
+}
+function CancelCheckedApprovalByPerson($data){
+	extract($data);
+	global $wpdb;
+	$invoice_tablename = $wpdb->prefix . "custom_invoice_table";
+	$invoice_info = $wpdb->get_row("SELECT * FROM wp_custom_invoice_table WHERE id = ". $invoice_id);
+	$dates = explode("-", $invoice_info->date);
+
+	$admin_info = $wpdb->get_row("SELECT * FROM wp_custom_person WHERE ID = 2");
+	$person_info = $wpdb->get_row("SELECT * FROM wp_custom_person WHERE wp_user_id = ". $invoice_info->person_id);
+
+	$approved_by_person_status = $wpdb->update(
+		$invoice_tablename,
+		array(
+			'person_approval'		 => 0
+		),
+		array(
+			'id' => $invoice_id
+		),
+		array(
+			'%d'
+		)
+	);
+
+	if($approved_by_person_status == 1){
+		$body = "
+		<h1>Hello ".$admin_info->person_fullname.",</h1>
+		<p>".$person_info->person_fullname."'s Invoice for the ". date("F", mktime(0, 0, 0, $dates[0], 10))." ". $dates[1] ." has been disapproved.</p>
+		<p><a href='http://admin.seowebsolutions.com/' target='_blank'>Log In Here to Splan</a></p>";
+
+		$to = $admin_info->person_email;
+		$subject = "".$person_info->person_fullname."'s Invoice for ".date("F", mktime(0, 0, 0, $dates[0], 10))." ". $dates[1] ." has been disapproved.";
+		$headers = array('Content-Type: text/html; charset=UTF-8','From: Splan Auto Invoice <info@seowebsolutions.se');
+					 
+		$email_status = wp_mail( $to, $subject, $body, $headers );
+	}else{
+		die("FAILED CANCEL APPROVE BY PERSON!");
+	}
+}
+function CancelCheckedApprovalByAdmin($data){
+	extract($data);
+	global $wpdb;
+	$invoice_tablename = $wpdb->prefix . "custom_invoice_table";
+	$invoice_info = $wpdb->get_row("SELECT * FROM wp_custom_invoice_table WHERE id = ". $invoice_id);
+	$dates = explode("-", $invoice_info->date);
+
+	$admin_info = $wpdb->get_row("SELECT * FROM wp_custom_person WHERE ID = 2");
+	$person_info = $wpdb->get_row("SELECT * FROM wp_custom_person WHERE wp_user_id = ". $invoice_info->person_id);
+
+	$approved_by_person_status = $wpdb->update(
+		$invoice_tablename,
+		array(
+			'admin_approval'		 => 0
+		),
+		array(
+			'id' => $invoice_id
+		),
+		array(
+			'%d'
+		)
+	);
+
+	if($approved_by_person_status == 1){
+		$body = "
+		<h1>Hello ".$person_info->person_fullname.",</h1>
+		<p>Your Invoice for the ". date("F", mktime(0, 0, 0, $dates[0], 10))." ". $dates[1] ." has been disapproved by ".$admin_info->person_fullname.".</p>
+		<p><a href='http://admin.seowebsolutions.com/' target='_blank'>Log In Here to Splan</a></p>";
+
+		$to = $person_info->person_email;
+		$subject = "Your Invoice for ".date("F", mktime(0, 0, 0, $dates[0], 10))." ". $dates[1] ." has been disapproved by ".$admin_info->person_fullname.".";
+		$headers = array('Content-Type: text/html; charset=UTF-8','From: Splan Auto Invoice <info@seowebsolutions.se'); 
+		$email_status = wp_mail( $to, $subject, $body, $headers );
+	}else{
+		die("FAILED CANCEL APPROVE BY ADMIN!");
+	}
+}
 ?>

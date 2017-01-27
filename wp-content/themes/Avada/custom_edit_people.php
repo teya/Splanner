@@ -254,7 +254,7 @@ if(isset($_POST['submit'])){
 				<p class="label">Hourly rate</p>
 			</div>
 			<div class="right">
-				<p class="right_label">kr</p>
+				<p class="right_label">USD</p>
 				<input type="text" class="person_hourly_rate" name="person_hourly_rate" value="<?php echo (isset($results_edit->person_hourly_rate)) ? $results_edit->person_hourly_rate : '';  ?>"/>
 			</div>
 		</div>
@@ -263,7 +263,7 @@ if(isset($_POST['submit'])){
 				<p class="label">Monthly rate</p>
 			</div>
 			<div class="right">
-				<p class="right_label">kr</p>
+				<p class="right_label">USD</p>
 				<input type="text" class="person_monthly_rate" name="person_monthly_rate" value="<?php echo (isset($results_edit->person_monthly_rate)) ? $results_edit->person_monthly_rate : '';  ?>"/>
 			</div>
 		</div>

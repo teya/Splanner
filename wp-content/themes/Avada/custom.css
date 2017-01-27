@@ -6504,7 +6504,7 @@ div.ui-dialog[aria-describedby='dialog_client_information']{
 .monthly_plans .display_list,
 .hosting_domain .display_list,
 .websites .display_list{
-    width: 70%;
+    width: 68%;
 }
 
 .projects .display_section:hover,
@@ -6905,4 +6905,82 @@ body.single .post-content li{
 	white-space: nowrap;	
 	width: auto !important;	
 }
-
+.regenerate-invoice{
+	float: right;
+	width: 20px;
+	height: 10px;
+	cursor: pointer;
+	background: -moz-linear-gradient(center bottom , #D4D4D4 0%, #F4F4F4 70%) repeat scroll 0 0 rgba(0, 0, 0, 0);
+	background: -webkit-gradient(linear, 0% 100%, 0% 0%, color-stop(0, #D4D4D4), color-stop(0.7, #F4F4F4));
+	border: 1px solid #AAAAAA;
+	border-radius: 5px;
+	box-shadow: 0 1px 0 #FFFFFF inset;
+	cursor: pointer;
+	font-family: "Helvetica Neue",Arial,Verdana,"Nimbus Sans L",sans-serif;
+	font-size: 11px;
+	font-weight: bold;
+	/*height: 25px;*/
+	line-height: 10px;
+	margin: 0 5px 0 0;
+	outline: medium none;
+	overflow: visible;
+	padding: 5px 12px;
+	text-align: center;
+	text-decoration: none;
+	text-shadow: 0 1px 0 #F4F4F4;
+	white-space: nowrap;
+	width: auto;
+	background: -moz-linear-gradient(center bottom , #DDDDDD 0%, #EEEEEE 70%) repeat scroll 0 0 rgba(0, 0, 0, 0);
+	background: -webkit-gradient(linear, 0% 100%, 0% 0%, color-stop(0, #DDDDDD), color-stop(0.7, #EEEEEE));
+}
+.regenerate-invoice:hover{
+	color: #A0CE4E;;
+}
+#invoice-name-person{
+	font-weight: 600;
+}
+#regenerate-invoice-month{
+	font-weight: 600;
+}
+#confirmed_regenerate_invoice{
+	position: absolute;
+	bottom: 10%;
+	right: 2%;
+}
+.regenerate_invoice_loader{
+	position: absolute !important;
+    bottom: 15% !important;
+    right: 34% !important;
+}
+#approval-checboxes{
+	width: 200px;
+	margin-left: 0px;
+	padding-left: 0px;
+}
+.disabled-btn{
+	background-color: #4CAD1E;
+	background: -moz-linear-gradient(center bottom , #738a6c 0%, #a6c599 70%) repeat scroll 0 0 rgba(0, 0, 0, 0) !important; 	
+	background:	-webkit-gradient(linear, 0% 100%, 0% 0%, color-stop(0, #719467), color-stop(0.7, #a0c094)) !important;     
+	border: 1px solid #73906b;    
+	box-shadow: 0 1px 0 rgba(255, 255, 255, 0.3) inset;    
+	color: #FFFFFF;    
+	font-weight: bold;    
+	text-shadow: 0 0 2px #2E8D11;	
+	border-radius: 4px;	
+	cursor: pointer;    
+	display: inline-block;    
+	font-family: "Helvetica Neue",Arial,Verdana,"Nimbus Sans L",sans-serif !important;    
+	font-size: 11px !important;    
+	height: 25px;    
+	line-height: 25px;    
+	margin: 0 3px 0 0;    
+	outline: medium none;    
+	padding: 0 12px;    
+	text-align: center;    
+	text-decoration: none;    
+	white-space: nowrap;	
+	width: auto !important;	
+}
+#download_pdf_invoice_wrapper{
+	display: inline-block;
+}
