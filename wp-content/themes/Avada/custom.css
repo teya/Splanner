@@ -7048,3 +7048,6 @@ body.single .post-content li{
 #login_box #loginform .login-remember #rememberme{
 	width: 0px !important;
 }
+#planned_projects{
+	margin-top: 20px;
+}

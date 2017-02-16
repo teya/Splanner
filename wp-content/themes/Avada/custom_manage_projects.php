@@ -87,7 +87,7 @@ endif;
 	</form>
 </div>
 <div class="projects">
-	<a id="create_projects" class="button_1 float_left" href="/add-project/">+ Add Project</a>
+	<a id="create_projects" class="button_1 float_left" href="<?php echo get_site_url(); ?>/add-project/">+ Add Project</a>
 	<div style="display:none;" class="loader"></div>
 </div>
 <div class="display_main projects">	
@@ -109,8 +109,8 @@ endif;
 			?>
 			<div class="display_section delete_ajax_<?php echo $project->ID; ?>">
 				<div id="display_note_<?php echo $project->ID; ?>" class="display_note">
-					<div class="display_list" onclick="window.open('/project-information/?id=<?php echo $project->ID ?>');">
-						<a class="button_2 display_button" href="/edit-project/?editID=<?php echo $project->ID ?>">Edit</a>
+					<div class="display_list" onclick="window.open('<?php echo get_site_url(); ?>/project-information/?id=<?php echo $project->ID ?>');">
+						<a class="button_2 display_button" href="<?php echo get_site_url(); ?>/edit-project/?editID=<?php echo $project->ID ?>">Edit</a>
 						<h3 id="name_<?php echo $project->ID; ?>" class="display_subtitle"><?php echo $project->project_name; ?></h3>						
 						<div style="display:none" id="project_notes_<?php echo $project->ID ?>" class="project_notes"><?php echo $project->project_description; ?></div>
 					</div>
