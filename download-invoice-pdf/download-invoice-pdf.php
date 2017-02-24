@@ -38,7 +38,6 @@
     }
     $person_info = $wpdb->get_row('SELECT * FROM '. SPLAN_PERSON_TBL .' WHERE wp_user_id = '. $invoice_info->person_id);
 
-    $dates = explode("-", $invoice_info->date);
 
     class PDF extends FPDF
     {
@@ -47,17 +46,20 @@
         function setInvoiceInfo($invoice_info){
             $this->invoice_date = $invoice_info->date;
             $this->total_salary = $invoice_info->salary;
+            $this->invoice_id = $invoice_info->id;
         }
         function setPersonInfo($person_info){
             $this->person_name = $person_info->person_fullname;
             $this->person_address = $person_info->person_address;
             $this->person_contact_no = $person_info->person_mobile;
             $this->email = $person_info->person_email;
+            $this->person_id = $person_info->wp_user_id;
         }
          // Page header
         function Header()
         {
             $dates = explode("-", $this->invoice_date);
+            $y = substr($dates[1], -2);
             // Logo
             $this->Image(get_template_directory_uri().'/images/invoice-pc-icon.png',10,6,30);
             // $this->AddFont('Arial','','Arial.php');
@@ -81,13 +83,25 @@
             $this->Cell(20,0,'Billed to: ',0,10,'L');
             $this->SetXY(135,40);
             $this->SetFont('Arial','B',8);
-            $this->Cell(20,0,'Invoice No: ',0,10,'L');;
+            $this->Cell(20,0,'Invoice No: ','L');
+            $this->SetXY(153,40);
+            $this->SetFont('Arial','U',8);
+            $this->Cell(20,0,'   '.$y.''.$dates[0].''.$this->person_id.'                         ',0,10,'L');
             $this->SetXY(135,45);
             $this->SetFont('Arial','B',8);
-            $this->Cell(20,0,'Date: ',0,10,'L');
-            $this->SetXY(145,45);
+            $this->Cell(20,0,'Salary for: ',0,10,'L');
+            $this->SetXY(150,45);
             $this->SetFont('Arial','U',8);
-            $this->Cell(20,0,date("F", mktime(0, 0, 0, $dates[0], 10)).'-'.$dates[1].'                           ',0,10,'L');
+            $this->Cell(20,0,date("M", mktime(0, 0, 0, $dates[0], 10)).'-'.$dates[1].'                           ',0,10,'L');
+
+            $this->SetXY(135,50);
+            $this->SetFont('Arial','B',8);
+            $this->Cell(20,0,'Date: ',0,10,'L');
+            $this->SetXY(145,50);
+            $this->SetFont('Arial','U',8);
+            $this->Cell(20,0,$dates[1].'-'.date("m", mktime(0, 0, 0, $dates[0], 10)).'-20                           ',0,10,'L');
+
+
             $this->SetXY(30,40);
             $this->SetFont('Arial', 'U',8);
             $this->Cell(100,0,'SEOWEB Solutions                                                         ',0,10,'L');
@@ -127,33 +141,32 @@
     // $pdf->SetFont('Arial','B',8);
     $pdf->SetFont('Arial','',8);
     $pdf->SetXY(15,65);
-    $pdf->Cell(20,7,'Unit ',1,10,'C');
-    $pdf->SetXY(35,65);
-    $pdf->Cell(70,7,'DESCRIPTIONS',1,10,'C');
-    $pdf->SetXY(105,65);
-    $pdf->Cell(36,7,'#Hours for the Month',1,10,'C');
-    $pdf->SetXY(141,65);
-    $pdf->Cell(25,7,'PRICE',1,10,'C');
-    $pdf->SetXY(166,65);
+    $pdf->Cell(60,7,'Client ',1,10,'C');
+    $pdf->SetXY(75,65);
+    $pdf->Cell(45,7,'Projects',1,10,'C');
+    $pdf->SetXY(120,65);
+    $pdf->Cell(20,7,'#Hours '.date("M", mktime(0, 0, 0, $dates[0], 10)),1,10,'C');
+    $pdf->SetXY(140,65);
+    $pdf->Cell(20,7,'$/h',1,10,'C');
+    $pdf->SetXY(160,65);
     $pdf->Cell(25,7,'Total',1,10,'C');
-    $pdf->SetFont('Arial','',8);
+    // $pdf->SetFont('Arial','',8);
 
     foreach($client_lists as $client){
         $pdf->SetXY(15,$row);
-        $pdf->Cell(20,7,' ',1,10,'C');
+        $pdf->Cell(60,7,iconv('UTF-8','windows-1252',$client['clientname']),1,10,'L');
 
-        $pdf->SetXY(35,$row);
-        // $pdf->Cell(70,7,$client['clientname'],1,10,'C');.
-        $pdf->Cell(70,7,iconv('UTF-8','windows-1252',$client['clientname']),1,10,'C');
+        $pdf->SetXY(75,$row);
+        $pdf->Cell(45,7,iconv('UTF-8','windows-1252',$client['project_name']),1,10,'C');
 
-        $pdf->SetXY(105,$row);
-        $pdf->Cell(36,7,$client['total_hours'],1,10,'R');   
+        $pdf->SetXY(120,$row);
+        $pdf->Cell(20,7,$client['total_hours'],1,10,'R');   
 
-        $pdf->SetXY(141,$row);
-        $pdf->Cell(25,7,$client['price'],1,10,'R'); 
+        $pdf->SetXY(140,$row);
+        $pdf->Cell(20,7,$client['total_hours'] * $person_info->person_hourly_rate,1,10,'R'); 
 
-        $pdf->SetXY(141,$row);
-        $pdf->Cell(50,7,$client['total'],1,10,'R'); 
+        $pdf->SetXY(160,$row);
+        $pdf->Cell(25,7,$client['total'],1,10,'R'); 
           
         $row = $row + 7;
 

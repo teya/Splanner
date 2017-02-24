@@ -224,17 +224,18 @@ jQuery(document).ready(function(){
 								<div style="display:none" class="desc_button seo_stat_type_sort_desc"></div>
 								<div style="display:none" class="seo_stat_type_sort_loader loader"></div>
 							</div>
-							<div class="fourth_column column">
+<!-- 							<div class="fourth_column column">
 								<h3>Platform</h3>
 								<div class="asc_button seo_stat_platform_sort_asc"></div>
 								<div style="display:none" class="desc_button seo_stat_platform_sort_desc"></div>
 								<div style="display:none" class="seo_stat_platform_sort_loader loader"></div>
-							</div>
-							<div class="fifth_column column"><h3>Page Authority</h3></div>
-							<div class="sixth_column column"><h3>Domain Authority</h3></div>
-							<div class="seventh_column column"><h3>Moz Rank</h3></div>
-							<div class="eighth_column column"><h3>Moz Trust</h3></div>
-							<div class="ninth_column column"><h3>External Links</h3></div>
+							</div> -->
+							<div class="fourth_column  column"><h3>Page Authority</h3></div>
+							<div class="fifth_column  column"><h3>Domain Authority</h3></div>
+							<div class="sixth_column  column"><h3>Moz Rank</h3></div>
+							<div class="seventh_column  column"><h3>Moz Trust</h3></div>
+							<div class="eighth_column  column"><h3>External Links</h3></div>
+							<div class="ninth_column column">Backlink Count</div>
 							<div class="tenth_column column">
 								<div class="bulk_get_metrix_button">									
 									<div class="button_2 display_button bulk_get_metrix float_right">C</div>
@@ -266,16 +267,17 @@ jQuery(document).ready(function(){
 										<div id="name_<?php echo $website_id; ?>" class="client_info first_column column"><?php echo $site_client; ?></div>
 										<div class="second_column column"><a href="<?php echo $site_url; ?>"><?php echo $site_url; ?></a></div>										
 										<div class="third_column column"><?php echo $site_type ?></div>										
-										<div class="fourth_column column"><?php echo $site_platform ?></div>										
-										<div class="fifth_column column"><?php echo $moz_page_authority ?></div>
-										<div class="sixth_column column"><?php echo $moz_domain_authority ?></div>
-										<div class="seventh_column column"><?php echo $moz_rank ?></div>
-										<div class="eighth_column column"><?php echo $moz_trust ?></div>
-										<div class="ninth_column column"><?php echo $moz_external_links ?></div>
+										<!-- <div class="fourth_column column"><?php echo $site_platform ?></div>										 -->
+										<div class="fourth_column column"><?php echo $moz_page_authority ?></div>
+										<div class="fifth_column  column"><?php echo $moz_domain_authority ?></div>
+										<div class="sixth_column column"><?php echo $moz_rank ?></div>
+										<div class="seventh_column column"><?php echo $moz_trust ?></div>
+										<div class="eighth_column  column"><?php echo $moz_external_links ?></div>
+										<div class="ninth_column  column">100</div>
 										<div class="tenth_column column">
 											<p style="display:none" id="website_button_note_<?php echo $website->ID; ?>" class="website_button_note"></p>
 											<a id="login_button_<?php echo $website->ID; ?>" class="button_2 display_button seo_stat_login_button website_login_button" href="http://<?php echo $site_login_url; ?>">L</a>
-											<a id="edit_button_<?php echo $website->ID; ?>" class="button_2 display_button website_edit_button" href="/edit-website/?editID=<?php echo $website->ID ?>">E</a>
+											<a id="edit_button_<?php echo $website->ID; ?>" class="button_2 display_button website_edit_button" href="<?php echo get_site_url(); ?>/edit-website/?editID=<?php echo $website->ID ?>">E</a>
 											<div class="ajax_action_buttons">									
 												<div id="delete_project_<?php echo $website_id; ?>" class="button_2 display_button float_left delete_website_button delete_ajax">D</div>
 											</div>

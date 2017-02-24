@@ -27,8 +27,6 @@
 	global $wpdb;
 	$current_user = wp_get_current_user();
 
-
-
 	$persons_tablename = $wpdb->prefix.'custom_person';
 	$invoice_tablename = $wpdb->prefix.'custom_invoice_table';
 
@@ -36,12 +34,12 @@
 
 	$month =  date("m", strtotime($last_month_date));
 	$year =  date("Y", strtotime($last_month_date));
+	// $y =  date("y", strtotime($last_month_date));
 
 	if($current_user->ID == 2){
 		$person_info = $wpdb->get_row('SELECT * FROM '.$persons_tablename.' WHERE wp_user_id = '.$person_id);
 	}else{
 		$person_info = $wpdb->get_row('SELECT * FROM '.$persons_tablename.' WHERE wp_user_id = '.$current_user->ID);
-
 	}
 
 	$month = date('m', strtotime('-1 Month'));
@@ -50,7 +48,18 @@
 
 	$get_invoice_last_id = $wpdb->get_row('SELECT MAX(ID) as ID FROM '.$invoice_tablename.' WHERE person_id = '. $person_info->wp_user_id);
 	$invoice_info = $wpdb->get_row('SELECT * FROM '.$invoice_tablename.' WHERE ID = '.$get_invoice_last_id->ID.' AND person_id = '. $person_info->wp_user_id);
+
+	$invoice_date = explode("-",$invoice_info->date);
+	$y = substr($invoice_date[1], -2);
+
 	$count_invoice = $wpdb->get_row("SELECT COUNT(*) as count FROM ".$invoice_tablename."  WHERE person_id = ".$person_info->wp_user_id);
+	$client_list = $wpdb->get_results('SELECT client_name FROM '.SPLAN_CLIENT_LIST.' ORDER BY client_name ASC');
+	$project_list = $wpdb->get_results('SELECT project_category FROM '.SPLAN_PROJECTS);
+	//If person hourly rate is empty.
+
+	if($current_user->ID != 2){
+		$person_info->person_hourly_rate = ($person_info->person_hourly_rate == '')? 0 : $person_info->person_hourly_rate;
+	}
 
 	$hide_prev = ($count_invoice->count == 1)? 'hide' : '';
 
@@ -92,34 +101,37 @@
 					<td><p>SEOWEB Solutions</p></td>
 					<td></td>
 					<td>Invoice No:</td>
-					<td><p><?php echo $year ." ". $month_in_num ." ". $invoice_info->person_id; ?></p></td>
+					<td><p id="invoice_no"><?php echo $y ."". $invoice_date[0] ."". $invoice_info->person_id; ?></p></td>
 				</tr>
 				<tr>
 					<td>Address:</td>
 					<td><p>Gärdsåsgatan 55A</p><p>415 16 Gothenburg, Sweden</p></td>
 					<td></td>
-					<td>Date:</td>
-					<td><p id="invoice_date"><?php echo $month . ' ' . $year; ?></p></td>
+					<td>Salary for: <br />Date</td>
+					<td><p id="invoice_date"><?php echo date("M", mktime(0, 0, 0, $invoice_date[0], 10)) . ' ' . $invoice_date[1]; ?></p><p id="invoice_date_2"><?php echo $invoice_date[1] . '-' .$invoice_date[0].'-20'; ?></p></td>
 				</tr>
 			</table>
 		</div>
 		<table id="invoice-table">
 			<thead>
 				<tr>
-					<th>Unit</th>
-					<th>Description</th>
-					<th>#Hours for the Month</th>
-					<th>PRICE $</th> 
+					<th>Client</th>
+					<th>Project</th>
+					<th>#Hours <?php  echo date("M", mktime(0, 0, 0, $invoice_date[0], 10)) ?></th>
+					<th>$/h</th> 
 					<th>Total</th>
 				</tr>
 			</thead>
 			<tbody>
 				<?php foreach($client_list_table as $row){ ?>
+				<?php 
+					$total_price_per_hrs = $row['total_hours'] * $person_info->person_hourly_rate;
+				?>
 					<tr>
-						<td></td>
 						<td class="clientname"><?php echo $row['clientname']; ?></td>
+						<td><?php echo $row['project_name']; ?></td>
 						<td><span class="total_hours_edit"><?php echo $row['total_hours']; ?></span></td>
-						<td><?php echo $row['price']; ?></td>
+						<td><?php echo $total_price_per_hrs; ?></td>
 						<td><?php echo $row['total']; ?></td>
 					</tr>
 				<?php 
@@ -131,7 +143,7 @@
 					//Calculate total working days.
 					$workingdays = countDays($year, $month_in_num, array(0, 6));
 					//Calculate Total working hours in a Month based on person's working hours.
-					$total_working_hr = $person_info->person_hours_per_day * $workingdays;
+					// $total_working_hr = $person_info->person_hours_per_day * $workingdays;
 				?>
 			</tbody>
 		</table>
@@ -173,7 +185,7 @@
 			</div>
 			<div class="pull-right">
 				<p>Total Hours: <span id="bottom_invoice_total_hours"><?php echo $invoice_info->total_hours; ?></span></p>
-				<p>Total Non-Working Hours: <span id="bottom_person_total_no_work_hours"><?php echo $invoice_info->non_working_hrs; ?></span></p>
+				<!-- <p>Total Non-Working Hours: <span id="bottom_person_total_no_work_hours"><?php // echo $invoice_info->non_working_hrs; ?></span></p> -->
 				<p>Total Salary: <span id="bottom_person_total_salary"><?php echo $invoice_info->salary; ?></span> USD</p>
 				<p class="hide">Invoice Status: <span id="bottom_person_invoice_status"><?php echo $invoice_info->status; ?></span></p>
 			</div>
@@ -188,7 +200,7 @@
 					<li>
 						<div class="person-profile"><?php echo $comment['person_name']; ?>:</div>
 						<div class="comment-date"><?php echo $comment['datetime']; ?></div>
-						<div class="person-comment"><?php echo $comment['comment']; ?></div>
+						<div class="person-comment"><?php echo stripslashes($comment['comment']); ?></div>
 					</li>
 					<?php } ?>
 				<?php }else{ ?>
@@ -230,8 +242,139 @@
 		<div style="display:none" class="loader approve_invoice_by_admin_ajax_loader"></div>		
 	</form>
 </div>
+<!-- show successfully regenerate invoice message-->
+<div style="display:none;" class="add_new_invoice_entry_dialog" id="add_new_invoice_entry_dialog" title="Invoice: Add New Entry">
+	<form class="" id="invoice_add_new_entry_form">
+		<table>
+			<tr>
+				<td>Client:</td>
+				<td>
+					<select name="clientname" id="">
+					<?php 
+						foreach($client_list as $client){
+							echo '<option value = "'.$client->client_name.'">'.$client->client_name.'</option>';
+						}
+					?>
+				</select>
+				</td>
+			</tr>
+			<tr>
+				<td>Project Name:</td>
+				<td class="project_name">
+					<select name="project_category" id="add_new_project_category">
+						<?php 
+							foreach($project_list as $project){
+								echo '<option value="'.$project->project_category.'">'.$project->project_category.'</option>';
+							}
+						?>
+						<option>Add New Entry</option>
+					</select>
+				</td>
+			</tr>
+			<tr id="new_entry_row" style="display: none;">
+				<td>New Entry:</td>
+				<td><input id="add_invoice_entry_string" type="text" name="new_entry"></td>
+			</tr>
+			<tr>
+				<td>Hours:</td>
+				<td><input id="add_invoice_entry_hours" type="text" name="hours"></td>
+			</tr>
+			<tr>
+				<td>Total:</td>
+				<td><input id="add_invoice_entry_total" type="text" name="total"></td>
+			</tr>
+		</table>
+		<div class="dialog-footer">
+			<ul class="footer-buttons">
+				<li><p style="display:none;" id="add_invoice_new_entry_message">Invalid hours entry.</p></li>
+				<li><div style="display:none;" class="loader add_invoice_new_entry_loader"></div></li>
+				<li><div id="add_new_invoice_entry" class="button_1">Add</div></li>
+				<li><div id="add_new_invoice_entry_dialog_close" class="button_1">Cancel</div></li>
+			</ul>
+			
+					
+		</div>
+	</form>
+</div>
 <script type="text/javascript">
+	jQuery( "#add_new_invoice_entry_dialog" ).dialog({
+		autoOpen: false,
+		height: 330,
+		width: 130,
+		modal: true,
+		close: function() {
+		}
+	});	
+
 	jQuery(document).ready(function(){
+		jQuery(document).on('change', '#add_new_project_category', function(){
+			var value = jQuery(this).val();
+			if(value == 'Add New Entry'){
+				jQuery('#new_entry_row').show();
+			}else{
+				jQuery('#new_entry_row').hide();
+			}
+		});
+
+		jQuery(document).on('click', '#add_new_invoice_entry', function(){
+			var hours = jQuery('#add_invoice_entry_hours').val();
+			var total = jQuery('#add_invoice_entry_total').val();
+			var add_new_project_category = jQuery('#add_new_project_category').val();
+			var new_new_string = jQuery('#add_invoice_entry_string').val();
+
+			if(jQuery.isNumeric(hours) || hours == '' && jQuery.isNumeric(total)){
+				if(new_new_string == '' && add_new_project_category == 'Add New Entry'){
+					jQuery('#add_invoice_new_entry_message').text('Invalid New Entry.').fadeIn(200).delay(2000).fadeOut(500);
+					jQuery('.add_invoice_new_entry_loader').hide();
+					return false;
+				}
+				var new_invoice_entries = jQuery('#invoice_add_new_entry_form').serialize();
+
+				jQuery('.add_invoice_new_entry_loader').show();
+				var invoice_id = jQuery("#invoice_id").val();
+				var logged_in_id = <?php echo $current_user->ID;  ?>;
+
+				var new_entries_invoice = {
+					'logged_in_id' : logged_in_id,
+					'invoice_id' : invoice_id,
+					'new_invoice_entries' : new_invoice_entries
+				};
+
+				jQuery('#add_new_invoice_entry').hide();
+				jQuery.ajax({				
+					type: "POST",
+					url: '<?php bloginfo("template_directory"); ?>/custom_ajax-functions.php',
+					data: {
+							'data_info' : new_entries_invoice,
+							'type' : 'edit_invoice_data_table',
+					},
+					success: function (data) {
+						var parsed = jQuery.parseJSON(data);
+
+						if(parsed.editing_invoice_table_status == 'successfully_editing_invoice_table'){
+							jQuery('#invoice-table tbody tr:last').after('<tr><td class="clientname">'+parsed.clientname+'</td><td>'+parsed.project_name+'</td><td><span class="total_hours_edit">'+parsed.hours+'</span></td><td>'+parsed.price_per_hour+'</td><td>'+parsed.total+'</td></tr>');
+							jQuery('#bottom_person_total_salary').text(parsed.total_salary);
+							jQuery('#bottom_invoice_total_hours').text(parsed.total_hours);
+							jQuery('#new_entry_row').hide();
+							jQuery('#invoice_add_new_entry_form')[0].reset();
+							jQuery('#approved_by_person').attr('checked', false);
+							jQuery('#approved_by_admin').attr('checked', false);
+							jQuery('#add_new_invoice_entry_dialog').dialog('close');
+						}else{
+							alert('ERROR EDITING INVOICE!');
+						}
+						jQuery('#add_new_invoice_entry').show();
+						jQuery('.add_invoice_new_entry_loader').hide();
+					},
+					error: function (data) {
+						alert('error');
+					}				
+				});					
+			}else{
+				jQuery('.add_invoice_new_entry_loader').hide();
+				jQuery('#add_invoice_new_entry_message').text('Invalid Hours or Total Input.').fadeIn(200).delay(2000).fadeOut(500);
+			}
+		});
 
 		//Checkbox for person approval.
 		jQuery(document).on('click', '#approved_by_person', function(){
@@ -362,23 +505,21 @@
 
 		//Next Button for invoice
 		jQuery(document).on('click', '#invoice-nav-right-btn', function(){
-			var month = jQuery('#invoice-month').val();
-			var year = jQuery('#invoice-year').val();
-			var person_id = jQuery('#invoice_person_id').val();
+
+			var invoice_id = jQuery('#invoice_id').val();
 
 			jQuery('#add_row_invoice').hide();
 			jQuery('#approve_invoice').hide();
 			jQuery('#submit-comment').hide();
 			jQuery('#download_pdf_invoice').hide();
-			
+
 			jQuery('#invoice-table tbody tr').fadeOut(2000);
 
 			jQuery('#invoice-table tbody').html('<tr><td colspan="5">Loading</td></tr>');
 			
 			var data = {
-				'month' : month,
-				'year'	: year,
-				'person_id' : person_id
+				'invoice_id' : invoice_id,
+				'person_id' : <?php echo $invoice_info->person_id; ?>
 			}
 
 			jQuery.ajax({				
@@ -390,7 +531,6 @@
 				},
 				success: function (data) {
 					var parsed = jQuery.parseJSON(data);
-					console.log(parsed);
 					jQuery('#invoice_date').html(parsed.invoice_info.date);
 
 					jQuery('#invoice_id').val(parsed.invoice_info.id);
@@ -401,7 +541,7 @@
 
 					jQuery('#invoice-month').val(current_date_array[0]);
 					jQuery('#invoice-year').val(current_date_array[1]);
-
+					console.log(parsed.end_next );
 					if(parsed.end_next == 0){
 						jQuery("#invoice-nav-right-btn").attr('disabled','disabled').addClass('hide');
 						jQuery("#invoice-nav-left-btn").removeAttr('disabled').removeClass('hide');
@@ -409,29 +549,35 @@
 						jQuery("#invoice-nav-left-btn").removeAttr('disabled').removeClass('hide');
 					}
 					var rows_string = "";
-				
+
+
 					jQuery.each(parsed.invoice_info.clients_invoices_table, function(key,valueObj){
+
 						rows_string += "<tr>";
-						rows_string += "<td></td><td class='clientname'>"+valueObj.clientname+"</td><td><span class='total_hours_edit'>"+valueObj.total_hours+"</span></td><td>"+valueObj.price+"</td><td>"+valueObj.total+"</td>";
+						rows_string += "<td class='clientname'>"+valueObj.clientname+"</td><td>"+valueObj.project_name+"</td><td>"+valueObj.total_hours+"</td><td>"+valueObj.total_hours  * parsed.person_per_hours_rate+"</td><td>"+valueObj.total+"</td>";
 						rows_string += "</tr>";
 					});
+					jQuery('#invoice-table tbody').html(rows_string);
+					jQuery('#invoice_no').text(parsed.invoice_no);
+					jQuery('#invoice_date').text(parsed.salary_month);
+					jQuery('#invoice_date_2').text(parsed.date);
+					jQuery('#bottom_invoice_total_hours').text(parsed.invoice_info.total_hours);
+					jQuery('#bottom_person_invoice_status').text(parsed.invoice_info.status);
+					jQuery('#bottom_person_total_salary').text(parsed.invoice_info.salary);
+					jQuery('#bottom_invoice_total_hours').text(parsed.total_invoice_hours);
+					jQuery('#bottom_person_total_no_work_hours').text(parsed.invoice_info.non_working_hrs);
+					jQuery('.invoices-comments').html(parsed.invoice_info.comments);
+
+					// jQuery('#add_row_invoice').show();
+					// jQuery('#approve_invoice').show();
+			
 					jQuery('#download_pdf_invoice').attr('href', '<?php echo get_site_url(); ?>/download-invoice-pdf/download-invoice-pdf.php?id='+parsed.invoice_id);
-
-					console.log(parsed.invoice_id);
-
+	
 					if(parsed.filter_download_pdf == 2){
 						jQuery('#download_pdf_invoice').show();
 					}else{
 						jQuery('#download_pdf_invoice').hide();
 					}
-					// if(parsed.person_approve == 1){
-					// 	jQuery('#add_row_invoice').hide();
-					// 	jQuery('#approve_invoice').hide();
-					// }else{
-					// 	jQuery('#add_row_invoice').show();
-					// 	jQuery('#approve_invoice').show();
-					// }
-
 					if(parsed.person_approve == 1){
 						jQuery('#approved_by_person').prop('checked', true);
 					}else{
@@ -443,14 +589,6 @@
 					}else{
 						jQuery('#approved_by_admin').removeAttr('checked');
 					}
-
-					jQuery('#invoice-table tbody').html(rows_string);
-					jQuery('#bottom_invoice_total_hours').text(parsed.invoice_info.total_hours);
-					jQuery('#bottom_person_invoice_status').text(parsed.invoice_info.status);
-					jQuery('#bottom_person_total_salary').text(parsed.invoice_info.salary);
-					jQuery('#bottom_person_total_no_work_hours').text(parsed.invoice_info.non_working_hrs);
-					jQuery('.invoices-comments').html(parsed.invoice_info.comments);
-
 
 					jQuery('#add_row_invoice').show();
 					jQuery('#approve_invoice').show();
@@ -466,9 +604,8 @@
 
 		//Previous Button for invoice
 		jQuery(document).on('click', '#invoice-nav-left-btn', function(){
-			var month = jQuery('#invoice-month').val();
-			var year = jQuery('#invoice-year').val();
-			var person_id = jQuery('#invoice_person_id').val();
+
+			var invoice_id = jQuery('#invoice_id').val();
 
 			jQuery('#add_row_invoice').hide();
 			jQuery('#approve_invoice').hide();
@@ -480,9 +617,8 @@
 			jQuery('#invoice-table tbody').html('<tr><td colspan="5">Loading</td></tr>');
 			
 			var data = {
-				'month' : month,
-				'year'	: year,
-				'person_id' : person_id
+				'invoice_id' : invoice_id,
+				'person_id' : <?php echo $invoice_info->person_id; ?>
 			}
 
 			jQuery.ajax({				
@@ -513,15 +649,21 @@
 					}
 					var rows_string = "";
 
+
 					jQuery.each(parsed.invoice_info.clients_invoices_table, function(key,valueObj){
+
 						rows_string += "<tr>";
-						rows_string += "<td></td><td class='clientname'>"+valueObj.clientname+"</td><td><span class='total_hours_edit'>"+valueObj.total_hours+"</span></td><td>"+valueObj.price+"</td><td>"+valueObj.total+"</td>";
+						rows_string += "<td class='clientname'>"+valueObj.clientname+"</td><td>"+valueObj.project_name+"</td><td>"+valueObj.total_hours+"</td><td>"+valueObj.total_hours  * parsed.person_per_hours_rate+"</td><td>"+valueObj.total+"</td>";
 						rows_string += "</tr>";
 					});
 					jQuery('#invoice-table tbody').html(rows_string);
+					jQuery('#invoice_no').text(parsed.invoice_no);
+					jQuery('#invoice_date').text(parsed.salary_month);
+					jQuery('#invoice_date_2').text(parsed.date);
 					jQuery('#bottom_invoice_total_hours').text(parsed.invoice_info.total_hours);
 					jQuery('#bottom_person_invoice_status').text(parsed.invoice_info.status);
 					jQuery('#bottom_person_total_salary').text(parsed.invoice_info.salary);
+					jQuery('#bottom_invoice_total_hours').text(parsed.total_invoice_hours);
 					jQuery('#bottom_person_total_no_work_hours').text(parsed.invoice_info.non_working_hrs);
 					jQuery('.invoices-comments').html(parsed.invoice_info.comments);
 
@@ -558,11 +700,22 @@
 
 		});
 		//Add new row Entry
-		jQuery(document).on('click', '#add_row_invoice', function(){
-			jQuery("#invoice-table tbody tr:last").after("<tr id='new_entry_invoice_row'><td></td><td class='clientname'><input name='invoice_new_row_entry' class='invoice_new_row_entry'></td><td class='invoice_new_hours'><input name='invoice_new_row_entry_hours' class='invoice_new_row_entry_hours'></td><td class='invoice_new_price'><input name='invoice_new_row_entry_price' class='invoice_new_row_entry_price'></td><td class='invoice_new_total'><input name='invoice_new_row_entry_total' class='invoice_new_row_entry_total'></td></tr>"); 
+		// jQuery(document).on('click', '#add_row_invoice', function(){
+		// 	jQuery("#invoice-table tbody tr:last").after("<tr id='new_entry_invoice_row'><td></td><td class='clientname'><input name='invoice_new_row_entry' class='invoice_new_row_entry'></td><td class='invoice_new_hours'><input name='invoice_new_row_entry_hours' class='invoice_new_row_entry_hours'></td><td class='invoice_new_price'><input name='invoice_new_row_entry_price' class='invoice_new_row_entry_price'></td><td class='invoice_new_total'><input name='invoice_new_row_entry_total' class='invoice_new_row_entry_total'></td></tr>"); 
 
-			jQuery(this).text('Save').unbind().attr('id', 'save_new_invoice_row');
-			jQuery("#remove_add_row_invoice").show();
+		// 	jQuery(this).text('Save').unbind().attr('id', 'save_new_invoice_row');
+		// 	jQuery("#remove_add_row_invoice").show();
+		// });
+
+		//Add new row Entry V2
+		jQuery(document).on('click', '#add_row_invoice', function(){
+			jQuery('#add_new_invoice_entry_dialog').dialog('open');
+		});
+
+		//Close INvoice add new Entry dialog
+		jQuery(document).on('click', '#add_new_invoice_entry_dialog_close', function(){
+			jQuery('#invoice_add_new_entry_form')[0].reset();
+			jQuery('#add_new_invoice_entry_dialog').dialog('close');
 		});
 
 		//cancel new row entry
@@ -582,6 +735,12 @@
 			var invoice_new_row_entry_total = current_row.find(".invoice_new_row_entry_total").val();
 			var invoice_id = jQuery("#invoice_id").val();
 			var logged_in_id = jQuery("#invoice_person_id").val();
+
+			if(new_entry_name == ''){
+				alert("Please Enter New Entry.");
+				jQuery(".invoice_add_new_entry_loader").css('display', 'none');
+				return false;
+			}
 
 			var data = {
 				'new_entry_name' : new_entry_name,

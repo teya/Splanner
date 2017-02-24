@@ -2,6 +2,11 @@
 require_once('function_manage_submit_task.php');
 require_once('function_page_timesheet.php');
 require_once('function_manage_website.php');
+
+setcookie(TEST_COOKIE, 'WP Cookie check', 0, COOKIEPATH, COOKIE_DOMAIN);
+if ( SITECOOKIEPATH != COOKIEPATH )
+setcookie(TEST_COOKIE, 'WP Cookie check', 0, SITECOOKIEPATH, COOKIE_DOMAIN);
+
 // Translation
 load_theme_textdomain('Avada', TEMPLATEPATH.'/languages');
 
@@ -5788,12 +5793,11 @@ function ApprovePersonInvoiceByAdmin($invoice_id){
 
 function EditInvoiceDataTable($data){
 	global $wpdb;
-
 	extract($data);
 
-	$invoice_tablename = $wpdb->prefix . "custom_invoice_table";
+	parse_str($new_invoice_entries, $new_invoice_entries_data);
 
-	$invoice_info = $wpdb->get_row("SELECT clients_invoices_table, total_hours, salary, person_id, date FROM ". $invoice_tablename ." WHERE id = ". $invoice_id);
+	$invoice_info = $wpdb->get_row("SELECT clients_invoices_table, total_hours, salary, person_id, date FROM ". SPLAN_TIMESHEET_INVOICE ." WHERE id = ". $invoice_id);
 
 	$dates = explode("-", $invoice_info->date);
 
@@ -5802,27 +5806,41 @@ function EditInvoiceDataTable($data){
 
 	$invoice_table_array = unserialize($invoice_info->clients_invoices_table);
 
-	$total_hours = $invoice_info->total_hours + $invoice_new_row_entry_hours;
-
-
-	if($invoice_new_row_entry_price < 1){
-		// str_replace("world","Peter","Hello world!");
-		$total_salary = round($invoice_info->salary - str_replace("-", "",$invoice_new_row_entry_price), 2);
+	if(!empty($new_invoice_entries_data['hours'])){
+		if(is_numeric($new_invoice_entries_data['hours'])){
+			$total_hours = $invoice_info->total_hours + $new_invoice_entries_data['hours'];
+		}else{
+			die('INVALID NEW INVOICE ENTRY HOURS INPUT');
+		}		
 	}else{
-		$total_salary = round($invoice_info->salary + $invoice_new_row_entry_price, 2);
+		$total_hours = $invoice_info->total_hours;
+		$new_invoice_entries_data['hours'] = 0;
 	}
 
+	if($new_invoice_entries_data['project_category'] == 'Add New Entry'){
+		$new_project_name_entry = $new_invoice_entries_data['new_entry'];
+	}else{
+		$new_project_name_entry = $new_invoice_entries_data['project_category'];
+	}
+
+	if($new_invoice_entries_data['total'] < 1){
+		$total_salary = round($invoice_info->salary - str_replace("-", "",$new_invoice_entries_data['total']), 2);
+	}else{
+		$total_salary = round($invoice_info->salary + $new_invoice_entries_data['total'], 2);
+	}
+
+
 	$new_invoice_row_array  = array(
-		'clientname' => $new_entry_name,
-		'total_hours' => $invoice_new_row_entry_hours,
-		'price' => $invoice_new_row_entry_price,
-		'total' => $invoice_new_row_entry_total
+		'clientname' => $new_invoice_entries_data['clientname'],
+		'project_name' => $new_project_name_entry,
+		'total_hours' => $new_invoice_entries_data['hours'],
+		'total' => $new_invoice_entries_data['total']
 	);
 
 	array_push($invoice_table_array, $new_invoice_row_array);
 
 	$update_invoice_table_status = $wpdb->update(
-		$invoice_tablename,
+		SPLAN_TIMESHEET_INVOICE,
 		array(
 			'clients_invoices_table'		 => serialize($invoice_table_array),
 			'total_hours'					 => $total_hours,
@@ -5868,12 +5886,14 @@ function EditInvoiceDataTable($data){
 		}
 	$response = array(
 		'editing_invoice_table_status' => 'successfully_editing_invoice_table',
-		'clientname'	=> $new_entry_name,
+		'clientname'	=>  $new_invoice_entries_data['clientname'],
+		'project_name' => $new_project_name_entry,
+		'hours' => $new_invoice_entries_data['hours'],
+		'total' => $new_invoice_entries_data['total'],
 		'total_hours' => $total_hours,
-		'price' => $invoice_new_row_entry_price,
-		'total' => $invoice_new_row_entry_total,
+		'price_per_hour' => $new_invoice_entries_data['hours'] * $person_info->person_hourly_rate,
 		'total_salary' => round($total_salary, 2)
-		);
+	);
 	}else{
 		die('ERROR EDITING INVOICE TABLE');
 	}
@@ -5883,18 +5903,12 @@ function PreviousInvoiceRecord($data){
 	global $wpdb;
 	extract($data);
 
-	$current_date = '01/'.$month.'/'.$year;
+	$previous_invoice_info = $wpdb->get_row("SELECT * FROM ".SPLAN_TIMESHEET_INVOICE." WHERE id < ".$invoice_id." AND person_id = ".$person_id." ORDER BY id DESC LIMIT 1");
+	$invoice_user = $wpdb->get_row('SELECT person_hours_per_day FROM '.SPLAN_PERSONS.' WHERE wp_user_id = '.$person_id);
 
-	$prev_month_string = date("Y-m-d", strtotime($year.'-'.$month.'-20 -1 month'));
-
-	$prev_month = split('-', $prev_month_string);
-
-	$prev_month2_string = date("Y-m-d", strtotime($prev_month_string.' -1 month'));
-
-	$prev_month2 = split('-', $prev_month2_string);
-
-	$previous_invoice_info = $wpdb->get_row("SELECT * FROM wp_custom_invoice_table WHERE date = '".$prev_month[1]."-".$prev_month[0]."' AND person_id = ".$person_id);
 	$filter_download_pdf = $previous_invoice_info->person_approval + $previous_invoice_info->admin_approval;
+
+	$invoice_date = explode('-', $previous_invoice_info->date);
 
 	$previous_invoice_info->clients_invoices_table = unserialize($previous_invoice_info->clients_invoices_table);
 	$comments_array = unserialize($previous_invoice_info->comments);
@@ -5916,7 +5930,7 @@ function PreviousInvoiceRecord($data){
 
 	$previous_invoice_info->comments = $comment_strings;
 
-	$previous_invoice_info2 = $wpdb->get_row("SELECT * FROM wp_custom_invoice_table WHERE date = '".$prev_month2[1]."-".$prev_month2[0]."' AND person_id = ".$person_id);
+	$previous_invoice_info2 = $wpdb->get_row("SELECT * FROM ".SPLAN_TIMESHEET_INVOICE." WHERE id < ".$previous_invoice_info->id." AND person_id = ".$person_id." ORDER BY id ASC LIMIT 1");
 
 	$end_previous = (!empty($previous_invoice_info2))? 1 : 0;
 
@@ -5924,10 +5938,16 @@ function PreviousInvoiceRecord($data){
 	$response  = array(
 		'invoice_info' => $previous_invoice_info,
 		'end_previous' => $end_previous,
+		'invoice_no' => substr($invoice_date[1], -2)."".$invoice_date[0]."".$person_id,
+		'salary_month' => date("M", mktime(0, 0, 0, $invoice_date[0], 10)) . "-" . $invoice_date[1],
+		'date' => $invoice_date[1] . "-" . $invoice_date[0] . '-20',
+		'person_per_hours_rate' => $invoice_user->person_hours_per_day,
 		'person_approve' => $previous_invoice_info->person_approval,
 		'admin_approve' => $previous_invoice_info->admin_approval,
 		'filter_download_pdf' => $filter_download_pdf,
-		'invoice_id' => $previous_invoice_info->id
+		'invoice_id' => $previous_invoice_info->id,
+		'total_invoice_hours' => $previous_invoice_info->total_hours,
+		'r'
 	);
 	return $response;
 }
@@ -5935,20 +5955,14 @@ function NextInvoiceRecord($data){
 	global $wpdb;
 	extract($data);
 
-	$current_date = '01/'.$month.'/'.$year;
+	$next_invoice_info = $wpdb->get_row("SELECT * FROM ".SPLAN_TIMESHEET_INVOICE." WHERE id > ".$invoice_id." AND person_id = ".$person_id." ORDER BY id ASC LIMIT 1");
+	$invoice_user = $wpdb->get_row('SELECT person_hours_per_day FROM '.SPLAN_PERSONS.' WHERE wp_user_id = '.$person_id);
 
-	$next_month_string = date("Y-m-d", strtotime($year.'-'.$month.'-20 +1 month'));
+	$filter_download_pdf = $next_invoice_info->person_approval + $next_invoice_info->admin_approval;
 
-	$next_month = split('-', $next_month_string);
-
-	$next_month2_string = date("Y-m-d", strtotime($next_month_string.' +1 month'));
-
-	$next_month2 = split('-', $next_month2_string);
-
-	$next_invoice_info = $wpdb->get_row("SELECT * FROM wp_custom_invoice_table WHERE date = '".$next_month[1]."-".$next_month[0]."' AND person_id = ".$person_id);
+	$invoice_date = explode('-', $next_invoice_info->date);
 
 	$next_invoice_info->clients_invoices_table = unserialize($next_invoice_info->clients_invoices_table);
-	$filter_download_pdf = $next_invoice_info->person_approval + $next_invoice_info->admin_approval;
 	$comments_array = unserialize($next_invoice_info->comments);
 	$comment_strings = "";
 
@@ -5968,7 +5982,7 @@ function NextInvoiceRecord($data){
 
 	$next_invoice_info->comments = $comment_strings;
 
-	$next_invoice_info2 = $wpdb->get_row("SELECT * FROM wp_custom_invoice_table WHERE date = '".$next_month2[1]."-".$next_month2[0]."' AND person_id = ".$person_id);
+	$next_invoice_info2 = $wpdb->get_row("SELECT * FROM ".SPLAN_TIMESHEET_INVOICE." WHERE id > ".$next_invoice_info->id." AND person_id = ".$person_id." ORDER BY id ASC LIMIT 1");
 
 	$end_next = (!empty($next_invoice_info2))? 1 : 0;
 
@@ -5976,10 +5990,16 @@ function NextInvoiceRecord($data){
 	$response  = array(
 		'invoice_info' => $next_invoice_info,
 		'end_next' => $end_next,
+		'invoice_no' => substr($invoice_date[1], -2)."".$invoice_date[0]."".$person_id,
+		'salary_month' => date("M", mktime(0, 0, 0, $invoice_date[0], 10)) . "-" . $invoice_date[1],
+		'date' => $invoice_date[1] . "-" . $invoice_date[0] . '-20',
+		'person_per_hours_rate' => $invoice_user->person_hours_per_day,
 		'person_approve' => $next_invoice_info->person_approval,
 		'admin_approve' => $next_invoice_info->admin_approval,
 		'filter_download_pdf' => $filter_download_pdf,
-		'invoice_id' => $next_invoice_info->id
+		'invoice_id' => $next_invoice_info->id,
+		'total_invoice_hours' => $next_invoice_info->total_hours,
+		'r'
 	);
 	return $response;
 }
@@ -6070,115 +6090,84 @@ function RegenerateInvoice($data){
 	global $wpdb;
 	extract($data);
 
-	$person_tablename = $wpdb->prefix . 'custom_person';
-	$invoice_tablename = $wpdb->prefix . 'custom_invoice_table';
-	$timesheet_tablename = $wpdb->prefix . 'custom_timesheet';
 	//Get last month date.
 	$last_month_date = date('Y-m-d', strtotime("-1 month"));
 	$month =  date("m", strtotime($last_month_date));
 	$year =  date("Y", strtotime($last_month_date));
 
-	$person_info = $wpdb->get_row("SELECT ID, wp_user_id, person_hours_per_day, person_fullname, person_email_notification, person_monthly_rate  FROM ".$person_tablename." WHERE ID = ". $person_id);
+	$person_info = $wpdb->get_row("SELECT ID, wp_user_id, person_hours_per_day, person_fullname, person_email_notification, person_monthly_rate  FROM ".SPLAN_PERSON_TBL." WHERE ID = ". $person_id);
 
-	$invoice_old_info = $wpdb->get_row("SELECT comments FROM ".$invoice_tablename." WHERE person_id = ". $person_info->wp_user_id ." AND date = '" . $month ."-". $year."'");
-	$delete_old_invoice = $wpdb->query("DELETE FROM ".$invoice_tablename." WHERE person_id = ". $person_info->wp_user_id ." AND date = '" . $month ."-". $year."'");
+	$timesheets = $wpdb->get_results('SELECT 
+						SUM(IF(task_name = "holiday", TIME_TO_SEC(task_hour)/3600, 0 )) as holiday,
+						SUM(IF(task_name = "sickness", TIME_TO_SEC(task_hour)/3600, 0 )) as sickness, 
+						SUM(IF(task_name = "electric / internet problems", TIME_TO_SEC(task_hour)/3600, 0 )) as electric, 
+						SUM(TIME_TO_SEC(task_hour)/3600) as totalhours, 
+						task_project_name as project_name, 
+						task_label 
+						FROM '.SPLAN_TIMESHEET.' 
+						WHERE task_person = "'.$person_info->person_fullname.'" 
+						AND STR_TO_DATE(date_now, "%d/%m/%Y") BETWEEN STR_TO_DATE("01/'.$month.'/'.$year.'", "%d/%m/%Y") 
+						AND STR_TO_DATE("31/'.$month.'/'.$year.'", "%d/%m/%Y") 
+						GROUP BY  task_project_name, task_label 
+						ORDER BY task_label ASC');
 
-	if($delete_old_invoice == 1){
-		$timesheets = $wpdb->get_results('SELECT SUM(IF(task_name = "holiday", TIME_TO_SEC(task_hour)/3600, 0 )) as holiday, SUM(IF(task_name = "sickness", TIME_TO_SEC(task_hour)/3600, 0 )) as sickness, SUM(IF(task_name = "electric / internet problems", TIME_TO_SEC(task_hour)/3600, 0 )) as electric, SUM(TIME_TO_SEC(task_hour)/3600) as totalhours, task_label FROM '.$timesheet_tablename.' WHERE task_person = "'.$person_info->person_fullname.'" AND STR_TO_DATE(date_now, "%d/%m/%Y") BETWEEN STR_TO_DATE("01/'.$month.'/'.$year.'", "%d/%m/%Y") AND STR_TO_DATE("31/'.$month.'/'.$year.'", "%d/%m/%Y") GROUP BY  task_label');
+	$client_list_array = array();
 
-		$client_list_array = array();
+	foreach($timesheets as $timesheet){
 
-		foreach($timesheets as $timesheet){
-
-			$total_holiday_hours += $timesheet->holiday;
-			$total_sickness_hours += $timesheet->sickness;
-			$total_electric_hours += $timesheet->electric;
-
-
-			array_push($client_list_array, array('clientname' => $timesheet->task_label, 'total_hours' =>  round($timesheet->totalhours, 2), 'price' => '', 'total' => ''));
-			$total_client_hours += round($timesheet->totalhours, 2);
-		}
-
-		$total_non_working_hours = $total_holiday_hours + $total_sickness_hours + $total_electric_hours;
-
-		if($total_non_working_hours > 0){
-
-			foreach($client_list_array as $key => $value){
-				if($client_list_array[$key]['clientname'] == 'SEOWeb Solutions'){
-					$client_list_array[$key]['total_hours'] = round($client_list_array[$key]['total_hours'] - $total_non_working_hours, 2);
-				}
-			}
-
-			if($total_holiday_hours > 0){
-				array_push($client_list_array, array('clientname' => 'Holidays', 'total_hours' =>  round($total_holiday_hours, 2), 'price' => '', 'total' => '' ));
-			}
-			if($total_sickness_hours > 0){
-				array_push($client_list_array, array('clientname' => 'Sickness', 'total_hours' =>  round($total_sickness_hours, 2), 'price' => '', 'total' => '' ));
-			}
-			if($total_electric_hours > 0){
-				array_push($client_list_array, array('clientname' => 'Electric & Internet Problem', 'total_hours' =>  round($total_electric_hours, 2), 'price' => '', 'total' => '' ));
-			}
-		}
-
-		$total_working_days = countDays($year, $month, array(0, 6));
-
-		$person_total_hr = $person_info->person_hours_per_day * $total_working_days; 
-
-		//Salary Deduction if current hour not sufficient.
-		if($person_total_hr > $total_client_hours){
-			$salary_per_day = $person_info->person_monthly_rate / $total_working_days;
-			$salary_per_hr = $salary_per_day / $person_info->person_hours_per_day;
-			$remaining_hrs = $person_total_hr - $total_client_hours;
-			$salary_deduction = $remaining_hrs * $salary_per_hr;
-			$total_salary = $person_info->person_monthly_rate - $salary_deduction;
-		}else{
-			$total_salary = $person_info->person_monthly_rate;
-		}
-
-		$insert_invoice_table = $wpdb->insert(
-				$invoice_tablename,
-				array(
-					'person_id' 				=> $person_info->wp_user_id,
-					'clients_invoices_table'	=> serialize($client_list_array),
-					'date'						=> $month . '-' . $year,
-					'active_viewing'			=> 1,
-					'person_approval'			=> 0,
-					'comments'					=> $invoice_old_info->comments,
-					'admin_approval'			=> 0,
-					'status'					=> 'Reviewing',
-					'total_hours'				=> $total_client_hours,
-					'person_total_hr'			=> $person_total_hr,
-					'non_working_hrs'			=> $total_non_working_hours,
-					'salary'					=> $total_salary
-				),
-				array(
-					'%s',
-					'%s',
-					'%s',
-					'%d',
-					'%d',
-					'%s',
-					'%d',		
-					'%s',
-					'%s',
-					'%d',
-					'%d',
-					'%d'								
-				)
-			);
-
-		if($insert_invoice_table == 1){
-			$response = array(
-				'status' => 'successfully-regenerate-invoice'
-			);
-
-		}else{
-			die('Failed Regenerate new invoice');
-		}
-	}else{
-		die('Failed delete old invoices.');
+		array_push($client_list_array, array('clientname' => $timesheet->task_label, 'project_name' => $timesheet->project_name, 'total_hours' =>  round($timesheet->totalhours, 2),  'total' => ''));
+				$total_client_hours += round($timesheet->totalhours, 2);
 	}
 
+	$invoice_info = $wpdb->get_row("SELECT * FROM ".SPLAN_TIMESHEET_INVOICE." WHERE person_id = ". $person_info->wp_user_id ." AND date = '" . $month ."-". $year."'");
+
+	$total_working_days = countDays($year, $month, array(0, 6));
+
+	$person_total_hr = $person_info->person_hours_per_day * $total_working_days; 
+
+	//Salary Deduction if current hour not sufficient.
+	if($person_total_hr > $total_client_hours){
+		$salary_per_day = $person_info->person_monthly_rate / $total_working_days;
+		$salary_per_hr = $salary_per_day / $person_info->person_hours_per_day;
+		$remaining_hrs = $person_total_hr - $total_client_hours;
+		$salary_deduction = $remaining_hrs * $salary_per_hr;
+		$total_salary = $person_info->person_monthly_rate - $salary_deduction;
+	}else{
+		$total_salary = $person_info->person_monthly_rate;
+	}
+
+	$regenerate_invoice_table_status = $wpdb->update(
+		SPLAN_TIMESHEET_INVOICE,
+		array(
+			'clients_invoices_table'	=> serialize($client_list_array),
+			'person_approval'			=> 0,
+			'admin_approval'			=> 0,
+			'status'					=> 'Reviewing',
+			'total_hours'				=> $total_client_hours,
+			'person_total_hr'			=> $person_total_hr,
+			'salary'					=> $total_salary
+		),
+		array(
+			'id' => $invoice_info->id
+		),
+		array(
+			'%s',
+			'%d',
+			'%d',
+			'%d',
+			'%d'
+		)
+	);
+
+
+	if($regenerate_invoice_table_status == 1){
+		$response = array(
+			'status' => 'successfully-regenerate-invoice'
+		);
+
+	}else{
+		die('Failed Regenerate new invoice');
+	}
 	return $response;
 }
 function CheckedApprovalByPerson($data){

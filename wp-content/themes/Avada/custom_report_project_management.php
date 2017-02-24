@@ -29,7 +29,7 @@ $persons = $wpdb->get_results("SELECT * FROM {$table_name_person}");
 				</ul>
 			</div>
 			<div class="tab-box tabs-container">
-				<!-- ------------------------------------ DEV ------------------------------------  --> 
+				<!--  DEV   --> 
 				<div id="dev" class="tab tab_content active" style="display: none;">
 					<div class="display_main">
 						<div class="section current">
@@ -49,7 +49,125 @@ $persons = $wpdb->get_results("SELECT * FROM {$table_name_person}");
 							</div>
 							<?php 
 								$project_client_temp = "";
-								$project_ongoing = $wpdb->get_results("SELECT * FROM {$table_name_project} ORDER BY STR_TO_DATE(project_start_date, '%m/%d/%Y')  DESC");
+								$project_ongoing = $wpdb->get_results("SELECT * FROM {$table_name_project} WHERE project_current_status != 'Planning' AND project_current_status != 'Quote sent'  ORDER BY STR_TO_DATE(project_start_date, '%m/%d/%Y')  DESC");
+								foreach($project_ongoing as $project){
+									if($project->project_date_completed == null){
+										if($project->project_name != 'Monthly Ongoing SEO' && $project->project_name != 'Monthly Ongoing Dev' && $project->project_name != 'Issue/Bug'){
+											if($project->project_client != 'SEOWeb Solutions'){
+												$project_client				= $project->project_client;
+												$project_name				= $project->project_name;
+												$project_start_date			= $project->project_start_date;		
+												$project_estimated_deadline	= $project->project_estimated_deadline;
+												$project_hour				= $project->project_hour;
+												$project_minute				= $project->project_minute;
+												$project_responsible_worker = $project->project_responsible_worker;
+												$project_current_status		= $project->project_current_status;
+												$project_description		= $project->project_description;
+												$project_budget				= $project->project_budget;
+												$project_extra_expenses		= $project->project_extra_expenses;
+												$project_default_expenses	= $project->project_default_expenses;
+												$project_invoiced_amount	= $project->project_invoiced_amount;
+												
+												$today						= date('m/d/Y');
+												if($project_start_date != null){
+													$project_days_in_production	= dateDiff($project_start_date,$today);
+													}else{
+													$project_days_in_production = "--";
+												}
+												
+												$project_hours = $project_hour.":".$project_minute.":00";
+												$project_decimal_hours = decimalHours($project_hours);
+												$project_rounded_hour = round($project_decimal_hours, 2);
+												
+												$start_date = date("d/m/Y", strtotime($project_start_date));
+												$today_date	= date('d/m/Y');												
+												$timesheets = $wpdb->get_results("SELECT * FROM {$table_name} WHERE task_project_name='$project_name' AND task_label='$project_client' AND STR_TO_DATE(date_now, '%d/%m/%Y') BETWEEN STR_TO_DATE('$start_date', '%d/%m/%Y') AND STR_TO_DATE('$today_date', '%d/%m/%Y')");
+												
+												$timesheet_hour_decimal = "";											
+												foreach($timesheets as $timesheet){
+													if($timesheet->task_label == $project_client){
+														$task_hour = $timesheet->task_hour;										
+														$decimal_hours = decimalHours($task_hour);
+														$rounded_hour = round($decimal_hours, 2);		
+														$timesheet_hour_decimal += $rounded_hour;
+													}				
+												}
+												
+												if($project_rounded_hour != null || $project_rounded_hour != 0){
+													$total_hour_decimal = $project_rounded_hour;
+												}else{
+													$total_hour_decimal = $timesheet_hour_decimal;
+												}
+												
+												$current_expense = $project_default_expenses + $project_extra_expenses;
+												
+												foreach($persons as $person){
+													$person_full_name = $person->person_first_name ." ". $person->person_last_name;
+													if($project_responsible_worker == $person_full_name){
+														$person_hourly_rate = $person->person_hourly_rate;														
+														$multiply = $total_hour_decimal * $person_hourly_rate;					
+														$add = $multiply + $current_expense;
+														$revenue = $project_budget - $add;
+													}
+												}
+												
+												$today_date_ongoing_format = date("d/m/y", strtotime($today));
+												$today_date_ongoing_explode = explode('/', $today_date_ongoing_format);
+												$today_date_ongoing_mktime = mktime(0, 0, 0, $today_date_ongoing_explode[1], $today_date_ongoing_explode[0], $today_date_ongoing_explode[2]);
+												
+												$project_estimated_deadline_format = date("d/m/y", strtotime($project_estimated_deadline));
+												$project_estimated_deadline_explode = explode('/', $project_estimated_deadline_format);
+												$project_estimated_deadline_mktime = mktime(0, 0, 0, $project_estimated_deadline_explode[1], $project_estimated_deadline_explode[0], $project_estimated_deadline_explode[2]);
+							?>
+												<div id="display_note_<?php echo $project->ID ?>" class="display_note display_list hide_list_<?php echo $project->ID ?>">
+													<div class="info_div">
+														<div class="buttons column">
+															<div id="edit_<?php echo $project->ID ?>" class="button_2 modal_form_edit">E</div>
+															<div id="archive_<?php echo $project->ID ?>" class="button_2 modal_form_archive">A</div>
+															<div id="delete_<?php echo $project->ID ?>" class="button_2 modal_form_delete">D</div>
+															<div style="display:none;" id="loader_<?php echo $project->ID ?>" class="loader"></div>
+														</div>
+														<p id="first_column_<?php echo $project->ID; ?>" class="client_info first_column column"><?php echo ($project_client != null) ? $project_client : "--"; ?></p>
+														<p id="second_column_<?php echo $project->ID; ?>" class="second_column column"><?php echo ($project_name != null) ? $project_name : "--"; ?></p>
+														<p id="third_column_<?php echo $project->ID; ?>" class="third_column column"><?php echo ($project_start_date != null) ? $project_start_date : "--"; ?></p>
+														<p id="fourth_column_<?php echo $project->ID; ?>" class="fourth_column column"><?php echo $project_days_in_production; ?></p>
+														<p id="fifth_column_<?php echo $project->ID; ?>" class="fifth_column column <?php echo ($today_date_ongoing_mktime > $project_estimated_deadline_mktime) ? "red_bg" : ""; ?>"><?php echo ($project_estimated_deadline != null) ? $project_estimated_deadline : "--"; ?></p>
+														<p id="sixth_column_<?php echo $project->ID; ?>" class="sixth_column column"><?php echo ($total_hour_decimal != null) ? round_quarter($total_hour_decimal) : "--"; ?></p>
+														<p id="seventh_column_<?php echo $project->ID; ?>" class="seventh_column column <?php echo ($revenue > 0) ? "green_bg" : "red_bg"; ?>"><?php echo ($revenue != null) ? round($revenue) : "--"; ?></p>
+														<p id="eighth_column_<?php echo $project->ID; ?>" class="eighth_column column"><?php echo ($current_expense != null) ? $current_expense : "--"; ?></p>					 
+														<p id="ninth_column_<?php echo $project->ID; ?>" class="ninth_column column"><?php echo ($project_responsible_worker != null) ? $project_responsible_worker : "--"; ?></p>
+														<p id="tenth_column_<?php echo $project->ID; ?>" class="tenth_column_ column"><?php echo ($project_current_status != null) ? $project_current_status : "--"; ?></p>	
+													</div>
+													<div style="display:none" id="project_notes_<?php echo $project->ID ?>" class="project_notes">
+														<p style="float:left"><strong><?php echo $project_client .":&nbsp";?></strong></p>
+														<p style="float:left"><?php echo $project_description; ?></p>
+													</div>
+												</div>
+							<?php 
+											}
+										}
+									}
+								}
+							?>
+						</div>
+						<div class="section current">
+							<h1>Prospects & Planned Projects</h1>
+							<div class="header_subtitle">
+								<h3 class="button_header column"></h3>
+								<h3 class="first_column column">Customer</h3>
+								<h3 class="second_column column">Project Name</h3>
+								<h3 class="third_column column">Started</h3>
+								<h3 class="fourth_column column">DiP</h3>
+								<h3 class="fifth_column column">Deadline</h3>
+								<h3 class="sixth_column column">Hours</h3>
+								<h3 class="seventh_column column">Revenue</h3>
+								<h3 class="eighth_column column">Expenses</h3>
+								<h3 class="ninth_column column">Main Dev.</h3>
+								<h3 class="tenth_column column">Status</h3>				
+							</div>
+							<?php 
+								$project_client_temp = "";
+								$project_ongoing = $wpdb->get_results("SELECT * FROM {$table_name_project} WHERE project_current_status = 'Planning' OR project_current_status = 'Quote sent' ORDER BY STR_TO_DATE(project_start_date, '%m/%d/%Y')  DESC");
 								foreach($project_ongoing as $project){
 									if($project->project_date_completed == null){
 										if($project->project_name != 'Monthly Ongoing SEO' && $project->project_name != 'Monthly Ongoing Dev' && $project->project_name != 'Issue/Bug'){
@@ -307,7 +425,7 @@ $persons = $wpdb->get_results("SELECT * FROM {$table_name_person}");
 						</div>
 					</div>
 				</div>
-				<!-- ------------------------------------ SEO ------------------------------------  --> 
+				<!-- SEO  --> 
 				<div id="seo" class="tab tab_content" style="display: none;">
 					<div class="display_main">
 						<div class="section current">
@@ -380,6 +498,7 @@ $persons = $wpdb->get_results("SELECT * FROM {$table_name_person}");
 													
 													$current_year = date('Y');
 													$month_filter = "STR_TO_DATE(date_now, '%d/%m/%Y') BETWEEN STR_TO_DATE('01/$month/$current_year', '%d/%m/%Y') AND STR_TO_DATE('31/$month/$current_year', '%d/%m/%Y')";
+
 													$month_hours = $wpdb->get_results("SELECT * FROM {$table_name} WHERE $month_filter AND task_project_name = '$project_name' AND task_label = '$project_client'");
 													$total_month_hours_seo = "";
 													$total_month_hours_dev = "";
@@ -460,6 +579,8 @@ $persons = $wpdb->get_results("SELECT * FROM {$table_name_person}");
 										}
 									}
 								}
+
+
 								foreach($seo_ongoing_array as $seo_ongoing_client => $seo_ongoing){										
 									$seo_detail_explode = explode('<_>', $seo_ongoing);
 									if($seo_hours[$seo_ongoing_client][0] != null && $seo_hours[$seo_ongoing_client][1] == null){
@@ -482,6 +603,7 @@ $persons = $wpdb->get_results("SELECT * FROM {$table_name_person}");
 									
 									$project_details_seo = $wpdb->get_row("SELECT * FROM {$table_name_project} WHERE project_name='Monthly Ongoing SEO' AND project_client='$seo_ongoing_client'");
 									$monthly_plan_seo_name = ($project_details_seo->project_monthly_plan) ? $project_details_seo->project_monthly_plan : "--";
+
 									$monthly_plans_seo = $wpdb->get_row("SELECT * FROM {$table_monthly_plan} WHERE monthly_name='$monthly_plan_seo_name'");									
 									$monthly_plans_seo_hour = ($monthly_plans_seo->monthly_seo_hours) ? $monthly_plans_seo->monthly_seo_hours : "--";
 									$monthly_plans_seo_budget = $monthly_plans_seo->monthly_budget;
@@ -496,7 +618,6 @@ $persons = $wpdb->get_results("SELECT * FROM {$table_name_person}");
 									$monthly_dev_extra_expense = $monthly_plans_dev->monthly_dev_extra_expense;
 									
 									$total_month_hours = $total_month_hours_seo + $total_month_hours_dev + $total_month_con_hours;
-									
 									
 									foreach($persons as $person){
 										$person_full_name = $person->person_fullname;
@@ -664,7 +785,7 @@ $persons = $wpdb->get_results("SELECT * FROM {$table_name_person}");
 										}
 									}
 								}
-								
+
 								foreach($seo_ongoing_array as $seo_ongoing_client => $seo_ongoing){										
 									$seo_detail_explode = explode('<_>', $seo_ongoing);										
 									$total_year_hours_seo = $seo_detail_explode[0];
@@ -708,7 +829,7 @@ $persons = $wpdb->get_results("SELECT * FROM {$table_name_person}");
 								<div id="display_note_<?php echo $client_id; ?>" class="display_note display_list hide_list_<?php echo $client_id; ?>">
 									<div class="info_div">										
 										<p id="first_column_<?php echo $client_id; ?>" class="client_info first_column column"><?php echo $seo_ongoing_client; ?></p>										
-										<p id="second_column_<?php echo $client_id; ?>" class="second_column column"><?php echo $monthly_plan_seo_name; ?></p>										
+										<p id="second_column_<?php echo $client_id; ?>" class="second_column column">112<?php echo $monthly_plan_seo_name; ?></p>										
 										<p id="third_column_<?php echo $client_id; ?>" class="third_column column"><?php echo $monthly_plan_dev_name; ?></p>																								
 										<p id="fourth_column_<?php echo $client_id; ?>" class="fourth_column column"><?php echo $total_year_hours_seo; ?></p>
 										<p id="fifth_column_<?php echo $client_id; ?>" class="fifth_column column"><?php echo $total_year_hours_dev; ?></p>													
@@ -726,7 +847,7 @@ $persons = $wpdb->get_results("SELECT * FROM {$table_name_person}");
 						</div>
 					</div>
 				</div>
-				<!-- ------------------------------------ INTERNAL DEV ------------------------------------  --> 
+				<!-- INTERNAL DEV  --> 
 				<div id="internal_dev" class="tab tab_content" style="display: none;">
 					<div class="display_main">
 						<div class="section current">
@@ -984,7 +1105,7 @@ $persons = $wpdb->get_results("SELECT * FROM {$table_name_person}");
 							</div>
 						</div>
 					</div>		
-					<!-- ------------------------------------ INTERNAL SEO ------------------------------------  --> 					
+					<!-- INTERNAL SEO  --> 					
 					<div id="internal_seo" class="tab tab_content" style="display: none;">
 						<div class="display_main">
 							<div class="section current">
@@ -1249,7 +1370,7 @@ $persons = $wpdb->get_results("SELECT * FROM {$table_name_person}");
 							</div>
 						</div>
 					</div>
-					<!-- ------------------------------------ CUSTOMER ISSUES/BUGS ------------------------------------  --> 
+					<!-- CUSTOMER ISSUES/BUGS  --> 
 					<div id="customer_issues_bugs" class="tab tab_content" style="display: none;">
 						<div class="display_main">
 							<div class="section current">

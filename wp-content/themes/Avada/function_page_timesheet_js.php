@@ -1061,4 +1061,53 @@ jQuery(document).ready(function(){
 	});		
 });
 /* ==================================== END SEARCH PERSON TASK BY NAME AND WEEK NUMBER ==================================== */
+
+/* ==================================== CHECK STATUS DAY TAB COLOR ==================================== */
+jQuery(document).ready(function(){
+	var monday = jQuery('#monday .total_hours .task_total_hour input').val();
+	var tuesday = jQuery('#tuesday .total_hours .task_total_hour input').val();
+	var wednesday = jQuery('#wednesday .total_hours .task_total_hour input').val();
+	var thursday = jQuery('#thursday .total_hours .task_total_hour input').val();
+	var friday = jQuery('#friday .total_hours .task_total_hour input').val();
+	var saturday = jQuery('#saturday .total_hours .task_total_hour input').val();
+	var sunday = jQuery('#sunday .total_hours .task_total_hour input').val();
+	
+	if(monday == 'green'){
+		jQuery('#tabs .monday a').addClass('green-day');
+	}else if(monday == 'red'){
+		jQuery('#tabs .monday a').addClass('red-day');
+	}
+	if(tuesday == 'green'){
+		jQuery('#tabs .tuesday a').addClass('green-day');
+	}else if(tuesday == 'red'){
+		jQuery('#tabs .tuesday a').addClass('red-day');
+	}
+	if(wednesday == 'green'){
+		jQuery('#tabs .wednesday a').addClass('green-day');
+	}else if(wednesday == 'red'){
+		jQuery('#tabs .wednesday a').addClass('red-day');
+	}
+	if(thursday == 'green'){
+		jQuery('#tabs .thursday a').addClass('green-day');
+	}else if(thursday == 'red'){
+		jQuery('#tabs .thursday a').addClass('red-day');
+	}
+	if(friday == 'green'){
+		jQuery('#tabs .friday a').addClass('green-day');
+	}else if(friday == 'red'){
+		jQuery('#tabs .friday a').addClass('red-day');
+	}
+	if(saturday == 'yellow'){
+		jQuery('#tabs .saturday a').addClass('yellow-day');
+	}else if(saturday == 'red'){
+		// jQuery('#tabs .saturday a').addClass('red-day');
+	}
+	if(sunday == 'yellow'){
+		jQuery('#tabs .sunday a').addClass('yellow-day');
+	}else if(sunday == 'red'){
+		// jQuery('#tabs .sunday a').addClass('red-day');
+	}
+
+});
+
 </script>

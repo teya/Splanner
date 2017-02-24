@@ -5,6 +5,7 @@
 $timezone = get_option('timezone_string'); 
 date_default_timezone_set($timezone); 
 
+
 $date_now_week = date('Y/m/d');
 $duedt = explode("/", $date_now_week);
 $date  = mktime(0, 0, 0, $duedt[1], $duedt[2], $duedt[0]);
@@ -14,6 +15,9 @@ $date_now = date('d/m/Y');
 $day_now = date('l');
 $display_date_now = date('l d M');
 $num_date = date('d');
+$compare_date_now = str_replace('/', '-', $date_now);
+
+// $compare_date_now = '27-02-2017';
 
 $user_id = get_current_user_id();
 $user_data = get_userdata($user_id);
@@ -164,6 +168,8 @@ $current_user_role = $current_user->roles['0'];
 	$tasks = $wpdb->get_results("SELECT * FROM {$table_name_task}");
 	$table_name_person = $wpdb->prefix . "custom_person";
 	$persons = $wpdb->get_results("SELECT * FROM {$table_name_person} WHERE person_status='0'");
+	$current_person = $wpdb->get_row("SELECT * FROM {$table_name_person} WHERE wp_user_id = ".$current_user->id);
+	$quota_time = decimalHours($current_person->person_hours_per_day);
 	$table_name_project = $wpdb->prefix . "custom_project";
 	$projects = $wpdb->get_results("SELECT * FROM {$table_name_project}");
 	$table_color = $wpdb->prefix . "custom_project_color";
@@ -261,6 +267,7 @@ if(isset($_GET['deleteID'])) {
 			<form class="staff_timesheet_form">
 				<div class="choose_person">
 					<p class="label">Team Member: </p>
+					 <input type="hidden" id="current-quota-time" value="<?php echo $quota_time; ?>">
 					<select name="person_name" class="person_name">
 						<option selected="" disabled="">-- Select Member --</option>
 						<?php foreach($persons as $person){ 
@@ -502,14 +509,21 @@ if(isset($_GET['deleteID'])) {
 					</ul>
 				</div>
 				<div class="tab-box tabs-container">					
-	<!------------------------------------------------------ MONDAY ------------------------------------------------------->
+				<!-- MONDAY -->
 					<div id="monday" class="tab tab_content <?php echo ($day_now == 'Monday') ? 'active' : ''; ?>" style="display: none;">
 						<input type="hidden" class="tab_date monday_date" value="<?php echo $date_range[0]; ?>" />						
 						<?php 
+
 							$monday_date = str_replace('/', '-', $date_range[0]);
 							$date_format = date("Y-m-d", strtotime($monday_date));
 							$date = new DateTime($date_format);
 							$week = $date->format("W");
+
+							if(strtotime($monday_date) >= strtotime($compare_date_now)){
+								$date_pass = true;
+							}else{
+								$date_pass = false;
+							}
 						?>
 						<input type="hidden" class="tab_week monday_week datepicker_week" value="<?php echo $week; ?>" />
 						<div class="person_task_timesheet">
@@ -658,11 +672,25 @@ if(isset($_GET['deleteID'])) {
 								$total_hour = $format_hour .":". $rounded_minute;
 								$total_hour_decimal = decimalHours($total_hour);
 								$total_hour_format =  gmdate('H:i', floor($total_hour_decimal * 3600));
+
+								if($date_pass == true){
+									$color_status = "gray";
+								}else{
+									if($total_hour_format >= $quota_time){
+										$color_status = "green";
+									}else{
+										$color_status = 'red';
+									}
+								}
+
 							?>
 						</div>
 						<div class="total_hours">
 							<div class="task_total"><h3>TOTAL</h3></div>
-							<div class="task_total_hour"><h3><?php echo $total_hour_format; ?></h3></div>
+							<div class="task_total_hour">
+								<h3><?php echo $total_hour_format; ?></h3>
+								<input type="hidden" name="monday_status_color" value="<?php echo $color_status; ?>">
+							</div>
 						</div>						
 						<div class="clear_add_buttons">							
 							<div style="display:none;" id="clear_kanban_monday" class="button_1 button_import">Clear</div>
@@ -673,7 +701,7 @@ if(isset($_GET['deleteID'])) {
 							<div style="display:none;" class="loader kanban_save_loader"></div>
 						</div>						
 					</div>
-	<!------------------------------------------------------ TUESDAY ------------------------------------------------------->
+					<!-- TUESDAY -->
 					<div id="tuesday" class="tab tab_content <?php echo ($day_now == 'Tuesday') ? 'active' : ''; ?>" style="display: none;">
 						<input type="hidden" class="tab_date tuesday_date" value="<?php echo $date_range[1]; ?>" />
 						<?php 
@@ -681,6 +709,11 @@ if(isset($_GET['deleteID'])) {
 							$date_format = date("Y-m-d", strtotime($tuesday_date));
 							$date = new DateTime($date_format);
 							$week = $date->format("W");
+							if(strtotime($tuesday_date) >= strtotime($compare_date_now)){
+								$date_pass = true;
+							}else{
+								$date_pass = false;
+							}
 						?>
 						<input type="hidden" class="tab_week tuesday_week datepicker_week" value="<?php echo $week; ?>" />
 						<div class="person_task_timesheet">
@@ -829,11 +862,24 @@ if(isset($_GET['deleteID'])) {
 								$total_hour = $format_hour .":". $rounded_minute;
 								$total_hour_decimal = decimalHours($total_hour);
 								$total_hour_format =  gmdate('H:i', floor($total_hour_decimal * 3600));
+
+								if($date_pass == true){
+									$color_status = "gray";
+								}else{
+									if($total_hour_format >= $quota_time){
+										$color_status = "green";
+									}else{
+										$color_status = 'red';
+									}
+								}
 							?>
 						</div>
 						<div class="total_hours">
 							<div class="task_total"><h3>TOTAL</h3></div>
-							<div class="task_total_hour"><h3><?php echo $total_hour_format; ?></h3></div>
+							<div class="task_total_hour">
+								<h3><?php echo $total_hour_format; ?></h3>
+								<input type="hidden" name="tuesday_status_color" value="<?php echo $color_status; ?>">
+							</div>
 						</div>						
 						<div class="clear_add_buttons">							
 							<div style="display:none;" id="clear_kanban_tuesday" class="button_1 button_import">Clear</div>
@@ -845,7 +891,7 @@ if(isset($_GET['deleteID'])) {
 						</div>
 						
 					</div>
-	<!------------------------------------------------------ WEDNESDAY ------------------------------------------------------->
+					<!-- WEDNESDAY -->
 					<div id="wednesday" class="tab tab_content <?php echo ($day_now == 'Wednesday') ? 'active' : ''; ?>" style="display: none;">
 						<input type="hidden" class="tab_date wednesday_date" value="<?php echo $date_range[2]; ?>" />
 						<?php 
@@ -853,6 +899,11 @@ if(isset($_GET['deleteID'])) {
 							$date_format = date("Y-m-d", strtotime($wednesday_date));
 							$date = new DateTime($date_format);
 							$week = $date->format("W");
+							if(strtotime($wednesday_date) >= strtotime($compare_date_now)){
+								$date_pass = true;
+							}else{
+								$date_pass = false;
+							}
 						?>
 						<input type="hidden" class="tab_week wednesday_week datepicker_week" value="<?php echo $week; ?>" />
 						<div class="person_task_timesheet">
@@ -1001,11 +1052,25 @@ if(isset($_GET['deleteID'])) {
 								$total_hour = $format_hour .":". $rounded_minute;
 								$total_hour_decimal = decimalHours($total_hour);
 								$total_hour_format =  gmdate('H:i', floor($total_hour_decimal * 3600));
+
+								if($date_pass == true){
+									$color_status = "gray";
+								}else{
+									if($total_hour_format >= $quota_time){
+										$color_status = "green";
+									}else{
+										$color_status = 'red';
+									}
+								}
+
 							?>
 						</div>
 						<div class="total_hours">
 							<div class="task_total"><h3>TOTAL</h3></div>
-							<div class="task_total_hour"><h3><?php echo $total_hour_format; ?></h3></div>
+							<div class="task_total_hour">
+								<h3><?php echo $total_hour_format; ?></h3>
+								<input type="hidden" name="wednesday_status_color" value="<?php echo $color_status; ?>">
+							</div>
 						</div>						
 						<div class="clear_add_buttons">
 							<div style="display:none;" id="clear_kanban_wednesday" class="button_1 button_import">Clear</div>
@@ -1016,7 +1081,7 @@ if(isset($_GET['deleteID'])) {
 							<div style="display:none;" class="loader kanban_save_loader"></div>
 						</div>						
 					</div>
-	<!------------------------------------------------------ THURSDAY ------------------------------------------------------->
+					<!-- THURSDAY -->
 					<div id="thursday" class="tab tab_content <?php echo ($day_now == 'Thursday') ? 'active' : ''; ?>" style="display: none;">
 						<input type="hidden" class="tab_date thursday_date" value="<?php echo $date_range[3]; ?>" />
 						<?php 
@@ -1024,6 +1089,11 @@ if(isset($_GET['deleteID'])) {
 							$date_format = date("Y-m-d", strtotime($thursday_date));
 							$date = new DateTime($date_format);
 							$week = $date->format("W");
+							if(strtotime($thursday_date) >= strtotime($compare_date_now)){
+								$date_pass = true;
+							}else{
+								$date_pass = false;
+							}
 						?>
 						<input type="hidden" class="tab_week thursday_week datepicker_week" value="<?php echo $week; ?>" />
 						<div class="person_task_timesheet">
@@ -1172,11 +1242,24 @@ if(isset($_GET['deleteID'])) {
 								$total_hour = $format_hour .":". $rounded_minute;
 								$total_hour_decimal = decimalHours($total_hour);
 								$total_hour_format =  gmdate('H:i', floor($total_hour_decimal * 3600));
+
+								if($date_pass == true){
+									$color_status = "gray";
+								}else{
+									if($total_hour_format >= $quota_time){
+										$color_status = "green";
+									}else{
+										$color_status = 'red';
+									}
+								}
 							?>
 						</div>
 						<div class="total_hours">
 							<div class="task_total"><h3>TOTAL</h3></div>
-							<div class="task_total_hour"><h3><?php echo $total_hour_format; ?></h3></div>
+							<div class="task_total_hour">
+								<h3><?php echo $total_hour_format; ?></h3>
+								<input type="hidden" name="thursday_status_color" value="<?php echo $color_status; ?>">
+							</div>
 						</div>
 						<div class="clear_add_buttons">
 							<div style="display:none;" id="clear_kanban_thursday" class="button_1 button_import">Clear</div>
@@ -1187,7 +1270,7 @@ if(isset($_GET['deleteID'])) {
 							<div style="display:none;" class="loader kanban_save_loader"></div>
 						</div>						
 					</div>
-	<!------------------------------------------------------ FRIDAY ------------------------------------------------------->
+					<!-- FRIDAY -->
 					<div id="friday" class="tab tab_content <?php echo ($day_now == 'Friday') ? 'active' : ''; ?>" style="display: none;">
 						<input type="hidden" class="tab_date friday_date" value="<?php echo $date_range[4]; ?>" />
 						<?php 
@@ -1195,6 +1278,12 @@ if(isset($_GET['deleteID'])) {
 							$date_format = date("Y-m-d", strtotime($friday_date));
 							$date = new DateTime($date_format);
 							$week = $date->format("W");
+
+							if(strtotime($friday_date) >= strtotime($compare_date_now)){
+								$date_pass = true;
+							}else{
+								$date_pass = false;
+							}
 						?>
 						<input type="hidden" class="tab_week friday_week datepicker_week" value="<?php echo $week; ?>" />
 						<div class="person_task_timesheet">
@@ -1343,11 +1432,24 @@ if(isset($_GET['deleteID'])) {
 								$total_hour = $format_hour .":". $rounded_minute;
 								$total_hour_decimal = decimalHours($total_hour);
 								$total_hour_format =  gmdate('H:i', floor($total_hour_decimal * 3600));
+
+								if($date_pass == true){
+									$color_status = "gray";
+								}else{
+									if($total_hour_format >= $quota_time){
+										$color_status = "green";
+									}else{
+										$color_status = 'red';
+									}
+								}
 							?>
 						</div>
 						<div class="total_hours">
 							<div class="task_total"><h3>TOTAL</h3></div>
-							<div class="task_total_hour"><h3><?php echo $total_hour_format; ?></h3></div>
+							<div class="task_total_hour">
+								<h3><?php echo $total_hour_format; ?></h3>
+								<input type="hidden" name="friday_status_color" value="<?php echo $color_status; ?>">
+							</div>
 						</div>						
 						<div class="clear_add_buttons">
 							<div style="display:none;" id="clear_kanban_friday" class="button_1 button_import">Clear</div>
@@ -1358,7 +1460,7 @@ if(isset($_GET['deleteID'])) {
 							<div style="display:none;" class="loader kanban_save_loader"></div>
 						</div>						
 					</div>
-	<!------------------------------------------------------ SATURDAY ------------------------------------------------------->
+					<!-- SATURDAY -->
 					<div id="saturday" class="tab tab_content <?php echo ($day_now == 'Saturday') ? 'active' : ''; ?>" style="display: none;">
 						<input type="hidden" class="tab_date saturday_date" value="<?php echo $date_range[5]; ?>" />
 						<?php 
@@ -1366,6 +1468,11 @@ if(isset($_GET['deleteID'])) {
 							$date_format = date("Y-m-d", strtotime($saturday_date));
 							$date = new DateTime($date_format);
 							$week = $date->format("W");
+							if(strtotime($saturday_date) >= strtotime($compare_date_now)){
+								$date_pass = true;
+							}else{
+								$date_pass = false;
+							}
 						?>
 						<input type="hidden" class="tab_week saturday_week datepicker_week" value="<?php echo $week; ?>" />
 						<div class="person_task_timesheet">
@@ -1514,11 +1621,24 @@ if(isset($_GET['deleteID'])) {
 								$total_hour = $format_hour .":". $rounded_minute;
 								$total_hour_decimal = decimalHours($total_hour);
 								$total_hour_format =  gmdate('H:i', floor($total_hour_decimal * 3600));
+
+								if($date_pass == true){
+									$color_status = "gray";
+								}else{
+									if($total_hour_decimal > 0){
+										$color_status = "yellow";
+									}else{
+										// $color_status = 'red';
+									}
+								}
 							?>
 						</div>
 						<div class="total_hours">
 							<div class="task_total"><h3>TOTAL</h3></div>
-							<div class="task_total_hour"><h3><?php echo $total_hour_format; ?></h3></div>
+							<div class="task_total_hour">
+								<h3><?php echo $total_hour_format; ?></h3>
+								<input type="hidden" name="saturday_status_color" value="<?php echo $color_status; ?>">
+							</div>
 						</div>
 						<div class="clear_add_buttons">
 							<div style="display:none;" id="clear_kanban_saturday" class="button_1 button_import">Clear</div>
@@ -1529,7 +1649,7 @@ if(isset($_GET['deleteID'])) {
 							<div style="display:none;" class="loader kanban_save_loader"></div>
 						</div>						
 					</div>
-	<!------------------------------------------------------ SUNDAY ------------------------------------------------------->
+					<!-- SUNDAY -->
 					<div id="sunday" class="tab tab_content <?php echo ($day_now == 'Sunday') ? 'active' : ''; ?>" style="display: none;">
 						<input type="hidden" class="tab_date sunday_date" value="<?php echo $date_range[6]; ?>">
 						<?php 
@@ -1537,6 +1657,11 @@ if(isset($_GET['deleteID'])) {
 							$date_format = date("Y-m-d", strtotime($sunday_date));
 							$date = new DateTime($date_format);
 							$week = $date->format("W");
+							if(strtotime($sunday_date) >= strtotime($compare_date_now)){
+								$date_pass = true;
+							}else{
+								$date_pass = false;
+							}
 						?>
 						<input type="hidden" class="tab_week sunday_week datepicker_week" value="<?php echo $week; ?>" />
 						<div class="person_task_timesheet">
@@ -1685,11 +1810,23 @@ if(isset($_GET['deleteID'])) {
 								$total_hour = $format_hour .":". $rounded_minute;
 								$total_hour_decimal = decimalHours($total_hour);
 								$total_hour_format =  gmdate('H:i', floor($total_hour_decimal * 3600));
+								if($date_pass == true){
+									$color_status = "gray";
+								}else{
+									if($total_hour_format >= $quota_time){
+										$color_status = "yellow";
+									}else{
+										// $color_status = 'red';
+									}
+								}
 							?>
 						</div>
 						<div class="total_hours">
 							<div class="task_total"><h3>TOTAL</h3></div>
-							<div class="task_total_hour"><h3><?php echo $total_hour_format; ?></h3></div>
+							<div class="task_total_hour">
+								<h3><?php echo $total_hour_format; ?></h3>
+								<input type="hidden" name="sunday_status_color" value="<?php echo $color_status; ?>">
+							</div>
 						</div>
 						<div class="clear_add_buttons">
 							<div style="display:none;" id="clear_kanban_sunday" class="button_1 button_import">Clear</div>

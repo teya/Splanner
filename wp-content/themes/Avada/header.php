@@ -1293,6 +1293,7 @@ jQuery(document).ready(function(){
 	jQuery('.current_seo_filter .default_arrow_container .previous_arrow').click(function(){
 		var current_year = jQuery('.current_seo_filter .current_year').val();
 		var current_month = jQuery('.current_seo_filter .current_month').val();
+		var filter_type = jQuery('.current_seo_filter_select').val();
 		if(current_month == 01){
 			var filter_month = 12;
 			var filter_year = parseInt(current_year) - 1;
@@ -1301,7 +1302,7 @@ jQuery(document).ready(function(){
 			var filter_year = current_year;
 		}
 		var filter_details = filter_year +"_"+ filter_month;
-		pm_current_seo_filter(filter_details);
+		pm_current_seo_filter(filter_details, filter_type);
 		jQuery('.current_seo_filter .current_year').val(filter_year);
 		jQuery('.current_seo_filter .current_month').val(filter_month);				
 		jQuery('.section .current_seo_filter .report_top_label h1').text(get_month_name(filter_month.toString(), 'false') +" "+ filter_year);
@@ -1318,7 +1319,7 @@ jQuery(document).ready(function(){
 			var filter_year = current_year;
 		}
 		var filter_details = filter_year +"_"+ filter_month;
-		pm_current_seo_filter(filter_details);
+		pm_current_seo_filter(filter_details, filter_type);
 		jQuery('.current_seo_filter .current_year').val(filter_year);
 		jQuery('.current_seo_filter .current_month').val(filter_month);
 		jQuery('.section .current_seo_filter .report_top_label h1').text(get_month_name(filter_month.toString(), 'false') +" "+ filter_year);
@@ -1331,14 +1332,14 @@ jQuery(document).ready(function(){
 			jQuery('.current_seo_filter .arrow_container').show();
 			var current_year = jQuery('.current_seo_filter .current_year').val();
 			var filter_details = current_year +"_"+ 'null';
-			pm_current_seo_filter(filter_details);
+			pm_current_seo_filter(filter_details, filter_type);
 			jQuery('.section .current_seo_filter .report_top_label h1').text(current_year);
 			
 			jQuery('.current_seo_filter .previous_arrow').click(function(){
 				var current_year = jQuery('.current_seo_filter .current_year').val();
 				var filter_year = parseInt(current_year) - 1;
 				var filter_details = filter_year +"_"+ 'null';
-				pm_current_seo_filter(filter_details);
+				pm_current_seo_filter(filter_details, filter_type);
 				jQuery('.current_seo_filter .current_year').val(filter_year);
 				jQuery('.section .current_seo_filter .report_top_label h1').text(filter_year);
 			});
@@ -1347,7 +1348,7 @@ jQuery(document).ready(function(){
 				var current_year = jQuery('.current_seo_filter .current_year').val();
 				var filter_year = parseInt(current_year) + 1;
 				var filter_details = filter_year +"_"+ 'null';
-				pm_current_seo_filter(filter_details);
+				pm_current_seo_filter(filter_details, filter_type);
 				jQuery('.current_seo_filter .current_year').val(filter_year);
 				jQuery('.section .current_seo_filter .report_top_label h1').text(filter_year);
 			});
@@ -1358,7 +1359,7 @@ jQuery(document).ready(function(){
 			var current_year = jQuery('.current_seo_filter .current_year').val();
 			var current_month = jQuery('.current_seo_filter .current_month').val();
 			var filter_details = current_year +"_"+ current_month;
-			pm_current_seo_filter(filter_details);			
+			pm_current_seo_filter(filter_details, filter_type);			
 			jQuery('.section .current_seo_filter .report_top_label h1').text(get_month_name(current_month.toString(), 'true') +" "+ current_year);
 			
 			jQuery('.current_seo_filter .previous_arrow').click(function(){
@@ -1372,7 +1373,7 @@ jQuery(document).ready(function(){
 					var filter_year = current_year;
 				}
 				var filter_details = filter_year +"_"+ filter_month;
-				pm_current_seo_filter(filter_details);
+				pm_current_seo_filter(filter_details, filter_type);
 				jQuery('.current_seo_filter .current_year').val(filter_year);
 				jQuery('.current_seo_filter .current_month').val(filter_month);				
 				jQuery('.section .current_seo_filter .report_top_label h1').text(get_month_name(filter_month.toString(), 'false') +" "+ filter_year);
@@ -1389,7 +1390,7 @@ jQuery(document).ready(function(){
 					var filter_year = current_year;
 				}
 				var filter_details = filter_year +"_"+ filter_month;
-				pm_current_seo_filter(filter_details);
+				pm_current_seo_filter(filter_details, filter_type);
 				jQuery('.current_seo_filter .current_year').val(filter_year);
 				jQuery('.current_seo_filter .current_month').val(filter_month);
 				jQuery('.section .current_seo_filter .report_top_label h1').text(get_month_name(filter_month.toString(), 'false') +" "+ filter_year);
@@ -1397,7 +1398,7 @@ jQuery(document).ready(function(){
 		}
 	});
 });
-function pm_current_seo_filter(filter_details){
+function pm_current_seo_filter(filter_details, filter_type){
 	jQuery('.current_seo_filter_loader').show();
 	jQuery.ajax({
 		type: "POST",
@@ -1426,6 +1427,13 @@ function pm_current_seo_filter(filter_details){
 				var prject_description_seo = project_description_split[0];
 				var prject_description_dev = project_description_split[1];
 				var monthly_plans_budget = seo_filter_details_split[12];
+
+				console.log(filter_type);
+
+				if(filter_type == 'Year'){
+					monthly_plans_budget = monthly_plans_budget * 12;
+				}
+
 				if(revenue_class == 'redbg'){
 					revenue_class = 'red_bg';
 				}else if(revenue_class == 'greenbg'){

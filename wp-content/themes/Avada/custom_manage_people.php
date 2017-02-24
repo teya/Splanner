@@ -33,11 +33,11 @@ if(isset($_GET['deleteID'])) {
 					$person_fullname = $person->person_first_name . ' ' . $person->person_last_name;
 			?>
 			<div class="display_section display_section_archive_<?php echo $person->ID; ?> delete_ajax_<?php echo $person->ID; ?>">
-				<div class="display_list" onclick="window.open('<?php echo get_site_url(); ?>/person-information/?id=<?php echo $person->ID ?>');">
+				<div class="display_list">
 					<?php if($current_user_name == $person_fullname || $current_user_role == 'administrator'){ ?>
 					<a class="button_2 display_button" href="<?php echo get_site_url(); ?>/edit-people/?editID=<?php echo $person->ID ?>">Edit</a>
 					<?php } ?>
-					<h3 id="name_<?php echo $person->ID; ?>" class="display_subtitle float_left"><?php echo $person_fullname; ?></h3>
+					<h3 onclick="window.open('<?php echo get_site_url(); ?>/person-information/?id=<?php echo $person->ID ?>');" id="name_<?php echo $person->ID; ?>" class="display_subtitle float_left"><?php echo $person_fullname; ?></h3>
 					<p class="display_hourly_rate">(kr <?php echo $person->person_hourly_rate; ?>/hr)</p>
 					<p class="display_permission"><?php echo $person->person_permission; ?></p>			
 				</div>
@@ -69,11 +69,11 @@ if(isset($_GET['deleteID'])) {
 					$person_fullname = $person->person_first_name . ' ' . $person->person_last_name;
 				?>
 				<div class="display_section display_section_unarchive_<?php echo $person->ID; ?> delete_ajax_<?php echo $person->ID; ?>">
-					<div class="display_list" onclick="window.open('/person-information/?id=<?php echo $person->ID ?>');">
+					<div class="display_list">
 						<?php if($current_user_name == $person_fullname || $current_user_role == 'administrator'){ ?>
 							<a class="button_2 display_button" href="<?php echo get_site_url(); ?>/edit-people/?editID=<?php echo $person->ID ?>">Edit</a>
 						<?php } ?>
-						<h3 id="name_<?php echo $person->ID; ?>" class="display_subtitle float_left"><?php echo $person_fullname; ?></h3>
+						<h3 onclick="window.open('/person-information/?id=<?php echo $person->ID ?>');" id="name_<?php echo $person->ID; ?>" class="display_subtitle float_left"><?php echo $person_fullname; ?></h3>
 						<p class="display_hourly_rate">(kr <?php echo $person->person_hourly_rate; ?>/hr)</p>
 						<p class="display_permission"><?php echo $person->person_permission; ?></p>			
 					</div>

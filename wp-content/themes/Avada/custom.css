@@ -376,9 +376,34 @@ p.right_label{
 	padding: 6px 15px;    
 	text-shadow: 0 1px 0 #FFFFFF;    
 }
-
-.tab-holder .tabs li.active a{	 border-color: #EAEAEA !important;}
-
+.green-day{
+	background: -webkit-linear-gradient(#C9FFAD, #ACFC83) repeat scroll 0 0 rgba(0, 0, 0, 0.6) !important;
+	background: -o-linear-gradient(#C9FFAD, #ACFC83) repeat scroll 0 0 rgba(0, 0, 0, 0.6) !important;
+	background: linear-gradient(#C9FFAD, #ACFC83) repeat scroll 0 0 rgba(0, 0, 0, 0.6) !important;
+}
+.red-day{
+	background: -webkit-linear-gradient(#FFD1D4, #FFADB3) repeat scroll 0 0 rgba(0, 0, 0, 0.6) !important;
+	background: -o-linear-gradient(#FFD1D4, #FFADB3) repeat scroll 0 0 rgba(0, 0, 0, 0.6) !important;
+	background: linear-gradient(#FFD1D4, #FFADB3) repeat scroll 0 0 rgba(0, 0, 0, 0.6) !important;
+}
+.gray-day{
+	background: -webkit-linear-gradient(#cecece, #a5a5a5) repeat scroll 0 0 rgba(0, 0, 0, 0) !important;
+	background: -o-linear-gradient(#cecece, #a5a5a5) repeat scroll 0 0 rgba(0, 0, 0, 0) !important;
+	background: linear-gradient(#cecece, #a5a5a5) repeat scroll 0 0 rgba(0, 0, 0, 0) !important;	
+}
+.yellow-day{
+	background: -webkit-linear-gradient(#f8f293, #faf051) repeat scroll 0 0 rgba(0, 0, 0, 0.6) !important;
+	background: -o-linear-gradient(#f8f293, #faf051) repeat scroll 0 0 rgba(0, 0, 0, 0.6) !important;
+	background: linear-gradient(#f8f293, #faf051) repeat scroll 0 0 rgba(0, 0, 0, 0.6) !important;
+}
+.tab-holder .tabs li.active a{	
+	border-color: #EAEAEA !important;
+	background: rgba(151, 215, 252, 1) !important;
+	font-weight: 600 !important;
+}
+.tab-holder .tabs li.active a.red-day{
+	background: rgba(151, 215, 252, 1) !important;
+}
 .tabs_li.active a{		
 	background: none repeat scroll 0 0 #EAEAEA;    
 	box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1) inset;    
@@ -795,7 +820,7 @@ figure.person_image{
 }
 
 .timesheet .tabs_li .day_date{
-	color: #a9a9a9;
+	color: #424242;
     font-size: 10px;
     position: absolute;
     right: 3px;
@@ -6801,6 +6826,9 @@ body.single .post-content li{
 #invoice-table tr td:nth-child(4), #invoice-table tr td:nth-child(5){
 	text-align: right;;
 }
+#invoice-table tr td.clientname{
+	padding-left: 10px;
+}
 .update_client_total_hours{
 	background-image: url("img/check.png");
 	background-size: 20px auto;
@@ -7050,4 +7078,33 @@ body.single .post-content li{
 }
 #planned_projects{
 	margin-top: 20px;
+}
+#add_new_invoice_entry_dialog form table{
+	width: 100%;
+}
+#add_new_invoice_entry_dialog form table tr td{
+	padding: 5px;
+}
+#add_new_invoice_entry_dialog form table tr td select, 
+#add_new_invoice_entry_dialog form table tr td input{
+	min-width: 170px;
+}
+.dialog-footer{
+	position: absolute;
+	bottom: 3%;
+	width: 100%;
+	margin-left: -30px;
+}
+.footer-buttons{
+	float: right;
+}
+.footer-buttons li{
+	display: inline-block;
+}
+.add_invoice_new_entry_loader{
+	margin-right: 10px;
+	margin-bottom: -4px;	
+}
+#add_invoice_new_entry_message{
+	color: red;
 }
