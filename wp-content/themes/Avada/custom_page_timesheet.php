@@ -163,9 +163,9 @@ $current_user_role = $current_user->roles['0'];
 	global $wpdb;			
 	$table_name = $wpdb->prefix . "custom_timesheet";
 	$table_name_client = $wpdb->prefix . "custom_client"; 
-	$clients = $wpdb->get_results("SELECT * FROM {$table_name_client}");
+	$clients = $wpdb->get_results("SELECT * FROM {$table_name_client} ORDER BY client_name ASC");
 	$table_name_task = $wpdb->prefix . "custom_task";
-	$tasks = $wpdb->get_results("SELECT * FROM {$table_name_task}");
+	$tasks = $wpdb->get_results("SELECT * FROM {$table_name_task} ORDER BY task_name ASC");
 	$table_name_person = $wpdb->prefix . "custom_person";
 	$persons = $wpdb->get_results("SELECT * FROM {$table_name_person} WHERE person_status='0'");
 	$current_person = $wpdb->get_row("SELECT * FROM {$table_name_person} WHERE wp_user_id = ".$current_user->id);
@@ -173,7 +173,7 @@ $current_user_role = $current_user->roles['0'];
 	$table_name_project = $wpdb->prefix . "custom_project";
 	$projects = $wpdb->get_results("SELECT * FROM {$table_name_project}");
 	$table_color = $wpdb->prefix . "custom_project_color";
-	$colors = $wpdb->get_results("SELECT * FROM {$table_color}");
+	$colors = $wpdb->get_results("SELECT * FROM {$table_color} ORDER BY project_category ASC");
 ?>
 <?php 
 	$timesheet_entries = $wpdb->get_results("SELECT * FROM {$table_name}");
@@ -268,6 +268,7 @@ if(isset($_GET['deleteID'])) {
 				<div class="choose_person">
 					<p class="label">Team Member: </p>
 					 <input type="hidden" id="current-quota-time" value="<?php echo $quota_time; ?>">
+					 <input type="hidden" id="current-person-id" value="<?php echo $current_person->wp_user_id; ?>">
 					<select name="person_name" class="person_name">
 						<option selected="" disabled="">-- Select Member --</option>
 						<?php foreach($persons as $person){ 
@@ -557,6 +558,15 @@ if(isset($_GET['deleteID'])) {
 								?>
 								<li class="data_list_monday timesheet_data_id_<?php echo $import_item->ID?>"><?php echo $task_name_trimmed; ?></li>
 								<?php endforeach; ?>
+								<li class="">
+									<select name="" class="new_row_entry_taskname">
+										<?php
+											foreach($tasks as $task){
+												echo "<option>".$task->task_name."</option>";
+											}
+										?>
+									</select>
+								</li>
 							</div>
 							<div class="task_hour data_title header_titles">
 								<h3 class="top_label">Hours</h3>
@@ -566,12 +576,24 @@ if(isset($_GET['deleteID'])) {
 								?>
 								<li class="data_list_monday timesheet_data_id_<?php echo $import_item->ID?>"><?php echo (!empty($task_hour)) ? $task_hour : "--" ; ?></li>
 								<?php endforeach; ?>
+								<li class="">
+									<input type="text" class="new_row_entry_hours">
+								</li>
 							</div>
 							<div class="task_label data_title header_titles">
 								<h3 class="top_label">Client</h3>
 								<?php foreach ($import_data as $import_item): ?>
 								<li class="client_info data_list_monday timesheet_data_id_<?php echo $import_item->ID?>"><?php echo (!empty($import_item->task_label)) ? $import_item->task_label : "--" ; ?></li>
 								<?php endforeach; ?>
+								<li class="">
+									<select name="" class="new_row_entry_client">
+										<?php 
+											foreach ($clients as $client) {
+												echo '<option>'.$client->client_name.'</option>';
+											}
+										?>
+									</select>
+								</li>
 							</div>
 							<div class="task_color data_title header_titles">
 								<h3 class="top_label">Project</h3>
@@ -590,6 +612,15 @@ if(isset($_GET['deleteID'])) {
 								?>									
 								<li class="data_list_monday timesheet_data_id_<?php echo $import_item->ID?>"><?php echo $task_category; ?></li>
 								<?php } ?>
+								<li class="">
+									<select name="" id="" class="new_row_entry_project">
+										<?php 
+											foreach($colors as $project){
+												echo "<option value='".$project->project_color."'>".$project->project_category."</option>";
+											}
+										?>
+									</select>
+								</li>
 							</div>
 							<!--<div class="task_person data_title header_titles">
 								<h3 class="top_label">Done by</h3>
@@ -617,6 +648,9 @@ if(isset($_GET['deleteID'])) {
 									</div>
 								</div>
 								<?php endforeach; ?>
+								<div class="accordian_input">
+									<input type="text" class="new_row_entry_description">
+								</div>
 							</div>
 							<div class="task_edit">
 								<div class="top_label">&nbsp;<div style="display: none;" class="loader timesheet_loader"></div></div>
@@ -625,6 +659,10 @@ if(isset($_GET['deleteID'])) {
 									<div id="edit_kanban_monday_<?php echo $import_item->ID?>" class="button_1 edit_button edit_kanban">E</div>
 								</li>
 								<?php endforeach; ?>
+								<li class="">
+									<div class="button_1 add_new_row_entry_btn">+</div>
+									<div style="display: none;" class="loader loader-add-new-entry"></div>
+								</li>
 							</div>	
 							<div class="task_delete">
 								<h3 class="top_label">&nbsp;&nbsp;&nbsp;&nbsp;</h3>
@@ -633,6 +671,9 @@ if(isset($_GET['deleteID'])) {
 									<div id="delete_kanban_monday_<?php echo $import_item->ID?>" class="button_1 delete_button delete_edit_kanban">D</div>
 								</li>
 								<?php endforeach; ?>
+								<li class="">
+									<div class="button_1 delete_new_row_entry_btn">D</div>
+								</li>
 							</div>
 							<div class="task_done_today">
 								<h5 class="top_label">Done Today<div class="button_help"></div></h5>
@@ -641,6 +682,9 @@ if(isset($_GET['deleteID'])) {
 									<div id="done_today_kanban_monday_<?php echo $import_item->ID; ?>" class="button_1 done_today_button done_today_kanban">Done Today</div>
 								</li>
 								<?php endforeach; ?>
+								<li>
+									&nbsp;
+								</li>
 								<p style="display: none;" class="help_note">If task is not completely done, you can specify which task were done today.</p>
 							</div>						
 							<?php	
@@ -747,6 +791,15 @@ if(isset($_GET['deleteID'])) {
 								?>
 								<li class="data_list_tuesday timesheet_data_id_<?php echo $import_item->ID?>"><?php echo $task_name_trimmed; ?></li>
 								<?php endforeach; ?>
+								<li class="">
+									<select name="" class="new_row_entry_taskname">
+										<?php
+											foreach($tasks as $task){
+												echo "<option>".$task->task_name."</option>";
+											}
+										?>
+									</select>
+								</li>
 							</div>
 							<div class="task_hour data_title header_titles">
 								<h3 class="top_label">Hours</h3>
@@ -756,12 +809,24 @@ if(isset($_GET['deleteID'])) {
 								?>
 								<li class="data_list_tuesday timesheet_data_id_<?php echo $import_item->ID?>"><?php echo (!empty($task_hour)) ? $task_hour : "--" ; ?></li>
 								<?php endforeach; ?>
+								<li class="">
+									<input type="text" class="new_row_entry_hours">
+								</li>
 							</div>
 							<div class="task_label data_title header_titles">
 								<h3 class="top_label">Client</h3>
 								<?php foreach ($import_data as $import_item): ?>
 								<li class="client_info data_list_tuesday timesheet_data_id_<?php echo $import_item->ID?>"><?php echo (!empty($import_item->task_label)) ? $import_item->task_label : "--" ; ?></li>
 								<?php endforeach; ?>
+								<li class="">
+									<select name="" class="new_row_entry_client">
+										<?php 
+											foreach ($clients as $client) {
+												echo '<option>'.$client->client_name.'</option>';
+											}
+										?>
+									</select>
+								</li>
 							</div>
 							<div class="task_color data_title header_titles">
 								<h3 class="top_label">Project</h3>
@@ -780,6 +845,15 @@ if(isset($_GET['deleteID'])) {
 								?>									
 								<li class="data_list_tuesday timesheet_data_id_<?php echo $import_item->ID?>"><?php echo $task_category; ?></li>
 								<?php } ?>
+								<li class="">
+									<select name="" id="" class="new_row_entry_project">
+										<?php 
+											foreach($colors as $project){
+												echo "<option value='".$project->project_color."'>".$project->project_category."</option>";
+											}
+										?>
+									</select>
+								</li>
 							</div>
 							<!--<div class="task_person data_title header_titles">
 								<h3 class="top_label">Done by</h3>
@@ -807,6 +881,9 @@ if(isset($_GET['deleteID'])) {
 									</div>
 								</div>
 								<?php endforeach; ?>
+								<div class="accordian_input">
+									<input type="text" class="new_row_entry_description">
+								</div>
 							</div>
 							<div class="task_edit">
 								<div class="top_label">&nbsp;<div style="display: none;" class="loader timesheet_loader"></div></div>
@@ -815,6 +892,10 @@ if(isset($_GET['deleteID'])) {
 									<div id="edit_kanban_tuesday_<?php echo $import_item->ID?>" class="button_1 edit_button edit_kanban">E</div>
 								</li>								
 								<?php endforeach; ?>
+								<li class="">
+									<div class="button_1 add_new_row_entry_btn">+</div>
+									<div style="display: none;" class="loader loader-add-new-entry"></div>
+								</li>
 							</div>													
 							<div class="task_delete">
 								<h3 class="top_label">&nbsp;&nbsp;&nbsp;&nbsp;</h3>
@@ -823,6 +904,9 @@ if(isset($_GET['deleteID'])) {
 									<div id="delete_kanban_tuesday_<?php echo $import_item->ID?>" class="button_1 delete_button delete_edit_kanban">D</div>
 								</li>
 								<?php endforeach; ?>
+								<li class="">
+									<div class="button_1 delete_new_row_entry_btn">D</div>
+								</li>
 							</div>
 							<div class="task_done_today">
 								<h5 class="top_label">Done Today<div class="button_help"></div></h5>
@@ -831,6 +915,9 @@ if(isset($_GET['deleteID'])) {
 									<div id="done_today_kanban_tuesday_<?php echo $import_item->ID; ?>" class="button_1 done_today_button done_today_kanban">Done Today</div>
 								</li>
 								<?php endforeach; ?>
+								<li>
+									&nbsp;
+								</li>
 								<p style="display: none;" class="help_note">If task is not completely done, you can specify which task were done today.</p>
 							</div>	
 							<?php	
@@ -937,6 +1024,15 @@ if(isset($_GET['deleteID'])) {
 								?>
 								<li class="data_list_wednesday timesheet_data_id_<?php echo $import_item->ID?>"><?php echo $task_name_trimmed; ?></li>
 								<?php endforeach; ?>
+								<li class="">
+									<select name="" class="new_row_entry_taskname">
+										<?php
+											foreach($tasks as $task){
+												echo "<option>".$task->task_name."</option>";
+											}
+										?>
+									</select>
+								</li>
 							</div>
 							<div class="task_hour data_title header_titles">
 								<h3 class="top_label">Hours</h3>
@@ -946,12 +1042,24 @@ if(isset($_GET['deleteID'])) {
 								?>
 								<li class="data_list_wednesday timesheet_data_id_<?php echo $import_item->ID?>"><?php echo (!empty($task_hour)) ? $task_hour : "--" ; ?></li>
 								<?php endforeach; ?>
+								<li class="">
+									<input type="text" class="new_row_entry_hours">
+								</li>
 							</div>
 							<div class="task_label data_title header_titles">
 								<h3 class="top_label">Client</h3>
 								<?php foreach ($import_data as $import_item): ?>
 								<li class="client_info data_list_wednesday timesheet_data_id_<?php echo $import_item->ID?>"><?php echo (!empty($import_item->task_label)) ? $import_item->task_label : "--" ; ?></li>
 								<?php endforeach; ?>
+								<li class="">
+									<select name="" class="new_row_entry_client">
+										<?php 
+											foreach ($clients as $client) {
+												echo '<option>'.$client->client_name.'</option>';
+											}
+										?>
+									</select>
+								</li>
 							</div>
 							<div class="task_color data_title header_titles">
 								<h3 class="top_label">Project</h3>
@@ -970,6 +1078,15 @@ if(isset($_GET['deleteID'])) {
 								?>									
 								<li class="data_list_wednesday timesheet_data_id_<?php echo $import_item->ID?>"><?php echo $task_category; ?></li>
 								<?php } ?>
+								<li class="">
+									<select name="" id="" class="new_row_entry_project">
+										<?php 
+											foreach($colors as $project){
+												echo "<option value='".$project->project_color."'>".$project->project_category."</option>";
+											}
+										?>
+									</select>
+								</li>
 							</div>
 							<!--<div class="task_person data_title header_titles">
 								<h3 class="top_label">Done by</h3>
@@ -997,6 +1114,9 @@ if(isset($_GET['deleteID'])) {
 									</div>
 								</div>
 								<?php endforeach; ?>
+								<div class="accordian_input">
+									<input type="text" class="new_row_entry_description">
+								</div>
 							</div>
 							<div class="task_edit">
 								<div class="top_label">&nbsp;<div style="display: none;" class="loader timesheet_loader"></div></div>
@@ -1005,6 +1125,10 @@ if(isset($_GET['deleteID'])) {
 									<div id="edit_kanban_wednesday_<?php echo $import_item->ID?>" class="button_1 edit_button edit_kanban">E</div>
 								</li>								
 								<?php endforeach; ?>
+								<li class="">
+									<div class="button_1 add_new_row_entry_btn">+</div>
+									<div style="display: none;" class="loader loader-add-new-entry"></div>
+								</li>
 							</div>	
 							<div class="task_delete">
 								<h3 class="top_label">&nbsp;&nbsp;&nbsp;&nbsp;</h3>
@@ -1013,6 +1137,9 @@ if(isset($_GET['deleteID'])) {
 									<div id="delete_kanban_wednesday_<?php echo $import_item->ID?>" class="button_1 delete_button delete_edit_kanban">D</div>
 								</li>
 								<?php endforeach; ?>
+								<li class="">
+									<div class="button_1 delete_new_row_entry_btn">D</div>
+								</li>
 							</div>
 							<div class="task_done_today">
 								<h5 class="top_label">Done Today<div class="button_help"></div></h5>
@@ -1021,6 +1148,9 @@ if(isset($_GET['deleteID'])) {
 									<div id="done_today_kanban_wednesday_<?php echo $import_item->ID; ?>" class="button_1 done_today_button done_today_kanban">Done Today</div>
 								</li>
 								<?php endforeach; ?>
+								<li>
+									&nbsp;
+								</li>
 								<p style="display: none;" class="help_note">If task is not completely done, you can specify which task were done today.</p>
 							</div>		
 							<?php	
@@ -1127,6 +1257,15 @@ if(isset($_GET['deleteID'])) {
 								?>
 								<li class="data_list_thursday timesheet_data_id_<?php echo $import_item->ID?>"><?php echo $task_name_trimmed; ?></li>
 								<?php endforeach; ?>
+								<li class="">
+									<select name="" class="new_row_entry_taskname">
+										<?php
+											foreach($tasks as $task){
+												echo "<option>".$task->task_name."</option>";
+											}
+										?>
+									</select>
+								</li>
 							</div>
 							<div class="task_hour data_title header_titles">
 								<h3 class="top_label">Hours</h3>
@@ -1136,12 +1275,24 @@ if(isset($_GET['deleteID'])) {
 								?>
 								<li class="data_list_thursday timesheet_data_id_<?php echo $import_item->ID?>"><?php echo (!empty($task_hour)) ? $task_hour : "--" ; ?></li>
 								<?php endforeach; ?>
+								<li class="">
+									<input type="text" class="new_row_entry_hours">
+								</li>
 							</div>
 							<div class="task_label data_title header_titles">
 								<h3 class="top_label">Client</h3>
 								<?php foreach ($import_data as $import_item): ?>
 								<li class="client_info data_list_thursday timesheet_data_id_<?php echo $import_item->ID?>"><?php echo (!empty($import_item->task_label)) ? $import_item->task_label : "--" ; ?></li>
 								<?php endforeach; ?>
+								<li class="">
+									<select name="" class="new_row_entry_client">
+										<?php 
+											foreach ($clients as $client) {
+												echo '<option>'.$client->client_name.'</option>';
+											}
+										?>
+									</select>
+								</li>
 							</div>
 							<div class="task_color data_title header_titles">
 								<h3 class="top_label">Project</h3>
@@ -1160,6 +1311,15 @@ if(isset($_GET['deleteID'])) {
 								?>									
 								<li class="data_list_thursday timesheet_data_id_<?php echo $import_item->ID?>"><?php echo $task_category; ?></li>
 								<?php } ?>
+								<li class="">
+									<select name="" id="" class="new_row_entry_project">
+										<?php 
+											foreach($colors as $project){
+												echo "<option value='".$project->project_color."'>".$project->project_category."</option>";
+											}
+										?>
+									</select>
+								</li>
 							</div>
 							<!--<div class="task_person data_title header_titles">						
 								<h3 class="top_label">Done by</h3>
@@ -1187,6 +1347,9 @@ if(isset($_GET['deleteID'])) {
 									</div>
 								</div>
 								<?php endforeach; ?>
+								<div class="accordian_input">
+									<input type="text" class="new_row_entry_description">
+								</div>
 							</div>
 							<div class="task_edit">
 								<div class="top_label">&nbsp;<div style="display: none;" class="loader timesheet_loader"></div></div>
@@ -1195,6 +1358,10 @@ if(isset($_GET['deleteID'])) {
 									<div id="edit_kanban_thursday_<?php echo $import_item->ID?>" class="button_1 edit_button edit_kanban">E</div>
 								</li>								
 								<?php endforeach; ?>
+								<li class="">
+									<div class="button_1 add_new_row_entry_btn">+</div>
+									<div style="display: none;" class="loader loader-add-new-entry"></div>
+								</li>
 							</div>	
 							<div class="task_delete">
 								<h3 class="top_label">&nbsp;&nbsp;&nbsp;&nbsp;</h3>
@@ -1203,6 +1370,9 @@ if(isset($_GET['deleteID'])) {
 									<div id="delete_kanban_thursday_<?php echo $import_item->ID?>" class="button_1 delete_button delete_edit_kanban">D</div>
 								</li>
 								<?php endforeach; ?>
+								<li class="">
+									<div class="button_1 delete_new_row_entry_btn">D</div>
+								</li>
 							</div>
 							<div class="task_done_today">
 								<h5 class="top_label">Done Today<div class="button_help"></div></h5>
@@ -1211,6 +1381,9 @@ if(isset($_GET['deleteID'])) {
 									<div id="done_today_kanban_thursday_<?php echo $import_item->ID; ?>" class="button_1 done_today_button done_today_kanban">Done Today</div>
 								</li>
 								<?php endforeach; ?>
+								<li>
+									&nbsp;
+								</li>
 								<p style="display: none;" class="help_note">If task is not completely done, you can specify which task were done today.</p>
 							</div>
 							<?php	
@@ -1317,6 +1490,15 @@ if(isset($_GET['deleteID'])) {
 								?>
 								<li class="data_list_friday timesheet_data_id_<?php echo $import_item->ID?>"><?php echo $task_name_trimmed; ?></li>
 								<?php endforeach; ?>
+								<li class="">
+									<select name="" class="new_row_entry_taskname">
+										<?php
+											foreach($tasks as $task){
+												echo "<option>".$task->task_name."</option>";
+											}
+										?>
+									</select>
+								</li>
 							</div>
 							<div class="task_hour data_title header_titles">
 								<h3 class="top_label">Hours</h3>
@@ -1326,12 +1508,24 @@ if(isset($_GET['deleteID'])) {
 								?>
 								<li class="data_list_friday timesheet_data_id_<?php echo $import_item->ID?>"><?php echo (!empty($task_hour)) ? $task_hour : "--" ; ?></li>
 								<?php endforeach; ?>
+								<li class="">
+									<input type="text" class="new_row_entry_hours">
+								</li>
 							</div>
 							<div class="task_label data_title header_titles">
 								<h3 class="top_label">Client</h3>
 								<?php foreach ($import_data as $import_item): ?>
 								<li class="client_info data_list_friday timesheet_data_id_<?php echo $import_item->ID?>"><?php echo (!empty($import_item->task_label)) ? $import_item->task_label : "--" ; ?></li>
 								<?php endforeach; ?>
+								<li class="">
+									<select name="" class="new_row_entry_client">
+										<?php 
+											foreach ($clients as $client) {
+												echo '<option>'.$client->client_name.'</option>';
+											}
+										?>
+									</select>
+								</li>
 							</div>
 							<div class="task_color data_title header_titles">
 								<h3 class="top_label">Project</h3>
@@ -1350,6 +1544,15 @@ if(isset($_GET['deleteID'])) {
 								?>									
 								<li class="data_list_friday timesheet_data_id_<?php echo $import_item->ID?>"><?php echo $task_category; ?></li>
 								<?php } ?>
+								<li class="">
+									<select name="" id="" class="new_row_entry_project">
+										<?php 
+											foreach($colors as $project){
+												echo "<option value='".$project->project_color."'>".$project->project_category."</option>";
+											}
+										?>
+									</select>
+								</li>
 							</div>
 							<!--<div class="task_person data_title header_titles">
 								<h3 class="top_label">Done by</h3>
@@ -1377,6 +1580,9 @@ if(isset($_GET['deleteID'])) {
 									</div>
 								</div>
 								<?php endforeach; ?>
+								<div class="accordian_input">
+									<input type="text" class="new_row_entry_description">
+								</div>
 							</div>
 							<div class="task_edit">
 								<div class="top_label">&nbsp;<div style="display: none;" class="loader timesheet_loader"></div></div>
@@ -1385,6 +1591,10 @@ if(isset($_GET['deleteID'])) {
 									<div id="edit_kanban_friday_<?php echo $import_item->ID?>" class="button_1 edit_button edit_kanban">E</div>
 								</li>								
 								<?php endforeach; ?>
+								<li class="">
+									<div class="button_1 add_new_row_entry_btn">+</div>
+									<div style="display: none;" class="loader loader-add-new-entry"></div>
+								</li>
 							</div>	
 							<div class="task_delete">
 								<h3 class="top_label">&nbsp;&nbsp;&nbsp;&nbsp;</h3>
@@ -1393,6 +1603,9 @@ if(isset($_GET['deleteID'])) {
 									<div id="delete_kanban_friday_<?php echo $import_item->ID?>" class="button_1 delete_button delete_edit_kanban">D</div>
 								</li>
 								<?php endforeach; ?>
+								<li class="">
+									<div class="button_1 delete_new_row_entry_btn">D</div>
+								</li>
 							</div>
 							<div class="task_done_today">
 								<h5 class="top_label">Done Today<div class="button_help"></div></h5>
@@ -1401,6 +1614,9 @@ if(isset($_GET['deleteID'])) {
 									<div id="done_today_kanban_friday_<?php echo $import_item->ID; ?>" class="button_1 done_today_button done_today_kanban">Done Today</div>
 								</li>
 								<?php endforeach; ?>
+								<li>
+									&nbsp;
+								</li>
 								<p style="display: none;" class="help_note">If task is not completely done, you can specify which task were done today.</p>
 							</div>
 							<?php	
@@ -1506,6 +1722,15 @@ if(isset($_GET['deleteID'])) {
 								?>
 								<li class="data_list_saturday timesheet_data_id_<?php echo $import_item->ID?>"><?php echo $task_name_trimmed; ?></li>
 								<?php endforeach; ?>
+								<li class="">
+									<select name="" class="new_row_entry_taskname">
+										<?php
+											foreach($tasks as $task){
+												echo "<option>".$task->task_name."</option>";
+											}
+										?>
+									</select>
+								</li>
 							</div>
 							<div class="task_hour data_title header_titles">
 								<h3 class="top_label">Hours</h3>
@@ -1515,12 +1740,24 @@ if(isset($_GET['deleteID'])) {
 								?>
 								<li class="data_list_saturday timesheet_data_id_<?php echo $import_item->ID?>"><?php echo (!empty($task_hour)) ? $task_hour : "--" ; ?></li>
 								<?php endforeach; ?>
+								<li class="">
+									<input type="text" class="new_row_entry_hours">
+								</li>
 							</div>
 							<div class="task_label data_title header_titles">
 								<h3 class="top_label">Client</h3>
 								<?php foreach ($import_data as $import_item): ?>
 								<li class="client_info data_list_saturday timesheet_data_id_<?php echo $import_item->ID?>"><?php echo (!empty($import_item->task_label)) ? $import_item->task_label : "--" ; ?></li>
 								<?php endforeach; ?>
+								<li class="">
+									<select name="" class="new_row_entry_client">
+										<?php 
+											foreach ($clients as $client) {
+												echo '<option>'.$client->client_name.'</option>';
+											}
+										?>
+									</select>
+								</li>
 							</div>
 							<div class="task_color data_title header_titles">
 								<h3 class="top_label">Project</h3>
@@ -1539,6 +1776,15 @@ if(isset($_GET['deleteID'])) {
 								?>									
 								<li class="data_list_saturday timesheet_data_id_<?php echo $import_item->ID?>"><?php echo $task_category; ?></li>
 								<?php } ?>
+								<li class="">
+									<select name="" id="" class="new_row_entry_project">
+										<?php 
+											foreach($colors as $project){
+												echo "<option value='".$project->project_color."'>".$project->project_category."</option>";
+											}
+										?>
+									</select>
+								</li>
 							</div>
 							<!--<div class="task_person data_title header_titles">
 								<h3 class="top_label">Done by</h3>
@@ -1566,6 +1812,9 @@ if(isset($_GET['deleteID'])) {
 									</div>
 								</div>
 								<?php endforeach; ?>
+								<div class="accordian_input">
+									<input type="text" class="new_row_entry_description">
+								</div>
 							</div>
 							<div class="task_edit">
 								<div class="top_label">&nbsp;<div style="display: none;" class="loader timesheet_loader"></div></div>
@@ -1574,6 +1823,10 @@ if(isset($_GET['deleteID'])) {
 									<div id="edit_kanban_saturday_<?php echo $import_item->ID?>" class="button_1 edit_button edit_kanban">E</div>
 								</li>								
 								<?php endforeach; ?>
+								<li class="">
+									<div class="button_1 add_new_row_entry_btn">+</div>
+									<div style="display: none;" class="loader loader-add-new-entry"></div>
+								</li>
 							</div>	
 							<div class="task_delete">
 								<h3 class="top_label">&nbsp;&nbsp;&nbsp;&nbsp;</h3>
@@ -1582,6 +1835,9 @@ if(isset($_GET['deleteID'])) {
 									<div id="delete_kanban_saturday_<?php echo $import_item->ID?>" class="button_1 delete_button delete_edit_kanban">D</div>
 								</li>
 								<?php endforeach; ?>
+								<li class="">
+									<div class="button_1 delete_new_row_entry_btn">D</div>
+								</li>
 							</div>
 							<div class="task_done_today">
 								<h5 class="top_label">Done Today<div class="button_help"></div></h5>
@@ -1590,6 +1846,9 @@ if(isset($_GET['deleteID'])) {
 									<div id="done_today_kanban_saturday_<?php echo $import_item->ID; ?>" class="button_1 done_today_button done_today_kanban">Done Today</div>
 								</li>
 								<?php endforeach; ?>
+								<li>
+									&nbsp;
+								</li>
 								<p style="display: none;" class="help_note">If task is not completely done, you can specify which task were done today.</p>
 							</div>
 							<?php	
@@ -1695,6 +1954,15 @@ if(isset($_GET['deleteID'])) {
 								?>
 								<li class="data_list_sunday timesheet_data_id_<?php echo $import_item->ID?>"><?php echo $task_name_trimmed; ?></li>
 								<?php endforeach; ?>
+								<li class="">
+									<select name="" class="new_row_entry_taskname">
+										<?php
+											foreach($tasks as $task){
+												echo "<option>".$task->task_name."</option>";
+											}
+										?>
+									</select>
+								</li>
 							</div>
 							<div class="task_hour data_title header_titles">
 								<h3 class="top_label">Hours</h3>
@@ -1704,12 +1972,24 @@ if(isset($_GET['deleteID'])) {
 								?>
 								<li class="data_list_sunday timesheet_data_id_<?php echo $import_item->ID?>"><?php echo (!empty($task_hour)) ? $task_hour : "--" ; ?></li>
 								<?php endforeach; ?>
+								<li class="">
+									<input type="text" class="new_row_entry_hours">
+								</li>
 							</div>
 							<div class="task_label data_title header_titles">
 								<h3 class="top_label">Client</h3>
 								<?php foreach ($import_data as $import_item): ?>
 								<li class="client_info data_list_sunday timesheet_data_id_<?php echo $import_item->ID?>"><?php echo (!empty($import_item->task_label)) ? $import_item->task_label : "--" ; ?></li>
 								<?php endforeach; ?>
+								<li class="">
+									<select name="" class="new_row_entry_client">
+										<?php 
+											foreach ($clients as $client) {
+												echo '<option>'.$client->client_name.'</option>';
+											}
+										?>
+									</select>
+								</li>
 							</div>
 							<div class="task_color data_title header_titles">
 								<h3 class="top_label">Project</h3>
@@ -1728,6 +2008,15 @@ if(isset($_GET['deleteID'])) {
 								?>									
 								<li class="data_list_sunday timesheet_data_id_<?php echo $import_item->ID?>"><?php echo $task_category; ?></li>
 								<?php } ?>
+								<li class="">
+									<select name="" id="" class="new_row_entry_project">
+										<?php 
+											foreach($colors as $project){
+												echo "<option value='".$project->project_color."'>".$project->project_category."</option>";
+											}
+										?>
+									</select>
+								</li>
 							</div>
 							<!--<div class="task_person data_title header_titles">
 								<h3 class="top_label">Done by</h3>
@@ -1755,6 +2044,9 @@ if(isset($_GET['deleteID'])) {
 									</div>
 								</div>
 								<?php endforeach; ?>
+								<div class="accordian_input">
+									<input type="text" class="new_row_entry_description">
+								</div>
 							</div>
 							<div class="task_edit">
 								<div class="top_label">&nbsp;<div style="display: none;" class="loader timesheet_loader"></div></div>
@@ -1763,6 +2055,10 @@ if(isset($_GET['deleteID'])) {
 									<div id="edit_kanban_sunday_<?php echo $import_item->ID?>" class="button_1 edit_button edit_kanban">E</div>
 								</li>								
 								<?php endforeach; ?>
+								<li class="">
+									<div class="button_1 add_new_row_entry_btn">+</div>
+									<div style="display: none;" class="loader loader-add-new-entry"></div>
+								</li>
 							</div>	
 							<div class="task_delete">
 								<h3 class="top_label">&nbsp;&nbsp;&nbsp;&nbsp;</h3>
@@ -1771,6 +2067,9 @@ if(isset($_GET['deleteID'])) {
 									<div id="delete_kanban_sunday_<?php echo $import_item->ID?>" class="button_1 delete_button delete_edit_kanban">D</div>
 								</li>
 							<?php endforeach; ?>
+								<li class="">
+									<div class="button_1 delete_new_row_entry_btn">D</div>
+								</li>
 							</div>
 							<div class="task_done_today">
 								<h5 class="top_label">Done Today<div class="button_help"></div></h5>
@@ -1840,6 +2139,22 @@ if(isset($_GET['deleteID'])) {
 					<!--END DAYS -->
 				</div>
 			</div>
+		</div>
+		<div id="splan-timesheet-buttons">
+			<ul>
+				<li>
+					<div id="add_sickness" class="button_1 add_none_working_btn">Sick</div>
+				</li>
+				<li>
+					<div class="button_1">Holiday</div>
+				</li>
+				<li>
+					<div class="button_1">Issues</div>
+				</li>
+				<li>
+					<div class="button_1">Vacation</div>
+				</li>
+			</ul>
 		</div>
 		<div style="display:none" class="month_summary">
 			<h1>Monthly Summary</h1>
@@ -2052,6 +2367,51 @@ endif;
 			<div class="seventh_column column">L</div>
 		</div>
 		<div class="site_container"></div>
+	</div>
+</div>
+<?php 
+	$SeoWebsolutions = $wpdb->get_row('SELECT client_name FROM '.SPLAN_CLIENT_LIST.' WHERE id = 15');
+?>
+<!-- Sickness dialog box -->
+<div style="display:none;" class="sickness_dialog_box" id="sickness_dialog_box" title="">
+	<div class="full_width">
+		<div class="dialog-content">
+			<table class="splan-table-form">
+				<tr>
+					<td>Client:</td>
+					<td><p class="clientname"><?php echo $SeoWebsolutions->client_name;   ?></p></td>
+				</tr>
+				<tr>
+					<td>Task Name:</td>
+					<td>Sickness</td>
+				</tr>
+				<tr>
+					<td>Project Name:</td>
+					<td>Non Working Days</td>
+				</tr>
+				<tr>
+					<td>Hours:</td>
+					<td><input id="sickness_hours" type="text" name="sickness_hours" value="08:00"></td>
+				</tr>
+				<tr>
+					<td>Description:</td>
+					<td><textarea id="sickness_descriptions" name="sickness_descriptions"></textarea></td>
+				</tr>
+			</table>
+		</div>
+		<div class="footer-dialog">
+			<ul>
+				<li>
+					<div style="display: none;" class="loader add-sickness-loader"></div>
+				</li>
+				<li>
+					<div id="add-sickness-day" class="button_1">Add</div>
+				</li>
+				<li>
+					<div class="button_1">Cancel</div>
+				</li>
+			</ul>
+		</div>
 	</div>
 </div>
 <?php get_footer(); ?>

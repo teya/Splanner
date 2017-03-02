@@ -6328,4 +6328,5 @@ function CancelCheckedApprovalByAdmin($data){
 		die("FAILED CANCEL APPROVE BY ADMIN!");
 	}
 }
+
 ?>

@@ -14,7 +14,7 @@ function import_task_kanban($date_hour_day_week){
 	global $wpdb;
 	$seconds = 0;
 	set_time_limit($seconds);
-	$token = "apiToken=5ca8e8ab49cd25f58fb7fa3fbe566c75";
+	$token = "apiToken=e11e4e64d18b24448367a062d0e969e9";
 	$counter = 1;
 	$task_counter = 1;
 	$curr_task = "";
@@ -25,9 +25,10 @@ function import_task_kanban($date_hour_day_week){
 	$current_user = wp_get_current_user();	
 	$user_id = get_current_user_id();
 	$current_user_fullname = $current_user->data->display_name;
+
 	
 	$table_name_person = $wpdb->prefix . "custom_person";
-	$person_detail = $wpdb->get_row("SELECT * FROM $table_name_person WHERE person_fullname = '$current_user_fullname'");
+	$person_detail = $wpdb->get_row("SELECT * FROM $table_name_person WHERE wp_user_id = '$user_id'");
 	$person_kb_user_id = $person_detail->person_kb_user_id;
 	
 	$url= "https://kanbanflow.com/api/v1/board/events?from=".$format_import_date."T00:00Z&to=".$format_import_date."T23:59Z&" . $token;
@@ -87,7 +88,8 @@ function import_task_kanban($date_hour_day_week){
 			$task_name = $task_details['name'];		
 			$task_label = $task_label_details[0]['name'];
 			$task_person = $current_user_fullname;
-			$task_description = htmlentities($task_details['description']);
+			// $task_description = htmlentities($task_details['description']);
+			$task_description = "";
 			$task_project_name = $colors->project_category;	
 
 			$task_label_explode = explode(' ', $task_label);
@@ -126,6 +128,7 @@ function import_task_kanban($date_hour_day_week){
 	$total_hour_real =  convertTime($current_total);
 	$total_hour = time_format($total_hour_real);
 	$tasks_data['total_hour'] = $total_hour;
+
 	return $tasks_data;
 }
 /* ==================================== END TIMESHEET IMPORT TASK ==================================== */
@@ -433,7 +436,9 @@ function timesheet_add_task($day_date_week){
 function save_add_task_timesheet($save_add_timesheet_task_data){
 	$save_add_timesheet_form_data = array();
 	parse_str($save_add_timesheet_task_data, $save_add_timesheet_form_data);
-	
+
+
+
 	global $wpdb;
 	$table_name = $wpdb->prefix . "custom_timesheet";
 	$table_color = $wpdb->prefix . "custom_project_color";
@@ -442,6 +447,7 @@ function save_add_task_timesheet($save_add_timesheet_task_data){
 	$task_name = $save_add_timesheet_form_data['task_name'];
 	$task_suffix = $save_add_timesheet_form_data['task_suffix'];	
 	$date_now = $save_add_timesheet_form_data['date_now'];
+
 	$day_now = $save_add_timesheet_form_data['day_now'];
 	$week_number = $save_add_timesheet_form_data['week_number'];
 	$task_hour_unformat = $save_add_timesheet_form_data['task_hour'];
@@ -453,10 +459,14 @@ function save_add_task_timesheet($save_add_timesheet_task_data){
 	
 	$current_hour = $save_add_timesheet_form_data['current_hour'];
 	$task_hour = time_format($task_hour_unformat);
+
+
 	$task_hour_decimal = decimalHours($task_hour);
-	$task_current_hour_decimal = decimalHours($current_hour);
-	
-	$sum = $task_current_hour_decimal + $task_hour_decimal;
+	$task_current_hour_decimal = decimalHours($task_hour_unformat);
+
+	$get_all_hours_current_day = $wpdb->get_row('SELECT SUM(TIME_TO_SEC(task_hour)/3600) as totalhours FROM '.SPLAN_TIMESHEET.' WHERE task_person = "'.$task_person.'" AND date_now = "'.$date_now.'"');
+
+	$sum = $task_hour_decimal + $get_all_hours_current_day->totalhours;
 	$total_hour =  gmdate('H:i', floor($sum * 3600));
 	
 	foreach($colors as $color){
@@ -480,7 +490,8 @@ function save_add_task_timesheet($save_add_timesheet_task_data){
 		'user_id' => $user_id,
 		'status' => 1
 	),	
-	array( '%s', '%s' ));
+	array( '%s', '%s' )); 
+
 	$submit_id = $wpdb->insert_id;	
 	$save_add_timesheet_form_data['id'] = $submit_id;
 	$save_add_timesheet_form_data['task_category'] = $task_category;
@@ -839,8 +850,66 @@ function staff_timesheet($staff_timesheet_data){
 	$timesheet_details['person_name'] = $person_name;
 	$timesheet_details['week_start'] = $start_date;
 	$timesheet_details['week_end'] = $end_date;
-	// print_var($total_hour_monday);
+	$timesheet_details['person_hours_per_day'] = $person->person_hours_per_day;
+	$timesheet_details['person_id'] = $person->wp_user_id;
+
 	return $timesheet_details;
 }
 /* ==================================== END STAFF TIMESHEET ==================================== */
+
+/* ==================================== ADD NEW TIMESHEET ENTRY ROW ==================================== */
+
+function SaveNewRowEntryTimesheet($data){
+	global $wpdb;
+	extract($data);
+
+	$person = $wpdb->get_row('SELECT person_fullname, person_hours_per_day  FROM '.SPLAN_PERSONS.' WHERE wp_user_id = '. $person_id);
+	$project_name = $wpdb->get_row($wpdb->prepare('SELECT project_category FROM '.SPLAN_PROJECTS.' WHERE project_color = %s', $project));
+
+
+	// $task_hour = gmdate('H:i', round($hours * 3600));
+	// $task_hour = CovertTimeInput($hours);
+	$task_hour = $hours;
+
+	$new_entry_array = array( 
+		'task_name' => $taskname,
+		'task_suffix' => '',
+		'date_now' => $date,
+		'day_now' => $day,
+		'week_number' => $week,		
+		'task_hour' => $task_hour,
+		'task_label' => $client,	
+		'task_person' => $person->person_fullname,
+		'task_description' => $description,
+		'task_color' => $project,
+		'task_project_name' => $project_name->project_category,
+		'user_id' => $person_id,
+		'status' => 1
+	);
+
+	$insert = $wpdb->insert( SPLAN_TIMESHEET , $new_entry_array, array( '%s', '%s' )); 
+
+	if($insert == 1){
+		$get_all_hours_current_day = $wpdb->get_row('SELECT SUM(TIME_TO_SEC(task_hour)/3600) as totalhours FROM '.SPLAN_TIMESHEET.' WHERE user_id = '.$person_id.' AND date_now = "'.$date.'"');
+		$new_entry_array['insert_id'] = $wpdb->insert_id;
+		$new_entry_array['new_new_timesheet_entry_row'] = 'successfully-added-new-row-entry';
+		$new_entry_array['total_hours'] = round_quarter($get_all_hours_current_day->totalhours);
+		$new_entry_array['green_day'] = ($get_all_hours_current_day->totalhours >= $person->person_hours_per_day)? 1 : 0;
+		$response = $new_entry_array;
+	}else{
+		die('FAILED NEW ENTRY ROW TO DB!');
+	}
+
+
+	return $response;
+}
+
+function CovertTimeInput($time){
+	if(preg_match('/^\d+\.\d+$/',$time)){
+		$hours = gmstrftime("%H:%M", $time * 60 * 60);
+	}else{
+		$hours = $time;
+	}
+	return $hours;
+}
 ?>
