@@ -298,7 +298,7 @@ jQuery(document).on('click', '.add_new_row_entry_btn', function(){
 			//New Insert Client
 			jQuery("<li class='data_list_"+parsed.day_now+" timesheet_data_id_"+parsed.insert_id+"'>"+parsed.task_label+"</li>").insertBefore('#'+parsed.day_now+' .person_task_timesheet .task_label li:last');
 			//New Insert Project
-			jQuery("<li class='data_list_"+parsed.day_now+" timesheet_data_id_"+parsed.insert_id+"'>"+parsed.task_label+"</li>").insertBefore('#'+parsed.day_now+' .person_task_timesheet .task_color li:last');
+			jQuery("<li class='data_list_"+parsed.day_now+" timesheet_data_id_"+parsed.insert_id+"'>"+parsed.task_project_name+"</li>").insertBefore('#'+parsed.day_now+' .person_task_timesheet .task_color li:last');
 			//New Insert Description
 			jQuery("<div class='accordian accordian_"+parsed.insert_id+"'><h5 class='toggle'><a href='#''><li class='data_list_"+parsed.day_now+" timesheet_data_id_"+parsed.insert_id+"'>"+short_description+"<span class='arrow'></span></li></a></h5><div class='toggle-content' style='display: none;'>"+task_description+"</div></div>").insertBefore('#'+parsed.day_now+' .person_task_timesheet .task_description  div:last');
 			trigger_accordion_toggle();
@@ -1518,24 +1518,97 @@ jQuery(document).ready(function(){
 
 });
 
+// jQuery(document).on('click','.add_none_working_btn', function(){
+// 	var add_day =jQuery('.tabs_li.active a p:first-child()').text().toLowerCase();
+// 	var add_date = jQuery('.' + add_day + '_date').val();
+// 	var date_format = change_date_format(add_date, "dd/M");
+// 	var add_week = jQuery('#week_number').val();
+// 	var current_hour = jQuery('#'+add_day+' .total_hours .task_total_hour h3').text();
+// 	var day_not_current_capital = add_day.toLowerCase().replace(/\b[a-z]/g, function(letter) {
+// 		return letter.toUpperCase();
+// 	});
+// 	var day_date_week = add_day +"_"+ add_date +"_"+ add_week +"_"+ current_hour;
+// 	var check_modal_title = jQuery('div[aria-describedby^="sickness_dialog_box"] div.modal_header p.modal_date').length;
+// 	if(check_modal_title == 0){
+// 		jQuery('div[aria-describedby^="sickness_dialog_box"] .ui-widget-header').append('<div class="modal_header"><p class="modal_title">Add Sickness</p><p class="modal_date">'+day_not_current_capital +", "+ date_format+'</p></div>');
+// 	}else{
+// 		jQuery('div[aria-describedby^="sickness_dialog_box"] div.modal_header p.modal_date').text(day_not_current_capital +", "+ date_format);
+// 	}
+// 	jQuery('#sickness_dialog_box').dialog('open');
+// });
+
 jQuery(document).on('click','.add_none_working_btn', function(){
-	var add_day =jQuery('.tabs_li.active a p:first-child()').text().toLowerCase();
-	var add_date = jQuery('.' + add_day + '_date').val();
-	var date_format = change_date_format(add_date, "dd/M");
-	var add_week = jQuery('#week_number').val();
-	var current_hour = jQuery('#'+add_day+' .total_hours .task_total_hour h3').text();
-	var day_not_current_capital = add_day.toLowerCase().replace(/\b[a-z]/g, function(letter) {
-		return letter.toUpperCase();
-	});
-	var day_date_week = add_day +"_"+ add_date +"_"+ add_week +"_"+ current_hour;
-	var check_modal_title = jQuery('div[aria-describedby^="sickness_dialog_box"] div.modal_header p.modal_date').length;
-	if(check_modal_title == 0){
-		jQuery('div[aria-describedby^="sickness_dialog_box"] .ui-widget-header').append('<div class="modal_header"><p class="modal_title">Add Sickness</p><p class="modal_date">'+day_not_current_capital +", "+ date_format+'</p></div>');
-	}else{
-		jQuery('div[aria-describedby^="sickness_dialog_box"] div.modal_header p.modal_date').text(day_not_current_capital +", "+ date_format);
+	var id_string = jQuery(this).attr('id').split('_');
+	var current_button = jQuery(this);
+	current_button.hide().next('.loader').show();
+
+	var day = jQuery('.tab_content.active').attr('id');
+	var date = jQuery('#'+day).find('.tab_date').val();
+	var week =  jQuery('#'+day).find('.tab_week').val();
+	var person_id = jQuery('#current-person-id').val();
+
+	var new_non_working_entry = {
+		'type' : id_string[1],
+		'day' : day,
+		'date' : date,
+		'week' : week,
+		'person_id' : person_id
 	}
-	jQuery('#sickness_dialog_box').dialog('open');
+	
+	jQuery.ajax({
+		type: "POST",
+		url: '<?php bloginfo("template_directory"); ?>/custom_ajax-functions.php',
+		data:{
+			'type' : 'add_none_working_entry',
+			'data_info' : new_non_working_entry
+		},
+		success: function (data) {
+
+			var parsed = jQuery.parseJSON(data);
+			var task_description = (parsed.task_description == "") ? "--" : parsed.task_description;
+			var short_description = jQuery.trim(task_description).substring(0, 20).split(" ").slice(0, -1).join(" ") + "...";
+
+			//Update TOtal hours
+			jQuery('#'+parsed.day_now+' .total_hours .task_total_hour h3').text(parsed.total_hours);
+			//New Insert Taskname
+			jQuery("<li class='data_list_"+parsed.day_now+" timesheet_data_id_"+parsed.insert_id+"'>"+parsed.task_name+"</li>").insertBefore('#'+parsed.day_now+' .person_task_timesheet .task_name li:last');
+			//New Insert hours
+			jQuery("<li class='data_list_"+parsed.day_now+" timesheet_data_id_"+parsed.insert_id+"'>"+parsed.task_hour+"</li>").insertBefore('#'+parsed.day_now+' .person_task_timesheet .task_hour li:last');
+			//New Insert Client
+			jQuery("<li class='data_list_"+parsed.day_now+" timesheet_data_id_"+parsed.insert_id+"'>"+parsed.task_label+"</li>").insertBefore('#'+parsed.day_now+' .person_task_timesheet .task_label li:last');
+			//New Insert Project
+			jQuery("<li class='data_list_"+parsed.day_now+" timesheet_data_id_"+parsed.insert_id+"'>"+parsed.task_project_name+"</li>").insertBefore('#'+parsed.day_now+' .person_task_timesheet .task_color li:last');
+			//New Insert Description
+			jQuery("<div class='accordian accordian_"+parsed.insert_id+"'><h5 class='toggle'><a href='#''><li class='data_list_"+parsed.day_now+" timesheet_data_id_"+parsed.insert_id+"'>"+short_description+"<span class='arrow'></span></li></a></h5><div class='toggle-content' style='display: none;'>"+task_description+"</div></div>").insertBefore('#'+parsed.day_now+' .person_task_timesheet .task_description  div:last');
+			trigger_accordion_toggle();
+			//New Insert Edit
+			jQuery("<li class='data_list_"+parsed.day_now+" timesheet_data_id_"+parsed.insert_id+"'><div id='edit_kanban_"+parsed.day_now+"_"+parsed.insert_id+"' class='button_1 edit_button edit_kanban'>E</div></li>").insertBefore('#'+parsed.day_now+' .person_task_timesheet .task_edit li:last');
+			//New Insert Delete
+			jQuery("<li class='data_list_"+parsed.day_now+" timesheet_data_id_"+parsed.insert_id+"'><div id='delete_kanban_"+parsed.day_now+"_"+parsed.insert_id+"' class='button_1 delete_button delete_edit_kanban'>D</div></li>").insertBefore('#'+parsed.day_now+' .person_task_timesheet .task_delete li:last');
+			//New Insert DOne Today
+			if(jQuery('#'+parsed.day_now+' .person_task_timesheet .task_done_today li:last').length){
+				jQuery("<li class='data_list_"+parsed.day_now+" timesheet_data_id_"+parsed.insert_id+"'><div id='done_today_kanban_"+parsed.day_now+"_"+parsed.insert_id+"' class='button_1 done_today_button done_today_kanban'>Done Today</div></li>").insertBefore('#'+parsed.day_now+' .person_task_timesheet .task_done_today li:last');	
+			}else{
+				jQuery("<li class='data_list_"+parsed.day_now+" timesheet_data_id_"+parsed.insert_id+"'><div id='done_today_kanban_"+parsed.day_now+"_"+parsed.insert_id+"' class='button_1 done_today_button done_today_kanban'>Done Today</div></li>").insertAfter('#'+parsed.day_now+' .person_task_timesheet .task_done_today h5');	
+			}
+			
+			jQuery('#'+parsed.day_now).find('.new_row_entry_taskname').prop('selectedIndex',0);
+			jQuery('#'+parsed.day_now).find('.new_row_entry_hours').val('');
+			jQuery('#'+parsed.day_now).find('.new_row_entry_client').prop('selectedIndex',0);
+			jQuery('#'+parsed.day_now).find('.new_row_entry_project').prop('selectedIndex',0);;
+			jQuery('#'+parsed.day_now).find('.new_row_entry_description').val('');
+
+			if(parsed.green_day == 1){
+				jQuery('#tabs li.'+parsed.day_now+' a').removeClass('red-day').addClass('green-day');
+			}
+			current_button.show().next('.loader').hide();
+		},
+		error: function (data) {
+			alert('error');
+		}				
+	});	
 });
+
 
 
 //Add Sickness day

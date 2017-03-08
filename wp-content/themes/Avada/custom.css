@@ -7114,6 +7114,9 @@ body.single .post-content li{
 #splan-timesheet-buttons{
 	margin-left: -40px;
 }
+#splan-timesheet-buttons ul li{
+	height: 25px;
+}
 #splan-timesheet-buttons ul li, .footer-dialog ul li{
 	display: inline-block !important;
 }
@@ -7162,4 +7165,14 @@ padding: 0px 5px;
 }
 .accordian_input{
 	padding-top: 10px;
+}
+.add_none_working_btn{
+	min-width: 50px;
+}
+.non-working-loader{
+	min-width: 50px !important;
+	background-repeat: no-repeat;
+	background-position: 10px 0px;
+	height: 25px;
+	margin-top: 13px;
 }

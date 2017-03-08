@@ -2144,15 +2144,19 @@ if(isset($_GET['deleteID'])) {
 			<ul>
 				<li>
 					<div id="add_sickness" class="button_1 add_none_working_btn">Sick</div>
+					<div style="display: none;" class="loader non-working-loader"></div>
 				</li>
 				<li>
-					<div class="button_1">Holiday</div>
+					<div id="add_holiday" class="button_1 add_none_working_btn">Holiday</div>
+					<div style="display: none;" class="loader non-working-loader"></div>
 				</li>
 				<li>
-					<div class="button_1">Issues</div>
+					<div id="add_issues" class="button_1 add_none_working_btn">Issues</div>
+					<div style="display: none;" class="loader non-working-loader"></div>
 				</li>
 				<li>
-					<div class="button_1">Vacation</div>
+					<div id="add_vacation" class="button_1 add_none_working_btn">Vacation</div>
+					<div style="display: none;" class="loader non-working-loader"></div>
 				</li>
 			</ul>
 		</div>

@@ -912,4 +912,56 @@ function CovertTimeInput($time){
 	}
 	return $hours;
 }
+function AddNoneWorkingEntry($data){
+	global $wpdb;
+	extract($data);
+
+	switch($type){
+		case 'sickness':
+			$task_name = 'Sickness';
+		break;
+		case 'holiday':
+			$task_name = 'Holiday';
+		break;	
+		case 'issues':
+			$task_name = 'Electric / Internet Problems';
+		break;	
+		case 'vacation':
+			$task_name = 'Vacation';
+		break;				
+	}
+
+	$person = $wpdb->get_row('SELECT person_fullname, person_hours_per_day  FROM '.SPLAN_PERSONS.' WHERE wp_user_id = '. $person_id);	
+
+	$new_entry_array = array( 
+		'task_name' => $task_name,
+		'task_suffix' => '',
+		'date_now' => $date,
+		'day_now' => $day,
+		'week_number' => $week,		
+		'task_hour' => '08:00',
+		'task_label' => 'SEOWeb Solutions',	
+		'task_person' => $person->person_fullname,
+		'task_description' => '',
+		'task_color' => 'Black',
+		'task_project_name' => 'Non Working Days',
+		'user_id' => $person_id,
+		'status' => 1
+	);
+
+	$insert = $wpdb->insert( SPLAN_TIMESHEET , $new_entry_array, array( '%s', '%s' )); 
+
+
+	if($insert == 1){
+		$get_all_hours_current_day = $wpdb->get_row('SELECT SUM(TIME_TO_SEC(task_hour)/3600) as totalhours FROM '.SPLAN_TIMESHEET.' WHERE user_id = '.$person_id.' AND date_now = "'.$date.'"');
+		$new_entry_array['insert_id'] = $wpdb->insert_id;
+		$new_entry_array['new_new_timesheet_entry_row'] = 'successfully-added-new-row-entry';
+		$new_entry_array['total_hours'] = round_quarter($get_all_hours_current_day->totalhours);
+		$new_entry_array['green_day'] = ($get_all_hours_current_day->totalhours >= $person->person_hours_per_day)? 1 : 0;
+		$response = $new_entry_array;
+	}else{
+		die('FAILED NEW ENTRY ROW TO DB!');
+	}
+	return $response;
+}
 ?>

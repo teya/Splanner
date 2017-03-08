@@ -301,7 +301,7 @@ body,#nav ul li ul li a,#sticky-nav ul li ul li a
 .woocommerce-success-message .button,
 .page-title h3,
 .blog-shortcode h3.timeline-title{
-	font-family:;
+	font-family:"PT Sans", Arial, Helvetica, sans-serif !important;
 }
 .avada-container h3,
 .review blockquote div strong,
@@ -321,10 +321,38 @@ body,#nav ul li ul li a,#sticky-nav ul li ul li a
 }
 
 
+#nav, #sticky-nav, #navigation,
+.side-nav li a{
+	font-family:"Antic Slab", Arial, Helvetica, sans-serif !important;
+}
+
+
+#main .reading-box h2,
+#main h2,
+.page-title h1,
+.image .image-extras .image-extras-content h3,
+#main .post h2,
+#sidebar .widget h3,
+.tab-holder .tabs li a,
+.share-box h4,
+.project-content h3,
+.author .author_title,
+h5.toggle a,
+.full-boxed-pricing ul li.title-row,
+.full-boxed-pricing ul li.pricing-row,
+.sep-boxed-pricing ul li.title-row,
+.sep-boxed-pricing ul li.pricing-row,
+.person-author-wrapper,
+.post-content h1, .post-content h2, .post-content h3, .post-content h4, .post-content h5, .post-content h6,
+.ei-title h2, #header .tagline,
+table th,.project-content .project-info h4,
+.woocommerce-success-message .msg,.product-title{
+	font-family:"Antic Slab", Arial, Helvetica, sans-serif !important;
+}
 
 
 .footer-area  h3,#slidingbar-area  h3{
-	font-family:;
+	font-family:"Antic Slab", Arial, Helvetica, sans-serif !important;
 }
 
 body,#sidebar .slide-excerpt h2, .footer-area .slide-excerpt h2,#slidingbar-area .slide-excerpt h2{
