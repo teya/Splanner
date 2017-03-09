@@ -30,6 +30,8 @@ function import_task_kanban($date_hour_day_week){
 	$table_name_person = $wpdb->prefix . "custom_person";
 	$person_detail = $wpdb->get_row("SELECT * FROM $table_name_person WHERE wp_user_id = '$user_id'");
 	$person_kb_user_id = $person_detail->person_kb_user_id;
+
+	$tasklist = $wpdb->get_results('SELECT task_name FROM '.SPLAN_TASKS);
 	
 	$url= "https://kanbanflow.com/api/v1/board/events?from=".$format_import_date."T00:00Z&to=".$format_import_date."T23:59Z&" . $token;
 
@@ -85,7 +87,17 @@ function import_task_kanban($date_hour_day_week){
 			$task_hour_real = gmdate("H:i:s", $new_hour);
 			$task_hour = time_format($task_hour_real);
 			
-			$task_name = $task_details['name'];		
+			$task_details_full = $task_details['name'];	
+
+			foreach($tasklist as $task){
+				if (strpos($task_details_full, $task->task_name) !== false) {
+    				$task_name = $task->task_name;	
+    				$task_details_string = str_replace($task->task_name,"",$task_details_full);
+    				$task_details = substr($task_details_string, 3); 
+				}
+			}
+
+
 			$task_label = $task_label_details[0]['name'];
 			$task_person = $current_user_fullname;
 			// $task_description = htmlentities($task_details['description']);
@@ -108,7 +120,8 @@ function import_task_kanban($date_hour_day_week){
 			$total_hour_decimal += $task_hour_decimal;		
 			if($task_hour != null){
 				$tasks_data[] = array(
-				'task_name'			=> $task_name, 
+				'task_name'			=> $task_name,
+				'task_details' 		=> $task_details,
 				'task_hour'			=> $task_hour,
 				'task_label'		=> $client_name,
 				'task_person'		=> $task_person,
@@ -153,8 +166,8 @@ function save_task_timesheet($save_timesheet_task_data){
 			}
 			$task_name_array[] = $exploded_task_name;
 		}		
-		$task_name = implode(" ",$task_name_array);
-		$task_suffix = trim($result_task_name_explode['1']);		
+		$task_name = $save_timesheet_form_data['task_name'][$key];
+		$task_suffix = $save_timesheet_form_data['task_details'][$key];		
 		$task_label = $save_timesheet_form_data['task_label'][$key];
 		$task_hour = $save_timesheet_form_data['task_hour'][$key];
 		$task_person = $save_timesheet_form_data['task_person'][$key];
@@ -164,7 +177,8 @@ function save_task_timesheet($save_timesheet_task_data){
 		$user_id = $save_timesheet_form_data['user_id'][$key];		
 		$date_now = $save_timesheet_form_data['import_date'];
 		$day_now = $save_timesheet_form_data['import_day'];
-		$week_number = $save_timesheet_form_data['import_week'];					
+		$week_number = $save_timesheet_form_data['import_week'];
+
 		
 		$user_id = $save_timesheet_form_data['user_id'][$key];
 		
@@ -873,7 +887,7 @@ function SaveNewRowEntryTimesheet($data){
 
 	$new_entry_array = array( 
 		'task_name' => $taskname,
-		'task_suffix' => '',
+		'task_suffix' => $task_details,
 		'date_now' => $date,
 		'day_now' => $day,
 		'week_number' => $week,		

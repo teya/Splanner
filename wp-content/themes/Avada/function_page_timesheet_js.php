@@ -45,6 +45,7 @@ jQuery(document).on('click', '.import_kanban_task', function(){
 			// return false;		
 			jQuery.each(parsed, function(index, value){
 				var task_name = (value.task_name == "") ? "--" : value.task_name;
+				var task_details = (value.task_details == "") ? "--" : value.task_details;
 				var task_hour = (value.task_hour == "") ? "--" : value.task_hour;
 				var task_project_name = (value.task_project_name == "") ? "--" : value.task_project_name;
 				var task_color = (value.task_color == "") ? "--" : value.task_color;
@@ -58,7 +59,8 @@ jQuery(document).on('click', '.import_kanban_task', function(){
 				var short_description = jQuery.trim(task_description).substring(0, 20).split(" ").slice(0, -1).join(" ") + "...";
 
 				if(index != 'total_hour'){						
-					jQuery("<li class='data_list_"+index+" data_list_"+import_day+"'><p>"+task_name+"</p></li>").insertBefore('#'+import_day+'.tab_content .task_name li:last');												
+					jQuery("<li class='data_list_"+index+" data_list_"+import_day+"'><p>"+task_name+"</p></li>").insertBefore('#'+import_day+'.tab_content .task_name li:last');		
+					jQuery("<li class='data_list_"+index+" data_list_"+import_day+"'><p>"+task_details+"</p></li>").insertBefore('#'+import_day+'.tab_content .task_details li:last');											
 					jQuery("<li class='data_list_"+index+" data_list_"+import_day+"'><p>"+task_hour+"</p></li>").insertBefore('#'+import_day+'.tab_content .task_hour li:last');
 					jQuery("<li class='data_list_"+index+" data_list_"+import_day+"'><p>"+task_label+"</p></li>").insertBefore('#'+import_day+'.tab_content .task_label li:last');
 					jQuery("<li class='data_list_"+index+" data_list_"+import_day+"'><p>"+task_project_name+"</p></li>").insertBefore('#'+import_day+'.tab_content .task_color li:last');
@@ -74,6 +76,7 @@ jQuery(document).on('click', '.import_kanban_task', function(){
 					jQuery('#'+import_day+'.tab_content .import_save').append("<input type='hidden' name='import_day' value='"+import_day+"' />");
 					jQuery('#'+import_day+'.tab_content .import_save').append("<input type='hidden' name='import_week' value='"+import_week+"' />");
 					jQuery('#'+import_day+'.tab_content .import_save').append("<input type='hidden' name='task_name[]' value='"+task_name+"' />");
+					jQuery('#'+import_day+'.tab_content .import_save').append("<input type='hidden' name='task_details[]' value='"+task_details+"' />");
 					jQuery('#'+import_day+'.tab_content .import_save').append("<input type='hidden' name='task_hour[]' value='"+task_hour+"' />");												
 					jQuery('#'+import_day+'.tab_content .import_save').append("<input type='hidden' name='task_label[]' value='"+task_label+"' />");
 					jQuery('#'+import_day+'.tab_content .import_save').append("<input type='hidden' name='task_project_name[]' value='"+task_project_name+"' />");
@@ -221,6 +224,7 @@ jQuery(document).on('click', '.add_new_row_entry_btn', function(){
 	var current_element = jQuery(this);
 	var day = current_element.hide().next().show().closest('.tab_content.active').attr('id');
 	var taskname = jQuery('#'+day).find('.new_row_entry_taskname').val();
+	var task_details = jQuery('#'+day).find('.new_row_task_details').val();
 	var hours = jQuery('#'+day).find('.new_row_entry_hours').val();
 	var client = jQuery('#'+day).find('.new_row_entry_client').val();
 	var project = jQuery('#'+day).find('.new_row_entry_project').val();
@@ -264,6 +268,7 @@ jQuery(document).on('click', '.add_new_row_entry_btn', function(){
 
 	var new_entry = {
 		'taskname' : taskname,
+		'task_details' : task_details,
 		'hours' : hour_input,
 		'client' : client,
 		'project' : project,
@@ -286,13 +291,30 @@ jQuery(document).on('click', '.add_new_row_entry_btn', function(){
 
 			var parsed = jQuery.parseJSON(data);
 
+			console.log(parsed);
+
 			var task_description = (parsed.task_description == "") ? "--" : parsed.task_description;
-			var short_description = jQuery.trim(task_description).substring(0, 20).split(" ").slice(0, -1).join(" ") + "...";
+			var short_description = jQuery.trim(parsed.task_description).substring(0, 20).split(" ").slice(0, -1).join(" ") + "...";
+			var task_details = '';
+
+			if(parsed.task_suffix.length >= 20){
+				task_details = jQuery.trim(parsed.task_suffix).substring(0, 20).split(" ").slice(0, -1).join(" ") + "...";
+			}else{
+				task_details = parsed.task_suffix;
+			}
+
+			if(task_details == ''){
+				task_details = '...';
+			}
+
+			console.log(task_description);
 
 			//Update TOtal hours
 			jQuery('#'+parsed.day_now+' .total_hours .task_total_hour h3').text(parsed.total_hours);
 			//New Insert Taskname
 			jQuery("<li class='data_list_"+parsed.day_now+" timesheet_data_id_"+parsed.insert_id+"'>"+parsed.task_name+"</li>").insertBefore('#'+parsed.day_now+' .person_task_timesheet .task_name li:last');
+			//New Insert Task details
+			jQuery("<li class='data_list_"+parsed.day_now+" timesheet_data_id_"+parsed.insert_id+"'>"+task_details+"</li>").insertBefore('#'+parsed.day_now+' .person_task_timesheet .task_details li:last');
 			//New Insert hours
 			jQuery("<li class='data_list_"+parsed.day_now+" timesheet_data_id_"+parsed.insert_id+"'>"+parsed.task_hour+"</li>").insertBefore('#'+parsed.day_now+' .person_task_timesheet .task_hour li:last');
 			//New Insert Client
@@ -305,7 +327,7 @@ jQuery(document).on('click', '.add_new_row_entry_btn', function(){
 			//New Insert Edit
 			jQuery("<li class='data_list_"+parsed.day_now+" timesheet_data_id_"+parsed.insert_id+"'><div id='edit_kanban_"+parsed.day_now+"_"+parsed.insert_id+"' class='button_1 edit_button edit_kanban'>E</div></li>").insertBefore('#'+parsed.day_now+' .person_task_timesheet .task_edit li:last');
 			//New Insert Delete
-			jQuery("<li class='data_list_"+parsed.day_now+" timesheet_data_id_"+parsed.insert_id+"'><div id='delete_kanban_"+parsed.day_now+"_"+parsed.insert_id+"' class='button_1 delete_button delete_edit_kanban'>D</div></li>").insertBefore('#'+parsed.day_now+' .person_task_timesheet .task_delete li:last');
+			jQuery("<li class='data_list_"+parsed.day_now+" timesheet_data_id_"+parsed.insert_id+"'><div id='delete_kanban_"+parsed.day_now+"_"+parsed.insert_id+"' class='button_1 delete_button delete_edit_kanban'>-</div></li>").insertBefore('#'+parsed.day_now+' .person_task_timesheet .task_delete li:last');
 			//New Insert DOne Today
 			if(jQuery('#'+parsed.day_now+' .person_task_timesheet .task_done_today li:last').length){
 				jQuery("<li class='data_list_"+parsed.day_now+" timesheet_data_id_"+parsed.insert_id+"'><div id='done_today_kanban_"+parsed.day_now+"_"+parsed.insert_id+"' class='button_1 done_today_button done_today_kanban'>Done Today</div></li>").insertBefore('#'+parsed.day_now+' .person_task_timesheet .task_done_today li:last');	
@@ -353,7 +375,7 @@ jQuery(document).ready(function(){
 
 
 					jQuery('.tab_content.active .task_edit .data_list_'+index).replaceWith("<li class='data_list_"+day_now_id+" timesheet_data_id_"+value+"'><div id='edit_kanban_"+day_now_id+"_"+value+"' class='button_1 edit_button edit_kanban'>E</div></li>");
-					jQuery('.tab_content.active .task_delete .data_list_'+index).replaceWith("<li class='data_list_"+day_now_id+" timesheet_data_id_"+value+"'><div id='delete_kanban_"+day_now_id+"_"+value+"' class='button_1 confirm delete_button delete_kanban_"+day_now_id+"'>D</div></li>");
+					jQuery('.tab_content.active .task_delete .data_list_'+index).replaceWith("<li class='data_list_"+day_now_id+" timesheet_data_id_"+value+"'><div id='delete_kanban_"+day_now_id+"_"+value+"' class='button_1 confirm delete_button delete_kanban_"+day_now_id+"'>-</div></li>");
 					jQuery('.tab_content.active .task_done_today .data_list_'+index).replaceWith("<li class='data_list_"+day_now_id+" timesheet_data_id_"+value+"'><div id='done_today_kanban_"+day_now_id+"_"+value+"' class='button_1 done_today_button done_today_kanban_"+day_now_id+"'>Done Today</div></li>");
 
 
@@ -521,7 +543,6 @@ jQuery(document).on('click', '.update_button', function(){
 			jQuery('.update_timesheet .loader').hide();
 			var parsed = jQuery.parseJSON(data);
 
-			console.log(parsed);
 			jQuery(".action_message p").text("Task Updated");
 				jQuery(".action_message").fadeIn( "slow", function() {
 				jQuery(".action_message").delay(1000).fadeOut('slow');
@@ -834,16 +855,29 @@ jQuery(document).on('click', '.save_add_button', function(){
 /* ==================================== END SAVE ADD ENTRY TASK ==================================== */
 function day_sort(value, day, check_same_user){
 	if(value.task_suffix == ""){
-		var task_name_suffix = format_task_name(value.task_name);
+		var task_name = format_task_name(value.task_name);
 	}else{
-		var task_name_suffix = format_task_name(value.task_name) +' - '+ value.task_suffix;
+		var task_name = format_task_name(value.task_name);
 	}
-	var task_name_suffix_count = task_name_suffix.length;							
-	if(task_name_suffix_count <= 25){
-		var task_name = task_name_suffix;
+
+	var task_details = '';
+	if(value.task_suffix.length >= 20){
+		task_details = jQuery.trim(value.task_suffix).substring(0, 20).split(" ").slice(0, -1).join(" ") + "...";
 	}else{
-		var task_name = jQuery.trim(task_name_suffix).substring(0, 25).split(" ").slice(0, -1).join(" ") + "...";
+		task_details = value.task_suffix;
 	}
+
+	if(task_details == ''){
+		task_details = '...';
+	}
+
+	// var task_name_suffix_count = task_name_suffix.length;							
+	// if(task_name_suffix_count <= 25){
+	// 	var task_name = task_name_suffix;
+	// }else{
+	// 	var task_name = jQuery.trim(task_name_suffix).substring(0, 25).split(" ").slice(0, -1).join(" ") + "...";
+	// }
+
 	var task_description = (value.task_description == "") ? "--" : value.task_description;
 	var task_description_count = task_description.length;
 	var task_hour = (value.task_hour == "") ? "--" : value.task_hour;
@@ -858,6 +892,8 @@ function day_sort(value, day, check_same_user){
 	
 	//Taskname
 	jQuery('<li class="data_list_'+day+' timesheet_data_id_'+value.ID+'">'+task_name+'</li>').insertBefore('#'+day+' .task_name li:last');
+	//task details
+	jQuery('<li class="data_list_'+day+' timesheet_data_id_'+value.ID+'">'+task_details+'</li>').insertBefore('#'+day+' .task_details li:last');
 	//Hours
 	jQuery('<li class="client_info data_list_'+day+' timesheet_data_id_'+value.ID+'">'+task_hour+'</li>').insertBefore('#'+day+' .task_hour li:last');
 	//Client
@@ -870,7 +906,7 @@ function day_sort(value, day, check_same_user){
 	if(check_same_user == 'yes'){
 		jQuery('<li class="data_list_'+day+' timesheet_data_id_'+value.ID+'"><div id="edit_kanban_'+day+'_'+value.ID+'" class="button_1 edit_button edit_kanban">E</div></li>').insertBefore('#'+day+' .task_edit li:last');
 
-		jQuery('<li class="data_list_'+day+' timesheet_data_id_'+value.ID+'"><div id="delete_kanban_'+day+'_'+value.ID+'" class="button_1 delete_button delete_edit_kanban">D</div></li>').insertBefore('#'+day+' .task_delete li:last');
+		jQuery('<li class="data_list_'+day+' timesheet_data_id_'+value.ID+'"><div id="delete_kanban_'+day+'_'+value.ID+'" class="button_1 delete_button delete_edit_kanban">-</div></li>').insertBefore('#'+day+' .task_delete li:last');
 		jQuery('<li class="data_list_'+day+' timesheet_data_id_'+value.ID+'"><div id="done_today_kanban_'+day+'_'+value.ID+'" class="button_1 done_today_button done_today_kanban">Done Today</div></li>').insertBefore('#'+day+' .task_done_today li:last');
 	}else{
 		jQuery('<li class="data_list_'+day+' timesheet_data_id_'+value.ID+'">&nbsp;</li>').insertBefore('#'+day+' .task_edit li:last');
@@ -1572,6 +1608,8 @@ jQuery(document).on('click','.add_none_working_btn', function(){
 			jQuery('#'+parsed.day_now+' .total_hours .task_total_hour h3').text(parsed.total_hours);
 			//New Insert Taskname
 			jQuery("<li class='data_list_"+parsed.day_now+" timesheet_data_id_"+parsed.insert_id+"'>"+parsed.task_name+"</li>").insertBefore('#'+parsed.day_now+' .person_task_timesheet .task_name li:last');
+			//New Insert Details
+			jQuery("<li class='data_list_"+parsed.day_now+" timesheet_data_id_"+parsed.insert_id+"'>...</li>").insertBefore('#'+parsed.day_now+' .person_task_timesheet .task_details li:last');
 			//New Insert hours
 			jQuery("<li class='data_list_"+parsed.day_now+" timesheet_data_id_"+parsed.insert_id+"'>"+parsed.task_hour+"</li>").insertBefore('#'+parsed.day_now+' .person_task_timesheet .task_hour li:last');
 			//New Insert Client
@@ -1584,7 +1622,7 @@ jQuery(document).on('click','.add_none_working_btn', function(){
 			//New Insert Edit
 			jQuery("<li class='data_list_"+parsed.day_now+" timesheet_data_id_"+parsed.insert_id+"'><div id='edit_kanban_"+parsed.day_now+"_"+parsed.insert_id+"' class='button_1 edit_button edit_kanban'>E</div></li>").insertBefore('#'+parsed.day_now+' .person_task_timesheet .task_edit li:last');
 			//New Insert Delete
-			jQuery("<li class='data_list_"+parsed.day_now+" timesheet_data_id_"+parsed.insert_id+"'><div id='delete_kanban_"+parsed.day_now+"_"+parsed.insert_id+"' class='button_1 delete_button delete_edit_kanban'>D</div></li>").insertBefore('#'+parsed.day_now+' .person_task_timesheet .task_delete li:last');
+			jQuery("<li class='data_list_"+parsed.day_now+" timesheet_data_id_"+parsed.insert_id+"'><div id='delete_kanban_"+parsed.day_now+"_"+parsed.insert_id+"' class='button_1 delete_button delete_edit_kanban'>-</div></li>").insertBefore('#'+parsed.day_now+' .person_task_timesheet .task_delete li:last');
 			//New Insert DOne Today
 			if(jQuery('#'+parsed.day_now+' .person_task_timesheet .task_done_today li:last').length){
 				jQuery("<li class='data_list_"+parsed.day_now+" timesheet_data_id_"+parsed.insert_id+"'><div id='done_today_kanban_"+parsed.day_now+"_"+parsed.insert_id+"' class='button_1 done_today_button done_today_kanban'>Done Today</div></li>").insertBefore('#'+parsed.day_now+' .person_task_timesheet .task_done_today li:last');	

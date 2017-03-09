@@ -537,49 +537,6 @@ if(isset($_GET['deleteID'])) {
 								$filter = "Where ID!='' AND (day_now = 'Monday') AND (status = 1) AND (user_id = '$user_id') AND (date_now = '$date_range[0]')";
 								$import_data = $wpdb->get_results("SELECT * FROM {$table_name} $filter"); 					
 							?>
-							<div class="task_name data_title header_titles">
-								<h3 class="top_label">Task Name</h3>
-								<?php 
-									foreach ($import_data as $import_item): 
-									if($import_item->task_name != null && $import_item->task_suffix != null){
-										$task_name = format_task_name($import_item->task_name) ." - ". $import_item->task_suffix;
-										}elseif($import_item->task_name != null && $import_item->task_suffix == null){
-										$task_name = format_task_name($import_item->task_name);
-										}elseif($import_item->task_name == null && $import_item->task_suffix != null){
-										$task_name = $import_item->task_suffix;
-										}elseif($import_item->task_name == null && $import_item->task_suffix == null){
-										$task_name = "--";
-									}
-									if(strlen($task_name) <= 25){
-										$task_name_trimmed = $task_name;
-										}else{
-										$task_name_trimmed = substr($task_name, 0, 25) . "...";
-									}
-								?>
-								<li class="data_list_monday timesheet_data_id_<?php echo $import_item->ID?>"><?php echo $task_name_trimmed; ?></li>
-								<?php endforeach; ?>
-								<li class="">
-									<select name="" class="new_row_entry_taskname">
-										<?php
-											foreach($tasks as $task){
-												echo "<option>".$task->task_name."</option>";
-											}
-										?>
-									</select>
-								</li>
-							</div>
-							<div class="task_hour data_title header_titles">
-								<h3 class="top_label">Hours</h3>
-								<?php foreach ($import_data as $import_item):								
-									$task_hms = $import_item->task_hour;
-									$task_hour = time_format($task_hms);
-								?>
-								<li class="data_list_monday timesheet_data_id_<?php echo $import_item->ID?>"><?php echo (!empty($task_hour)) ? $task_hour : "--" ; ?></li>
-								<?php endforeach; ?>
-								<li class="">
-									<input type="text" class="new_row_entry_hours">
-								</li>
-							</div>
 							<div class="task_label data_title header_titles">
 								<h3 class="top_label">Client</h3>
 								<?php foreach ($import_data as $import_item): ?>
@@ -622,6 +579,78 @@ if(isset($_GET['deleteID'])) {
 									</select>
 								</li>
 							</div>
+							<div class="task_name data_title header_titles">
+								<h3 class="top_label">Task</h3>
+								<?php 
+									foreach ($import_data as $import_item): 
+									// if($import_item->task_name != null && $import_item->task_suffix != null){
+									// 	$task_name = format_task_name($import_item->task_name) ." - ". $import_item->task_suffix;
+									// 	}elseif($import_item->task_name != null && $import_item->task_suffix == null){
+									// 	$task_name = format_task_name($import_item->task_name);
+									// 	}elseif($import_item->task_name == null && $import_item->task_suffix != null){
+									// 	$task_name = $import_item->task_suffix;
+									// 	}elseif($import_item->task_name == null && $import_item->task_suffix == null){
+									// 	$task_name = "--";
+									// }
+									if(strlen($import_item->task_name) <= 25){
+										$task_name_trimmed = $import_item->task_name;
+										}else{
+										$task_name_trimmed = substr($import_item->task_name, 0, 25) . "...";
+									}
+								?>
+								<li class="data_list_monday timesheet_data_id_<?php echo $import_item->ID?>"><?php echo $task_name_trimmed; ?></li>
+								<?php endforeach; ?>
+								<li class="">
+									<select name="" class="new_row_entry_taskname">
+										<?php
+											foreach($tasks as $task){
+												echo "<option>".$task->task_name."</option>";
+											}
+										?>
+									</select>
+								</li>
+							</div>
+							<div class="task_details data_title header_titles">
+								<h3 class="top_label">Task Details</h3>
+								<?php 
+									foreach ($import_data as $import_item): 
+									// if($import_item->task_name != null && $import_item->task_suffix != null){
+									// 	$task_name = format_task_name($import_item->task_name) ." - ". $import_item->task_suffix;
+									// 	}elseif($import_item->task_name != null && $import_item->task_suffix == null){
+									// 	$task_name = format_task_name($import_item->task_name);
+									// 	}elseif($import_item->task_name == null && $import_item->task_suffix != null){
+									// 	$task_name = $import_item->task_suffix;
+									// 	}elseif($import_item->task_name == null && $import_item->task_suffix == null){
+									// 	$task_name = "--";
+									// }
+									if(strlen($import_item->task_suffix) <= 18){
+										$task_name_trimmed = $import_item->task_suffix;
+									}else{
+										$task_name_trimmed = substr($import_item->task_suffix, 0, 18) . "...";
+									}
+
+									if(empty($import_item->task_suffix)){
+										$task_name_trimmed = '...';
+									}
+								?>
+								<li class="data_list_monday timesheet_data_id_<?php echo $import_item->ID?>"><?php echo $task_name_trimmed ?></li>
+								<?php endforeach; ?>
+								<li class="">
+									<input type="text" class="new_row_task_details">
+								</li>
+							</div>
+							<div class="task_hour data_title header_titles">
+								<h3 class="top_label">Hours</h3>
+								<?php foreach ($import_data as $import_item):								
+									$task_hms = $import_item->task_hour;
+									$task_hour = time_format($task_hms);
+								?>
+								<li class="data_list_monday timesheet_data_id_<?php echo $import_item->ID?>"><?php echo (!empty($task_hour)) ? $task_hour : "--" ; ?></li>
+								<?php endforeach; ?>
+								<li class="">
+									<input type="text" class="new_row_entry_hours">
+								</li>
+							</div>
 							<!--<div class="task_person data_title header_titles">
 								<h3 class="top_label">Done by</h3>
 								<?php // foreach ($import_data as $import_item): ?>
@@ -629,7 +658,7 @@ if(isset($_GET['deleteID'])) {
 								<?php // endforeach; ?>						
 							</div>-->
 							<div class="task_description data_title header_titles">
-								<h3 class="top_label">Description</h3>
+								<h3 class="top_label">Describe what was done</h3>
 								<?php
 									foreach ($import_data as $import_item):
 									if(!empty($import_item->task_description)){
@@ -649,7 +678,7 @@ if(isset($_GET['deleteID'])) {
 								</div>
 								<?php endforeach; ?>
 								<div class="accordian_input">
-									<input type="text" class="new_row_entry_description">
+									<textarea class="new_row_entry_description" row="2"></textarea>
 								</div>
 							</div>
 							<div class="task_edit">
@@ -668,11 +697,11 @@ if(isset($_GET['deleteID'])) {
 								<h3 class="top_label">&nbsp;&nbsp;&nbsp;&nbsp;</h3>
 								<?php foreach ($import_data as $import_item): ?>								
 								<li class="data_list_monday timesheet_data_id_<?php echo $import_item->ID?>">									
-									<div id="delete_kanban_monday_<?php echo $import_item->ID?>" class="button_1 delete_button delete_edit_kanban">D</div>
+									<div id="delete_kanban_monday_<?php echo $import_item->ID?>" class="button_1 delete_button delete_edit_kanban">-</div>
 								</li>
 								<?php endforeach; ?>
 								<li class="">
-									<div class="button_1 delete_new_row_entry_btn">D</div>
+									<div class="button_1 delete_new_row_entry_btn">-</div>
 								</li>
 							</div>
 							<div class="task_done_today">
@@ -745,7 +774,7 @@ if(isset($_GET['deleteID'])) {
 							<div style="display:none;" class="loader kanban_save_loader"></div>
 						</div>						
 					</div>
-					<!-- TUESDAY -->
+				<!-- TUESDAY -->
 					<div id="tuesday" class="tab tab_content <?php echo ($day_now == 'Tuesday') ? 'active' : ''; ?>" style="display: none;">
 						<input type="hidden" class="tab_date tuesday_date" value="<?php echo $date_range[1]; ?>" />
 						<?php 
@@ -770,49 +799,6 @@ if(isset($_GET['deleteID'])) {
 								$filter = "Where ID!='' AND (day_now = 'Tuesday') AND (status = 1) AND (user_id = '$user_id') AND (date_now = '$date_range[1]')";
 								$import_data = $wpdb->get_results("SELECT * FROM {$table_name} $filter"); 					
 							?>
-							<div class="task_name data_title header_titles">
-								<h3 class="top_label">Task Name</h3>
-								<?php 
-									foreach ($import_data as $import_item): 
-									if($import_item->task_name != null && $import_item->task_suffix != null){
-										$task_name = format_task_name($import_item->task_name) ." - ". $import_item->task_suffix;
-										}elseif($import_item->task_name != null && $import_item->task_suffix == null){
-										$task_name = format_task_name($import_item->task_name);
-										}elseif($import_item->task_name == null && $import_item->task_suffix != null){
-										$task_name = $import_item->task_suffix;
-										}elseif($import_item->task_name == null && $import_item->task_suffix == null){
-										$task_name = "--";
-									}
-									if(strlen($task_name) <= 25){
-										$task_name_trimmed = $task_name;
-										}else{
-										$task_name_trimmed = substr($task_name, 0, 25) . "...";
-									}
-								?>
-								<li class="data_list_tuesday timesheet_data_id_<?php echo $import_item->ID?>"><?php echo $task_name_trimmed; ?></li>
-								<?php endforeach; ?>
-								<li class="">
-									<select name="" class="new_row_entry_taskname">
-										<?php
-											foreach($tasks as $task){
-												echo "<option>".$task->task_name."</option>";
-											}
-										?>
-									</select>
-								</li>
-							</div>
-							<div class="task_hour data_title header_titles">
-								<h3 class="top_label">Hours</h3>
-								<?php foreach ($import_data as $import_item):
-									$task_hms = $import_item->task_hour;
-									$task_hour = time_format($task_hms);
-								?>
-								<li class="data_list_tuesday timesheet_data_id_<?php echo $import_item->ID?>"><?php echo (!empty($task_hour)) ? $task_hour : "--" ; ?></li>
-								<?php endforeach; ?>
-								<li class="">
-									<input type="text" class="new_row_entry_hours">
-								</li>
-							</div>
 							<div class="task_label data_title header_titles">
 								<h3 class="top_label">Client</h3>
 								<?php foreach ($import_data as $import_item): ?>
@@ -855,6 +841,78 @@ if(isset($_GET['deleteID'])) {
 									</select>
 								</li>
 							</div>
+							<div class="task_name data_title header_titles">
+								<h3 class="top_label">Task</h3>
+								<?php 
+									foreach ($import_data as $import_item): 
+									if($import_item->task_name != null && $import_item->task_suffix != null){
+										$task_name = format_task_name($import_item->task_name) ." - ". $import_item->task_suffix;
+										}elseif($import_item->task_name != null && $import_item->task_suffix == null){
+										$task_name = format_task_name($import_item->task_name);
+										}elseif($import_item->task_name == null && $import_item->task_suffix != null){
+										$task_name = $import_item->task_suffix;
+										}elseif($import_item->task_name == null && $import_item->task_suffix == null){
+										$task_name = "--";
+									}
+									if(strlen($task_name) <= 25){
+										$task_name_trimmed = $task_name;
+										}else{
+										$task_name_trimmed = substr($task_name, 0, 25) . "...";
+									}
+								?>
+								<li class="data_list_tuesday timesheet_data_id_<?php echo $import_item->ID?>"><?php echo $task_name_trimmed; ?></li>
+								<?php endforeach; ?>
+								<li class="">
+									<select name="" class="new_row_entry_taskname">
+										<?php
+											foreach($tasks as $task){
+												echo "<option>".$task->task_name."</option>";
+											}
+										?>
+									</select>
+								</li>
+							</div>
+							<div class="task_details data_title header_titles">
+								<h3 class="top_label">Task Details</h3>
+								<?php 
+									foreach ($import_data as $import_item): 
+									// if($import_item->task_name != null && $import_item->task_suffix != null){
+									// 	$task_name = format_task_name($import_item->task_name) ." - ". $import_item->task_suffix;
+									// 	}elseif($import_item->task_name != null && $import_item->task_suffix == null){
+									// 	$task_name = format_task_name($import_item->task_name);
+									// 	}elseif($import_item->task_name == null && $import_item->task_suffix != null){
+									// 	$task_name = $import_item->task_suffix;
+									// 	}elseif($import_item->task_name == null && $import_item->task_suffix == null){
+									// 	$task_name = "--";
+									// }
+									if(strlen($import_item->task_suffix) <= 18){
+										$task_name_trimmed = $import_item->task_suffix;
+									}else{
+										$task_name_trimmed = substr($import_item->task_suffix, 0, 18) . "...";
+									}
+
+									if(empty($import_item->task_suffix)){
+										$task_name_trimmed = '...';
+									}
+								?>
+								<li class="data_list_tuesday timesheet_data_id_<?php echo $import_item->ID?>"><?php echo $task_name_trimmed ?></li>
+								<?php endforeach; ?>
+								<li class="">
+									<input type="text" class="new_row_task_details">
+								</li>
+							</div>
+							<div class="task_hour data_title header_titles">
+								<h3 class="top_label">Hours</h3>
+								<?php foreach ($import_data as $import_item):
+									$task_hms = $import_item->task_hour;
+									$task_hour = time_format($task_hms);
+								?>
+								<li class="data_list_tuesday timesheet_data_id_<?php echo $import_item->ID?>"><?php echo (!empty($task_hour)) ? $task_hour : "--" ; ?></li>
+								<?php endforeach; ?>
+								<li class="">
+									<input type="text" class="new_row_entry_hours">
+								</li>
+							</div>
 							<!--<div class="task_person data_title header_titles">
 								<h3 class="top_label">Done by</h3>
 								<?php // foreach ($import_data as $import_item): ?>
@@ -862,7 +920,7 @@ if(isset($_GET['deleteID'])) {
 								<?php // endforeach; ?>
 							</div>-->
 							<div class="task_description data_title header_titles">
-								<h3 class="top_label">Description</h3>
+								<h3 class="top_label">Describe what was done</h3>
 								<?php
 									foreach ($import_data as $import_item):
 									if(!empty($import_item->task_description)){
@@ -882,7 +940,7 @@ if(isset($_GET['deleteID'])) {
 								</div>
 								<?php endforeach; ?>
 								<div class="accordian_input">
-									<input type="text" class="new_row_entry_description">
+									<textarea class="new_row_entry_description" row="2"></textarea>
 								</div>
 							</div>
 							<div class="task_edit">
@@ -901,11 +959,11 @@ if(isset($_GET['deleteID'])) {
 								<h3 class="top_label">&nbsp;&nbsp;&nbsp;&nbsp;</h3>
 								<?php foreach ($import_data as $import_item): ?>								
 								<li class="data_list_tuesday timesheet_data_id_<?php echo $import_item->ID?>">									
-									<div id="delete_kanban_tuesday_<?php echo $import_item->ID?>" class="button_1 delete_button delete_edit_kanban">D</div>
+									<div id="delete_kanban_tuesday_<?php echo $import_item->ID?>" class="button_1 delete_button delete_edit_kanban">-</div>
 								</li>
 								<?php endforeach; ?>
 								<li class="">
-									<div class="button_1 delete_new_row_entry_btn">D</div>
+									<div class="button_1 delete_new_row_entry_btn">-</div>
 								</li>
 							</div>
 							<div class="task_done_today">
@@ -975,10 +1033,9 @@ if(isset($_GET['deleteID'])) {
 						<div style="display:none;" class="import_message">							
 							<p>Press save if Imported time is correct, else clear.</p>
 							<div style="display:none;" class="loader kanban_save_loader"></div>
-						</div>
-						
+						</div>	
 					</div>
-					<!-- WEDNESDAY -->
+				<!-- WEDNESDAY -->
 					<div id="wednesday" class="tab tab_content <?php echo ($day_now == 'Wednesday') ? 'active' : ''; ?>" style="display: none;">
 						<input type="hidden" class="tab_date wednesday_date" value="<?php echo $date_range[2]; ?>" />
 						<?php 
@@ -1003,49 +1060,6 @@ if(isset($_GET['deleteID'])) {
 								$filter = "Where ID!='' AND (day_now = 'Wednesday') AND (status = 1) AND (user_id = '$user_id') AND (date_now = '$date_range[2]')";
 								$import_data = $wpdb->get_results("SELECT * FROM {$table_name} $filter"); 					
 							?>
-							<div class="task_name data_title header_titles">
-								<h3 class="top_label">Task Name</h3>
-								<?php 
-									foreach ($import_data as $import_item): 
-									if($import_item->task_name != null && $import_item->task_suffix != null){
-										$task_name = format_task_name($import_item->task_name) ." - ". $import_item->task_suffix;
-										}elseif($import_item->task_name != null && $import_item->task_suffix == null){
-										$task_name = format_task_name($import_item->task_name);
-										}elseif($import_item->task_name == null && $import_item->task_suffix != null){
-										$task_name = $import_item->task_suffix;
-										}elseif($import_item->task_name == null && $import_item->task_suffix == null){
-										$task_name = "--";
-									}
-									if(strlen($task_name) <= 25){
-										$task_name_trimmed = $task_name;
-										}else{
-										$task_name_trimmed = substr($task_name, 0, 25) . "...";
-									}
-								?>
-								<li class="data_list_wednesday timesheet_data_id_<?php echo $import_item->ID?>"><?php echo $task_name_trimmed; ?></li>
-								<?php endforeach; ?>
-								<li class="">
-									<select name="" class="new_row_entry_taskname">
-										<?php
-											foreach($tasks as $task){
-												echo "<option>".$task->task_name."</option>";
-											}
-										?>
-									</select>
-								</li>
-							</div>
-							<div class="task_hour data_title header_titles">
-								<h3 class="top_label">Hours</h3>
-								<?php foreach ($import_data as $import_item):
-									$task_hms = $import_item->task_hour;
-									$task_hour = time_format($task_hms);
-								?>
-								<li class="data_list_wednesday timesheet_data_id_<?php echo $import_item->ID?>"><?php echo (!empty($task_hour)) ? $task_hour : "--" ; ?></li>
-								<?php endforeach; ?>
-								<li class="">
-									<input type="text" class="new_row_entry_hours">
-								</li>
-							</div>
 							<div class="task_label data_title header_titles">
 								<h3 class="top_label">Client</h3>
 								<?php foreach ($import_data as $import_item): ?>
@@ -1088,6 +1102,78 @@ if(isset($_GET['deleteID'])) {
 									</select>
 								</li>
 							</div>
+							<div class="task_name data_title header_titles">
+								<h3 class="top_label">Task</h3>
+								<?php 
+									foreach ($import_data as $import_item): 
+									if($import_item->task_name != null && $import_item->task_suffix != null){
+										$task_name = format_task_name($import_item->task_name) ." - ". $import_item->task_suffix;
+										}elseif($import_item->task_name != null && $import_item->task_suffix == null){
+										$task_name = format_task_name($import_item->task_name);
+										}elseif($import_item->task_name == null && $import_item->task_suffix != null){
+										$task_name = $import_item->task_suffix;
+										}elseif($import_item->task_name == null && $import_item->task_suffix == null){
+										$task_name = "--";
+									}
+									if(strlen($task_name) <= 25){
+										$task_name_trimmed = $task_name;
+										}else{
+										$task_name_trimmed = substr($task_name, 0, 25) . "...";
+									}
+								?>
+								<li class="data_list_wednesday timesheet_data_id_<?php echo $import_item->ID?>"><?php echo $task_name_trimmed; ?></li>
+								<?php endforeach; ?>
+								<li class="">
+									<select name="" class="new_row_entry_taskname">
+										<?php
+											foreach($tasks as $task){
+												echo "<option>".$task->task_name."</option>";
+											}
+										?>
+									</select>
+								</li>
+							</div>
+							<div class="task_details data_title header_titles">
+								<h3 class="top_label">Task Details</h3>
+								<?php 
+									foreach ($import_data as $import_item): 
+									// if($import_item->task_name != null && $import_item->task_suffix != null){
+									// 	$task_name = format_task_name($import_item->task_name) ." - ". $import_item->task_suffix;
+									// 	}elseif($import_item->task_name != null && $import_item->task_suffix == null){
+									// 	$task_name = format_task_name($import_item->task_name);
+									// 	}elseif($import_item->task_name == null && $import_item->task_suffix != null){
+									// 	$task_name = $import_item->task_suffix;
+									// 	}elseif($import_item->task_name == null && $import_item->task_suffix == null){
+									// 	$task_name = "--";
+									// }
+									if(strlen($import_item->task_suffix) <= 18){
+										$task_name_trimmed = $import_item->task_suffix;
+									}else{
+										$task_name_trimmed = substr($import_item->task_suffix, 0, 18) . "...";
+									}
+
+									if(empty($import_item->task_suffix)){
+										$task_name_trimmed = '...';
+									}
+								?>
+								<li class="data_list_wednesday timesheet_data_id_<?php echo $import_item->ID?>"><?php echo $task_name_trimmed ?></li>
+								<?php endforeach; ?>
+								<li class="">
+									<input type="text" class="new_row_task_details">
+								</li>
+							</div>
+							<div class="task_hour data_title header_titles">
+								<h3 class="top_label">Hours</h3>
+								<?php foreach ($import_data as $import_item):
+									$task_hms = $import_item->task_hour;
+									$task_hour = time_format($task_hms);
+								?>
+								<li class="data_list_wednesday timesheet_data_id_<?php echo $import_item->ID?>"><?php echo (!empty($task_hour)) ? $task_hour : "--" ; ?></li>
+								<?php endforeach; ?>
+								<li class="">
+									<input type="text" class="new_row_entry_hours">
+								</li>
+							</div>
 							<!--<div class="task_person data_title header_titles">
 								<h3 class="top_label">Done by</h3>
 								<?php //foreach ($import_data as $import_item): ?>
@@ -1095,7 +1181,7 @@ if(isset($_GET['deleteID'])) {
 								<?php //endforeach; ?>						
 							</div>-->
 							<div class="task_description data_title header_titles">
-								<h3 class="top_label">Description</h3>
+								<h3 class="top_label">Describe what was done</h3>
 								<?php
 									foreach ($import_data as $import_item):
 									if(!empty($import_item->task_description)){
@@ -1115,7 +1201,7 @@ if(isset($_GET['deleteID'])) {
 								</div>
 								<?php endforeach; ?>
 								<div class="accordian_input">
-									<input type="text" class="new_row_entry_description">
+									<textarea class="new_row_entry_description" row="2"></textarea>
 								</div>
 							</div>
 							<div class="task_edit">
@@ -1134,11 +1220,11 @@ if(isset($_GET['deleteID'])) {
 								<h3 class="top_label">&nbsp;&nbsp;&nbsp;&nbsp;</h3>
 								<?php foreach ($import_data as $import_item): ?>								
 								<li class="data_list_wednesday timesheet_data_id_<?php echo $import_item->ID?>">									
-									<div id="delete_kanban_wednesday_<?php echo $import_item->ID?>" class="button_1 delete_button delete_edit_kanban">D</div>
+									<div id="delete_kanban_wednesday_<?php echo $import_item->ID?>" class="button_1 delete_button delete_edit_kanban">-</div>
 								</li>
 								<?php endforeach; ?>
 								<li class="">
-									<div class="button_1 delete_new_row_entry_btn">D</div>
+									<div class="button_1 delete_new_row_entry_btn">-</div>
 								</li>
 							</div>
 							<div class="task_done_today">
@@ -1211,7 +1297,7 @@ if(isset($_GET['deleteID'])) {
 							<div style="display:none;" class="loader kanban_save_loader"></div>
 						</div>						
 					</div>
-					<!-- THURSDAY -->
+				<!-- THURSDAY -->
 					<div id="thursday" class="tab tab_content <?php echo ($day_now == 'Thursday') ? 'active' : ''; ?>" style="display: none;">
 						<input type="hidden" class="tab_date thursday_date" value="<?php echo $date_range[3]; ?>" />
 						<?php 
@@ -1236,49 +1322,6 @@ if(isset($_GET['deleteID'])) {
 								$filter = "Where ID!='' AND (day_now = 'Thursday') AND (status = 1) AND (user_id = '$user_id') AND (date_now = '$date_range[3]')";
 								$import_data = $wpdb->get_results("SELECT * FROM {$table_name} $filter"); 					
 							?>
-							<div class="task_name data_title header_titles">
-								<h3 class="top_label">Task Name</h3>
-								<?php 
-									foreach ($import_data as $import_item): 
-									if($import_item->task_name != null && $import_item->task_suffix != null){
-										$task_name = format_task_name($import_item->task_name) ." - ". $import_item->task_suffix;
-										}elseif($import_item->task_name != null && $import_item->task_suffix == null){
-										$task_name = format_task_name($import_item->task_name);
-										}elseif($import_item->task_name == null && $import_item->task_suffix != null){
-										$task_name = $import_item->task_suffix;
-										}elseif($import_item->task_name == null && $import_item->task_suffix == null){
-										$task_name = "--";
-									}
-									if(strlen($task_name) <= 25){
-										$task_name_trimmed = $task_name;
-									}else{
-										$task_name_trimmed = substr($task_name, 0, 25) . "...";
-									}
-								?>
-								<li class="data_list_thursday timesheet_data_id_<?php echo $import_item->ID?>"><?php echo $task_name_trimmed; ?></li>
-								<?php endforeach; ?>
-								<li class="">
-									<select name="" class="new_row_entry_taskname">
-										<?php
-											foreach($tasks as $task){
-												echo "<option>".$task->task_name."</option>";
-											}
-										?>
-									</select>
-								</li>
-							</div>
-							<div class="task_hour data_title header_titles">
-								<h3 class="top_label">Hours</h3>
-								<?php foreach ($import_data as $import_item):
-									$task_hms = $import_item->task_hour;
-									$task_hour = time_format($task_hms);
-								?>
-								<li class="data_list_thursday timesheet_data_id_<?php echo $import_item->ID?>"><?php echo (!empty($task_hour)) ? $task_hour : "--" ; ?></li>
-								<?php endforeach; ?>
-								<li class="">
-									<input type="text" class="new_row_entry_hours">
-								</li>
-							</div>
 							<div class="task_label data_title header_titles">
 								<h3 class="top_label">Client</h3>
 								<?php foreach ($import_data as $import_item): ?>
@@ -1321,6 +1364,78 @@ if(isset($_GET['deleteID'])) {
 									</select>
 								</li>
 							</div>
+							<div class="task_name data_title header_titles">
+								<h3 class="top_label">Task</h3>
+								<?php 
+									foreach ($import_data as $import_item): 
+									if($import_item->task_name != null && $import_item->task_suffix != null){
+										$task_name = format_task_name($import_item->task_name) ." - ". $import_item->task_suffix;
+										}elseif($import_item->task_name != null && $import_item->task_suffix == null){
+										$task_name = format_task_name($import_item->task_name);
+										}elseif($import_item->task_name == null && $import_item->task_suffix != null){
+										$task_name = $import_item->task_suffix;
+										}elseif($import_item->task_name == null && $import_item->task_suffix == null){
+										$task_name = "--";
+									}
+									if(strlen($task_name) <= 25){
+										$task_name_trimmed = $task_name;
+									}else{
+										$task_name_trimmed = substr($task_name, 0, 25) . "...";
+									}
+								?>
+								<li class="data_list_thursday timesheet_data_id_<?php echo $import_item->ID?>"><?php echo $task_name_trimmed; ?></li>
+								<?php endforeach; ?>
+								<li class="">
+									<select name="" class="new_row_entry_taskname">
+										<?php
+											foreach($tasks as $task){
+												echo "<option>".$task->task_name."</option>";
+											}
+										?>
+									</select>
+								</li>
+							</div>
+							<div class="task_details data_title header_titles">
+								<h3 class="top_label">Task Details</h3>
+								<?php 
+									foreach ($import_data as $import_item): 
+									// if($import_item->task_name != null && $import_item->task_suffix != null){
+									// 	$task_name = format_task_name($import_item->task_name) ." - ". $import_item->task_suffix;
+									// 	}elseif($import_item->task_name != null && $import_item->task_suffix == null){
+									// 	$task_name = format_task_name($import_item->task_name);
+									// 	}elseif($import_item->task_name == null && $import_item->task_suffix != null){
+									// 	$task_name = $import_item->task_suffix;
+									// 	}elseif($import_item->task_name == null && $import_item->task_suffix == null){
+									// 	$task_name = "--";
+									// }
+									if(strlen($import_item->task_suffix) <= 18){
+										$task_name_trimmed = $import_item->task_suffix;
+									}else{
+										$task_name_trimmed = substr($import_item->task_suffix, 0, 18) . "...";
+									}
+
+									if(empty($import_item->task_suffix)){
+										$task_name_trimmed = '...';
+									}
+								?>
+								<li class="data_list_thursday timesheet_data_id_<?php echo $import_item->ID?>"><?php echo $task_name_trimmed ?></li>
+								<?php endforeach; ?>
+								<li class="">
+									<input type="text" class="new_row_task_details">
+								</li>
+							</div>
+							<div class="task_hour data_title header_titles">
+								<h3 class="top_label">Hours</h3>
+								<?php foreach ($import_data as $import_item):
+									$task_hms = $import_item->task_hour;
+									$task_hour = time_format($task_hms);
+								?>
+								<li class="data_list_thursday timesheet_data_id_<?php echo $import_item->ID?>"><?php echo (!empty($task_hour)) ? $task_hour : "--" ; ?></li>
+								<?php endforeach; ?>
+								<li class="">
+									<input type="text" class="new_row_entry_hours">
+								</li>
+							</div>
 							<!--<div class="task_person data_title header_titles">						
 								<h3 class="top_label">Done by</h3>
 								<?php //foreach ($import_data as $import_item): ?>
@@ -1328,7 +1443,7 @@ if(isset($_GET['deleteID'])) {
 								<?php //endforeach; ?>						
 							</div>-->
 							<div class="task_description data_title header_titles">
-								<h3 class="top_label">Description</h3>
+								<h3 class="top_label">Describe what was done</h3>
 								<?php
 									foreach ($import_data as $import_item):
 									if(!empty($import_item->task_description)){
@@ -1348,7 +1463,7 @@ if(isset($_GET['deleteID'])) {
 								</div>
 								<?php endforeach; ?>
 								<div class="accordian_input">
-									<input type="text" class="new_row_entry_description">
+									<textarea class="new_row_entry_description" row="2"></textarea>
 								</div>
 							</div>
 							<div class="task_edit">
@@ -1367,11 +1482,11 @@ if(isset($_GET['deleteID'])) {
 								<h3 class="top_label">&nbsp;&nbsp;&nbsp;&nbsp;</h3>
 								<?php foreach ($import_data as $import_item): ?>								
 								<li class="data_list_thursday timesheet_data_id_<?php echo $import_item->ID?>">
-									<div id="delete_kanban_thursday_<?php echo $import_item->ID?>" class="button_1 delete_button delete_edit_kanban">D</div>
+									<div id="delete_kanban_thursday_<?php echo $import_item->ID?>" class="button_1 delete_button delete_edit_kanban">-</div>
 								</li>
 								<?php endforeach; ?>
 								<li class="">
-									<div class="button_1 delete_new_row_entry_btn">D</div>
+									<div class="button_1 delete_new_row_entry_btn">-</div>
 								</li>
 							</div>
 							<div class="task_done_today">
@@ -1443,7 +1558,7 @@ if(isset($_GET['deleteID'])) {
 							<div style="display:none;" class="loader kanban_save_loader"></div>
 						</div>						
 					</div>
-					<!-- FRIDAY -->
+				<!-- FRIDAY -->
 					<div id="friday" class="tab tab_content <?php echo ($day_now == 'Friday') ? 'active' : ''; ?>" style="display: none;">
 						<input type="hidden" class="tab_date friday_date" value="<?php echo $date_range[4]; ?>" />
 						<?php 
@@ -1469,49 +1584,6 @@ if(isset($_GET['deleteID'])) {
 								$filter = "Where ID!='' AND (day_now = 'Friday') AND (status = 1) AND (user_id = '$user_id') AND (date_now = '$date_range[4]')";
 								$import_data = $wpdb->get_results("SELECT * FROM {$table_name} $filter"); 					
 							?>
-							<div class="task_name data_title header_titles">
-								<h3 class="top_label">Task Name</h3>
-								<?php 
-									foreach ($import_data as $import_item): 
-									if($import_item->task_name != null && $import_item->task_suffix != null){
-										$task_name = format_task_name($import_item->task_name) ." - ". $import_item->task_suffix;
-										}elseif($import_item->task_name != null && $import_item->task_suffix == null){
-										$task_name = format_task_name($import_item->task_name);
-										}elseif($import_item->task_name == null && $import_item->task_suffix != null){
-										$task_name = $import_item->task_suffix;
-										}elseif($import_item->task_name == null && $import_item->task_suffix == null){
-										$task_name = "--";
-									}
-									if(strlen($task_name) <= 25){
-										$task_name_trimmed = $task_name;
-										}else{
-										$task_name_trimmed = substr($task_name, 0, 25) . "...";
-									}
-								?>
-								<li class="data_list_friday timesheet_data_id_<?php echo $import_item->ID?>"><?php echo $task_name_trimmed; ?></li>
-								<?php endforeach; ?>
-								<li class="">
-									<select name="" class="new_row_entry_taskname">
-										<?php
-											foreach($tasks as $task){
-												echo "<option>".$task->task_name."</option>";
-											}
-										?>
-									</select>
-								</li>
-							</div>
-							<div class="task_hour data_title header_titles">
-								<h3 class="top_label">Hours</h3>
-								<?php foreach ($import_data as $import_item):
-									$task_hms = $import_item->task_hour;
-									$task_hour = time_format($task_hms);
-								?>
-								<li class="data_list_friday timesheet_data_id_<?php echo $import_item->ID?>"><?php echo (!empty($task_hour)) ? $task_hour : "--" ; ?></li>
-								<?php endforeach; ?>
-								<li class="">
-									<input type="text" class="new_row_entry_hours">
-								</li>
-							</div>
 							<div class="task_label data_title header_titles">
 								<h3 class="top_label">Client</h3>
 								<?php foreach ($import_data as $import_item): ?>
@@ -1554,6 +1626,78 @@ if(isset($_GET['deleteID'])) {
 									</select>
 								</li>
 							</div>
+							<div class="task_name data_title header_titles">
+								<h3 class="top_label">Task</h3>
+								<?php 
+									foreach ($import_data as $import_item): 
+									if($import_item->task_name != null && $import_item->task_suffix != null){
+										$task_name = format_task_name($import_item->task_name) ." - ". $import_item->task_suffix;
+										}elseif($import_item->task_name != null && $import_item->task_suffix == null){
+										$task_name = format_task_name($import_item->task_name);
+										}elseif($import_item->task_name == null && $import_item->task_suffix != null){
+										$task_name = $import_item->task_suffix;
+										}elseif($import_item->task_name == null && $import_item->task_suffix == null){
+										$task_name = "--";
+									}
+									if(strlen($task_name) <= 25){
+										$task_name_trimmed = $task_name;
+										}else{
+										$task_name_trimmed = substr($task_name, 0, 25) . "...";
+									}
+								?>
+								<li class="data_list_friday timesheet_data_id_<?php echo $import_item->ID?>"><?php echo $task_name_trimmed; ?></li>
+								<?php endforeach; ?>
+								<li class="">
+									<select name="" class="new_row_entry_taskname">
+										<?php
+											foreach($tasks as $task){
+												echo "<option>".$task->task_name."</option>";
+											}
+										?>
+									</select>
+								</li>
+							</div>
+							<div class="task_details data_title header_titles">
+								<h3 class="top_label">Task Details</h3>
+								<?php 
+									foreach ($import_data as $import_item): 
+									// if($import_item->task_name != null && $import_item->task_suffix != null){
+									// 	$task_name = format_task_name($import_item->task_name) ." - ". $import_item->task_suffix;
+									// 	}elseif($import_item->task_name != null && $import_item->task_suffix == null){
+									// 	$task_name = format_task_name($import_item->task_name);
+									// 	}elseif($import_item->task_name == null && $import_item->task_suffix != null){
+									// 	$task_name = $import_item->task_suffix;
+									// 	}elseif($import_item->task_name == null && $import_item->task_suffix == null){
+									// 	$task_name = "--";
+									// }
+									if(strlen($import_item->task_suffix) <= 18){
+										$task_name_trimmed = $import_item->task_suffix;
+									}else{
+										$task_name_trimmed = substr($import_item->task_suffix, 0, 18) . "...";
+									}
+
+									if(empty($import_item->task_suffix)){
+										$task_name_trimmed = '...';
+									}
+								?>
+								<li class="data_list_friday timesheet_data_id_<?php echo $import_item->ID?>"><?php echo $task_name_trimmed ?></li>
+								<?php endforeach; ?>
+								<li class="">
+									<input type="text" class="new_row_task_details">
+								</li>
+							</div>
+							<div class="task_hour data_title header_titles">
+								<h3 class="top_label">Hours</h3>
+								<?php foreach ($import_data as $import_item):
+									$task_hms = $import_item->task_hour;
+									$task_hour = time_format($task_hms);
+								?>
+								<li class="data_list_friday timesheet_data_id_<?php echo $import_item->ID?>"><?php echo (!empty($task_hour)) ? $task_hour : "--" ; ?></li>
+								<?php endforeach; ?>
+								<li class="">
+									<input type="text" class="new_row_entry_hours">
+								</li>
+							</div>
 							<!--<div class="task_person data_title header_titles">
 								<h3 class="top_label">Done by</h3>
 								<?php //foreach ($import_data as $import_item): ?>
@@ -1561,7 +1705,7 @@ if(isset($_GET['deleteID'])) {
 								<?php //endforeach; ?>
 							</div>-->
 							<div class="task_description data_title header_titles">
-								<h3 class="top_label">Description</h3>
+								<h3 class="top_label">Describe what was done</h3>
 								<?php
 									foreach ($import_data as $import_item):
 									if(!empty($import_item->task_description)){
@@ -1581,7 +1725,7 @@ if(isset($_GET['deleteID'])) {
 								</div>
 								<?php endforeach; ?>
 								<div class="accordian_input">
-									<input type="text" class="new_row_entry_description">
+									<textarea class="new_row_entry_description" row="2"></textarea>
 								</div>
 							</div>
 							<div class="task_edit">
@@ -1600,11 +1744,11 @@ if(isset($_GET['deleteID'])) {
 								<h3 class="top_label">&nbsp;&nbsp;&nbsp;&nbsp;</h3>
 								<?php foreach ($import_data as $import_item): ?>								
 								<li class="data_list_friday timesheet_data_id_<?php echo $import_item->ID?>">									
-									<div id="delete_kanban_friday_<?php echo $import_item->ID?>" class="button_1 delete_button delete_edit_kanban">D</div>
+									<div id="delete_kanban_friday_<?php echo $import_item->ID?>" class="button_1 delete_button delete_edit_kanban">-</div>
 								</li>
 								<?php endforeach; ?>
 								<li class="">
-									<div class="button_1 delete_new_row_entry_btn">D</div>
+									<div class="button_1 delete_new_row_entry_btn">-</div>
 								</li>
 							</div>
 							<div class="task_done_today">
@@ -1676,7 +1820,7 @@ if(isset($_GET['deleteID'])) {
 							<div style="display:none;" class="loader kanban_save_loader"></div>
 						</div>						
 					</div>
-					<!-- SATURDAY -->
+				<!-- SATURDAY -->
 					<div id="saturday" class="tab tab_content <?php echo ($day_now == 'Saturday') ? 'active' : ''; ?>" style="display: none;">
 						<input type="hidden" class="tab_date saturday_date" value="<?php echo $date_range[5]; ?>" />
 						<?php 
@@ -1701,49 +1845,6 @@ if(isset($_GET['deleteID'])) {
 								$filter = "Where ID!='' AND (day_now = 'Saturday') AND (status = 1) AND (user_id = '$user_id') AND (date_now = '$date_range[5]')";
 								$import_data = $wpdb->get_results("SELECT * FROM {$table_name} $filter"); 					
 							?>
-							<div class="task_name data_title header_titles">
-								<h3 class="top_label">Task Name</h3>
-								<?php 
-									foreach ($import_data as $import_item): 
-									if($import_item->task_name != null && $import_item->task_suffix != null){
-										$task_name = format_task_name($import_item->task_name) ." - ". $import_item->task_suffix;
-										}elseif($import_item->task_name != null && $import_item->task_suffix == null){
-										$task_name = format_task_name($import_item->task_name);
-										}elseif($import_item->task_name == null && $import_item->task_suffix != null){
-										$task_name = $import_item->task_suffix;
-										}elseif($import_item->task_name == null && $import_item->task_suffix == null){
-										$task_name = "--";
-									}
-									if(strlen($task_name) <= 25){
-										$task_name_trimmed = $task_name;
-										}else{
-										$task_name_trimmed = substr($task_name, 0, 25) . "...";
-									}
-								?>
-								<li class="data_list_saturday timesheet_data_id_<?php echo $import_item->ID?>"><?php echo $task_name_trimmed; ?></li>
-								<?php endforeach; ?>
-								<li class="">
-									<select name="" class="new_row_entry_taskname">
-										<?php
-											foreach($tasks as $task){
-												echo "<option>".$task->task_name."</option>";
-											}
-										?>
-									</select>
-								</li>
-							</div>
-							<div class="task_hour data_title header_titles">
-								<h3 class="top_label">Hours</h3>
-								<?php foreach ($import_data as $import_item):
-									$task_hms = $import_item->task_hour;
-									$task_hour = time_format($task_hms);
-								?>
-								<li class="data_list_saturday timesheet_data_id_<?php echo $import_item->ID?>"><?php echo (!empty($task_hour)) ? $task_hour : "--" ; ?></li>
-								<?php endforeach; ?>
-								<li class="">
-									<input type="text" class="new_row_entry_hours">
-								</li>
-							</div>
 							<div class="task_label data_title header_titles">
 								<h3 class="top_label">Client</h3>
 								<?php foreach ($import_data as $import_item): ?>
@@ -1786,6 +1887,78 @@ if(isset($_GET['deleteID'])) {
 									</select>
 								</li>
 							</div>
+							<div class="task_name data_title header_titles">
+								<h3 class="top_label">Task</h3>
+								<?php 
+									foreach ($import_data as $import_item): 
+									if($import_item->task_name != null && $import_item->task_suffix != null){
+										$task_name = format_task_name($import_item->task_name) ." - ". $import_item->task_suffix;
+										}elseif($import_item->task_name != null && $import_item->task_suffix == null){
+										$task_name = format_task_name($import_item->task_name);
+										}elseif($import_item->task_name == null && $import_item->task_suffix != null){
+										$task_name = $import_item->task_suffix;
+										}elseif($import_item->task_name == null && $import_item->task_suffix == null){
+										$task_name = "--";
+									}
+									if(strlen($task_name) <= 25){
+										$task_name_trimmed = $task_name;
+										}else{
+										$task_name_trimmed = substr($task_name, 0, 25) . "...";
+									}
+								?>
+								<li class="data_list_saturday timesheet_data_id_<?php echo $import_item->ID?>"><?php echo $task_name_trimmed; ?></li>
+								<?php endforeach; ?>
+								<li class="">
+									<select name="" class="new_row_entry_taskname">
+										<?php
+											foreach($tasks as $task){
+												echo "<option>".$task->task_name."</option>";
+											}
+										?>
+									</select>
+								</li>
+							</div>
+							<div class="task_details data_title header_titles">
+								<h3 class="top_label">Task Details</h3>
+								<?php 
+									foreach ($import_data as $import_item): 
+									// if($import_item->task_name != null && $import_item->task_suffix != null){
+									// 	$task_name = format_task_name($import_item->task_name) ." - ". $import_item->task_suffix;
+									// 	}elseif($import_item->task_name != null && $import_item->task_suffix == null){
+									// 	$task_name = format_task_name($import_item->task_name);
+									// 	}elseif($import_item->task_name == null && $import_item->task_suffix != null){
+									// 	$task_name = $import_item->task_suffix;
+									// 	}elseif($import_item->task_name == null && $import_item->task_suffix == null){
+									// 	$task_name = "--";
+									// }
+									if(strlen($import_item->task_suffix) <= 18){
+										$task_name_trimmed = $import_item->task_suffix;
+									}else{
+										$task_name_trimmed = substr($import_item->task_suffix, 0, 18) . "...";
+									}
+
+									if(empty($import_item->task_suffix)){
+										$task_name_trimmed = '...';
+									}
+								?>
+								<li class="data_list_saturday timesheet_data_id_<?php echo $import_item->ID?>"><?php echo $task_name_trimmed ?></li>
+								<?php endforeach; ?>
+								<li class="">
+									<input type="text" class="new_row_task_details">
+								</li>
+							</div>
+							<div class="task_hour data_title header_titles">
+								<h3 class="top_label">Hours</h3>
+								<?php foreach ($import_data as $import_item):
+									$task_hms = $import_item->task_hour;
+									$task_hour = time_format($task_hms);
+								?>
+								<li class="data_list_saturday timesheet_data_id_<?php echo $import_item->ID?>"><?php echo (!empty($task_hour)) ? $task_hour : "--" ; ?></li>
+								<?php endforeach; ?>
+								<li class="">
+									<input type="text" class="new_row_entry_hours">
+								</li>
+							</div>
 							<!--<div class="task_person data_title header_titles">
 								<h3 class="top_label">Done by</h3>
 								<?php //foreach ($import_data as $import_item): ?>
@@ -1793,7 +1966,7 @@ if(isset($_GET['deleteID'])) {
 								<?php //endforeach; ?>
 							</div>-->
 							<div class="task_description data_title header_titles">
-								<h3 class="top_label">Description</h3>
+								<h3 class="top_label">Describe what was done</h3>
 								<?php
 									foreach ($import_data as $import_item):
 									if(!empty($import_item->task_description)){
@@ -1813,7 +1986,7 @@ if(isset($_GET['deleteID'])) {
 								</div>
 								<?php endforeach; ?>
 								<div class="accordian_input">
-									<input type="text" class="new_row_entry_description">
+									<textarea class="new_row_entry_description" row="2"></textarea>
 								</div>
 							</div>
 							<div class="task_edit">
@@ -1832,11 +2005,11 @@ if(isset($_GET['deleteID'])) {
 								<h3 class="top_label">&nbsp;&nbsp;&nbsp;&nbsp;</h3>
 								<?php foreach ($import_data as $import_item): ?>								
 								<li class="data_list_saturday timesheet_data_id_<?php echo $import_item->ID?>">									
-									<div id="delete_kanban_saturday_<?php echo $import_item->ID?>" class="button_1 delete_button delete_edit_kanban">D</div>
+									<div id="delete_kanban_saturday_<?php echo $import_item->ID?>" class="button_1 delete_button delete_edit_kanban">-</div>
 								</li>
 								<?php endforeach; ?>
 								<li class="">
-									<div class="button_1 delete_new_row_entry_btn">D</div>
+									<div class="button_1 delete_new_row_entry_btn">-</div>
 								</li>
 							</div>
 							<div class="task_done_today">
@@ -1908,7 +2081,7 @@ if(isset($_GET['deleteID'])) {
 							<div style="display:none;" class="loader kanban_save_loader"></div>
 						</div>						
 					</div>
-					<!-- SUNDAY -->
+				<!-- SUNDAY -->
 					<div id="sunday" class="tab tab_content <?php echo ($day_now == 'Sunday') ? 'active' : ''; ?>" style="display: none;">
 						<input type="hidden" class="tab_date sunday_date" value="<?php echo $date_range[6]; ?>">
 						<?php 
@@ -1933,49 +2106,6 @@ if(isset($_GET['deleteID'])) {
 								$filter = "Where ID!='' AND (day_now = 'Sunday') AND (status = 1) AND (user_id = '$user_id') AND (date_now = '$date_range[6]')";
 								$import_data = $wpdb->get_results("SELECT * FROM {$table_name} $filter"); 					
 							?>
-							<div class="task_name data_title header_titles">
-								<h3 class="top_label">Task Name</h3>
-								<?php 
-									foreach ($import_data as $import_item): 
-									if($import_item->task_name != null && $import_item->task_suffix != null){
-										$task_name = format_task_name($import_item->task_name) ." - ". $import_item->task_suffix;
-										}elseif($import_item->task_name != null && $import_item->task_suffix == null){
-										$task_name = format_task_name($import_item->task_name);
-										}elseif($import_item->task_name == null && $import_item->task_suffix != null){
-										$task_name = $import_item->task_suffix;
-										}elseif($import_item->task_name == null && $import_item->task_suffix == null){
-										$task_name = "--";
-									}
-									if(strlen($task_name) <= 25){
-										$task_name_trimmed = $task_name;
-										}else{
-										$task_name_trimmed = substr($task_name, 0, 25) . "...";
-									}
-								?>
-								<li class="data_list_sunday timesheet_data_id_<?php echo $import_item->ID?>"><?php echo $task_name_trimmed; ?></li>
-								<?php endforeach; ?>
-								<li class="">
-									<select name="" class="new_row_entry_taskname">
-										<?php
-											foreach($tasks as $task){
-												echo "<option>".$task->task_name."</option>";
-											}
-										?>
-									</select>
-								</li>
-							</div>
-							<div class="task_hour data_title header_titles">
-								<h3 class="top_label">Hours</h3>
-								<?php foreach ($import_data as $import_item):
-									$task_hms = $import_item->task_hour;
-									$task_hour = time_format($task_hms);
-								?>
-								<li class="data_list_sunday timesheet_data_id_<?php echo $import_item->ID?>"><?php echo (!empty($task_hour)) ? $task_hour : "--" ; ?></li>
-								<?php endforeach; ?>
-								<li class="">
-									<input type="text" class="new_row_entry_hours">
-								</li>
-							</div>
 							<div class="task_label data_title header_titles">
 								<h3 class="top_label">Client</h3>
 								<?php foreach ($import_data as $import_item): ?>
@@ -2018,6 +2148,78 @@ if(isset($_GET['deleteID'])) {
 									</select>
 								</li>
 							</div>
+							<div class="task_name data_title header_titles">
+								<h3 class="top_label">Task</h3>
+								<?php 
+									foreach ($import_data as $import_item): 
+									if($import_item->task_name != null && $import_item->task_suffix != null){
+										$task_name = format_task_name($import_item->task_name) ." - ". $import_item->task_suffix;
+										}elseif($import_item->task_name != null && $import_item->task_suffix == null){
+										$task_name = format_task_name($import_item->task_name);
+										}elseif($import_item->task_name == null && $import_item->task_suffix != null){
+										$task_name = $import_item->task_suffix;
+										}elseif($import_item->task_name == null && $import_item->task_suffix == null){
+										$task_name = "--";
+									}
+									if(strlen($task_name) <= 25){
+										$task_name_trimmed = $task_name;
+										}else{
+										$task_name_trimmed = substr($task_name, 0, 25) . "...";
+									}
+								?>
+								<li class="data_list_sunday timesheet_data_id_<?php echo $import_item->ID?>"><?php echo $task_name_trimmed; ?></li>
+								<?php endforeach; ?>
+								<li class="">
+									<select name="" class="new_row_entry_taskname">
+										<?php
+											foreach($tasks as $task){
+												echo "<option>".$task->task_name."</option>";
+											}
+										?>
+									</select>
+								</li>
+							</div>
+							<div class="task_details data_title header_titles">
+								<h3 class="top_label">Task Details</h3>
+								<?php 
+									foreach ($import_data as $import_item): 
+									// if($import_item->task_name != null && $import_item->task_suffix != null){
+									// 	$task_name = format_task_name($import_item->task_name) ." - ". $import_item->task_suffix;
+									// 	}elseif($import_item->task_name != null && $import_item->task_suffix == null){
+									// 	$task_name = format_task_name($import_item->task_name);
+									// 	}elseif($import_item->task_name == null && $import_item->task_suffix != null){
+									// 	$task_name = $import_item->task_suffix;
+									// 	}elseif($import_item->task_name == null && $import_item->task_suffix == null){
+									// 	$task_name = "--";
+									// }
+									if(strlen($import_item->task_suffix) <= 18){
+										$task_name_trimmed = $import_item->task_suffix;
+									}else{
+										$task_name_trimmed = substr($import_item->task_suffix, 0, 18) . "...";
+									}
+
+									if(empty($import_item->task_suffix)){
+										$task_name_trimmed = '...';
+									}
+								?>
+								<li class="data_list_sunday timesheet_data_id_<?php echo $import_item->ID?>"><?php echo $task_name_trimmed ?></li>
+								<?php endforeach; ?>
+								<li class="">
+									<input type="text" class="new_row_task_details">
+								</li>
+							</div>
+							<div class="task_hour data_title header_titles">
+								<h3 class="top_label">Hours</h3>
+								<?php foreach ($import_data as $import_item):
+									$task_hms = $import_item->task_hour;
+									$task_hour = time_format($task_hms);
+								?>
+								<li class="data_list_sunday timesheet_data_id_<?php echo $import_item->ID?>"><?php echo (!empty($task_hour)) ? $task_hour : "--" ; ?></li>
+								<?php endforeach; ?>
+								<li class="">
+									<input type="text" class="new_row_entry_hours">
+								</li>
+							</div>
 							<!--<div class="task_person data_title header_titles">
 								<h3 class="top_label">Done by</h3>
 								<?php //foreach ($import_data as $import_item): ?>
@@ -2025,7 +2227,7 @@ if(isset($_GET['deleteID'])) {
 								<?php //endforeach; ?>
 							</div>-->
 							<div class="task_description data_title header_titles">
-								<h3 class="top_label">Description</h3>
+								<h3 class="top_label">Describe what was done</h3>
 								<?php
 									foreach ($import_data as $import_item):
 									if(!empty($import_item->task_description)){
@@ -2045,7 +2247,7 @@ if(isset($_GET['deleteID'])) {
 								</div>
 								<?php endforeach; ?>
 								<div class="accordian_input">
-									<input type="text" class="new_row_entry_description">
+									<textarea class="new_row_entry_description" row="2"></textarea>
 								</div>
 							</div>
 							<div class="task_edit">
@@ -2064,11 +2266,11 @@ if(isset($_GET['deleteID'])) {
 								<h3 class="top_label">&nbsp;&nbsp;&nbsp;&nbsp;</h3>
 								<?php foreach ($import_data as $import_item): ?>								
 								<li class="data_list_sunday timesheet_data_id_<?php echo $import_item->ID?>">
-									<div id="delete_kanban_sunday_<?php echo $import_item->ID?>" class="button_1 delete_button delete_edit_kanban">D</div>
+									<div id="delete_kanban_sunday_<?php echo $import_item->ID?>" class="button_1 delete_button delete_edit_kanban">-</div>
 								</li>
 							<?php endforeach; ?>
 								<li class="">
-									<div class="button_1 delete_new_row_entry_btn">D</div>
+									<div class="button_1 delete_new_row_entry_btn">-</div>
 								</li>
 							</div>
 							<div class="task_done_today">
@@ -2136,7 +2338,7 @@ if(isset($_GET['deleteID'])) {
 							<div style="display:none;" class="loader kanban_save_loader"></div>
 						</div>						
 					</div>
-					<!--END DAYS -->
+				<!--END DAYS -->
 				</div>
 			</div>
 		</div>

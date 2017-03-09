@@ -902,23 +902,32 @@ figure.person_image{
 
 .task_name{	
 	float: left;	
-	width: 21%;
-	margin-left: 25px !important;
+	width: 17%;
+	/*margin-left: 25px !important;*/
 }
-
+.task_details{
+	float: left;	
+	width: 17%;	
+}
 .task_name li{	
 	border-bottom: 1px solid #D3D2D2;    
 	list-style: none outside none;    
-	padding: 10px 0;
+	padding: 10px 0px 10px 5px;
 }
-
+.task_details li{	
+	border-bottom: 1px solid #D3D2D2;    
+	list-style: none outside none;    
+	padding: 10px 0px 10px 5px;
+}
 .task_name li:last-child{	
 	border-bottom: 0px none;
 }
-
+.task_details li:last-child{	
+	border-bottom: 0px none;
+}
 .task_hour{	
 	float: left;    
-	width: 10%;
+	width: 7%;
 }
 
 .task_hour li{	
@@ -933,7 +942,8 @@ figure.person_image{
 
 .task_label{	
 	float: left;    
-	width: 15%;
+	width: 13%;
+	margin-left: 10px !important;
 }
 
 .task_label li{	
@@ -948,7 +958,7 @@ figure.person_image{
 
 .task_color{	
 	float: left;    
-	width: 16%;
+	width: 15%;
 }
 
 .task_color li{	
@@ -7146,11 +7156,12 @@ body.single .post-content li{
 }
 .new_row_entry_hours{
 	padding: 0px !important;
-	width: 50% !important;
+	width: 70% !important;
 }
 .new_row_entry_description{
 	padding: 0px !important;
 	width: 80% !important;	
+	margin-bottom: 12px;
 }
 .add_new_row_entry_btn,
 .delete_new_row_entry_btn{
@@ -7175,4 +7186,22 @@ padding: 0px 5px;
 	background-position: 10px 0px;
 	height: 25px;
 	margin-top: 13px;
+}
+.add_task, .done_today_kanban, .task_done_today{
+	display: none !important;
+}
+.new_row_entry_client{
+	width: 95%;
+}
+.new_row_entry_project{
+	width: 100%;
+}
+.task_name .top_label{
+	padding-left: 3px;
+}
+.new_row_entry_taskname{
+	width: 95%;
+}
+.new_row_task_details{
+	width: 70%;
 }
