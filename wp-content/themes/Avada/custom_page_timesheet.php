@@ -163,7 +163,7 @@ $current_user_role = $current_user->roles['0'];
 	global $wpdb;			
 	$table_name = $wpdb->prefix . "custom_timesheet";
 	$table_name_client = $wpdb->prefix . "custom_client"; 
-	$clients = $wpdb->get_results("SELECT * FROM {$table_name_client} ORDER BY client_name ASC");
+	$clients = $wpdb->get_results("SELECT * FROM {$table_name_client} WHERE client_status = 1 ORDER BY client_name ASC");
 	$table_name_task = $wpdb->prefix . "custom_task";
 	$tasks = $wpdb->get_results("SELECT * FROM {$table_name_task} ORDER BY task_name ASC");
 	$table_name_person = $wpdb->prefix . "custom_person";
@@ -648,7 +648,7 @@ if(isset($_GET['deleteID'])) {
 								<li class="data_list_monday timesheet_data_id_<?php echo $import_item->ID?>"><?php echo (!empty($task_hour)) ? $task_hour : "--" ; ?></li>
 								<?php endforeach; ?>
 								<li class="">
-									<input type="text" class="new_row_entry_hours">
+									<input type="text" class="new_row_entry_hours" placeholder="00:00">
 								</li>
 							</div>
 							<!--<div class="task_person data_title header_titles">
@@ -910,7 +910,7 @@ if(isset($_GET['deleteID'])) {
 								<li class="data_list_tuesday timesheet_data_id_<?php echo $import_item->ID?>"><?php echo (!empty($task_hour)) ? $task_hour : "--" ; ?></li>
 								<?php endforeach; ?>
 								<li class="">
-									<input type="text" class="new_row_entry_hours">
+									<input type="text" class="new_row_entry_hours" placeholder="00:00">
 								</li>
 							</div>
 							<!--<div class="task_person data_title header_titles">
@@ -1171,7 +1171,7 @@ if(isset($_GET['deleteID'])) {
 								<li class="data_list_wednesday timesheet_data_id_<?php echo $import_item->ID?>"><?php echo (!empty($task_hour)) ? $task_hour : "--" ; ?></li>
 								<?php endforeach; ?>
 								<li class="">
-									<input type="text" class="new_row_entry_hours">
+									<input type="text" class="new_row_entry_hours" placeholder="00:00">
 								</li>
 							</div>
 							<!--<div class="task_person data_title header_titles">
@@ -1433,7 +1433,7 @@ if(isset($_GET['deleteID'])) {
 								<li class="data_list_thursday timesheet_data_id_<?php echo $import_item->ID?>"><?php echo (!empty($task_hour)) ? $task_hour : "--" ; ?></li>
 								<?php endforeach; ?>
 								<li class="">
-									<input type="text" class="new_row_entry_hours">
+									<input type="text" class="new_row_entry_hours" placeholder="00:00">
 								</li>
 							</div>
 							<!--<div class="task_person data_title header_titles">						
@@ -1695,7 +1695,7 @@ if(isset($_GET['deleteID'])) {
 								<li class="data_list_friday timesheet_data_id_<?php echo $import_item->ID?>"><?php echo (!empty($task_hour)) ? $task_hour : "--" ; ?></li>
 								<?php endforeach; ?>
 								<li class="">
-									<input type="text" class="new_row_entry_hours">
+									<input type="text" class="new_row_entry_hours" placeholder="00:00">
 								</li>
 							</div>
 							<!--<div class="task_person data_title header_titles">
@@ -1956,7 +1956,7 @@ if(isset($_GET['deleteID'])) {
 								<li class="data_list_saturday timesheet_data_id_<?php echo $import_item->ID?>"><?php echo (!empty($task_hour)) ? $task_hour : "--" ; ?></li>
 								<?php endforeach; ?>
 								<li class="">
-									<input type="text" class="new_row_entry_hours">
+									<input type="text" class="new_row_entry_hours" placeholder="00:00">
 								</li>
 							</div>
 							<!--<div class="task_person data_title header_titles">
@@ -2217,7 +2217,7 @@ if(isset($_GET['deleteID'])) {
 								<li class="data_list_sunday timesheet_data_id_<?php echo $import_item->ID?>"><?php echo (!empty($task_hour)) ? $task_hour : "--" ; ?></li>
 								<?php endforeach; ?>
 								<li class="">
-									<input type="text" class="new_row_entry_hours">
+									<input type="text" class="new_row_entry_hours" placeholder="00:00">
 								</li>
 							</div>
 							<!--<div class="task_person data_title header_titles">

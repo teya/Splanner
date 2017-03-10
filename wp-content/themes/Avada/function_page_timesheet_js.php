@@ -233,6 +233,16 @@ jQuery(document).on('click', '.add_new_row_entry_btn', function(){
 	var week =  jQuery('#'+day).find('.tab_week').val();
 	var person_id = jQuery('#current-person-id').val();
 
+
+	if(description == ''){
+		jQuery(".status_message").fadeIn( "slow", function() {
+			jQuery(".status_message p").html("<p class='error-msg'>Please Enter descriptions.</p>");
+		});
+		jQuery(".status_message").delay(500).fadeOut('slow');
+		current_element.show().next().hide();
+		return false;
+	}
+
 	var remove_comma_hour = hours.replace(',','.');
 	if(hours != ""){
 		if(parseFloat(remove_comma_hour) < 1){
@@ -263,6 +273,12 @@ jQuery(document).on('click', '.add_new_row_entry_btn', function(){
 		}
 	}else{
 		hour_input = "00:00";
+		jQuery(".status_message").fadeIn( "slow", function() {
+			jQuery(".status_message p").html("<p class='error-msg'>Invalid Time Format.</p>");
+		});
+		jQuery(".status_message").delay(500).fadeOut('slow');
+		current_element.show().next().hide();
+		return false;
 	}
 
 
