@@ -845,19 +845,19 @@ if(isset($_GET['deleteID'])) {
 								<h3 class="top_label">Task</h3>
 								<?php 
 									foreach ($import_data as $import_item): 
-									if($import_item->task_name != null && $import_item->task_suffix != null){
-										$task_name = format_task_name($import_item->task_name) ." - ". $import_item->task_suffix;
-										}elseif($import_item->task_name != null && $import_item->task_suffix == null){
-										$task_name = format_task_name($import_item->task_name);
-										}elseif($import_item->task_name == null && $import_item->task_suffix != null){
-										$task_name = $import_item->task_suffix;
-										}elseif($import_item->task_name == null && $import_item->task_suffix == null){
-										$task_name = "--";
-									}
-									if(strlen($task_name) <= 25){
-										$task_name_trimmed = $task_name;
+									// if($import_item->task_name != null && $import_item->task_suffix != null){
+									// 	$task_name = format_task_name($import_item->task_name) ." - ". $import_item->task_suffix;
+									// 	}elseif($import_item->task_name != null && $import_item->task_suffix == null){
+									// 	$task_name = format_task_name($import_item->task_name);
+									// 	}elseif($import_item->task_name == null && $import_item->task_suffix != null){
+									// 	$task_name = $import_item->task_suffix;
+									// 	}elseif($import_item->task_name == null && $import_item->task_suffix == null){
+									// 	$task_name = "--";
+									// }
+									if(strlen($import_item->task_name) <= 25){
+										$task_name_trimmed = $import_item->task_name;
 										}else{
-										$task_name_trimmed = substr($task_name, 0, 25) . "...";
+										$task_name_trimmed = substr($import_item->task_name, 0, 25) . "...";
 									}
 								?>
 								<li class="data_list_tuesday timesheet_data_id_<?php echo $import_item->ID?>"><?php echo $task_name_trimmed; ?></li>
