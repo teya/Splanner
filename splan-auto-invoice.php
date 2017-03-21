@@ -108,6 +108,7 @@
 								'person_id' 				=> $person->wp_user_id,
 								'clients_invoices_table'	=> serialize($client_list_array),
 								'date'						=> $month . '-' . $year,
+								'date_created'				=> date('Y-m').'-20',
 								'active_viewing'			=> 1,
 								'person_approval'			=> 0,
 								'admin_approval'			=> 0,
@@ -118,6 +119,7 @@
 								'salary'					=> $total_salary
 							),
 							array(
+								'%s',
 								'%s',
 								'%s',
 								'%s',

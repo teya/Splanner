@@ -17,6 +17,7 @@
     global $wpdb;
     $invoice_info = $wpdb->get_row('SELECT * FROM '. SPLAN_INVOICE_TBL . ' WHERE id = '.$invoice_id);
     $approved_invoice = $invoice_info->person_approval + $invoice_info->admin_approval;
+    $dollar_per_hour = $invoice_info->salary / $invoice_info->total_hours;
 
 
     if($approved_invoice < 2){
@@ -47,6 +48,8 @@
             $this->invoice_date = $invoice_info->date;
             $this->total_salary = $invoice_info->salary;
             $this->invoice_id = $invoice_info->id;
+            $this->date_created = $invoice_info->date_created;
+
         }
         function setPersonInfo($person_info){
             $this->person_name = $person_info->person_fullname;
@@ -54,6 +57,7 @@
             $this->person_contact_no = $person_info->person_mobile;
             $this->email = $person_info->person_email;
             $this->person_id = $person_info->wp_user_id;
+
         }
          // Page header
         function Header()
@@ -99,7 +103,7 @@
             $this->Cell(20,0,'Date: ',0,10,'L');
             $this->SetXY(145,50);
             $this->SetFont('Arial','U',8);
-            $this->Cell(20,0,$dates[1].'-'.date("m", mktime(0, 0, 0, $dates[0], 10)).'-20                           ',0,10,'L');
+            $this->Cell(20,0,$this->date_created.'                           ',0,10,'L');
 
 
             $this->SetXY(30,40);
@@ -163,7 +167,7 @@
         $pdf->Cell(20,7,$client['total_hours'],1,10,'R');   
 
         $pdf->SetXY(140,$row);
-        $pdf->Cell(20,7,$client['total_hours'] * $person_info->person_hourly_rate,1,10,'R'); 
+        $pdf->Cell(20,7,number_format($client['total_hours'] * $dollar_per_hour,2) ,1,10,'R'); 
 
         $pdf->SetXY(160,$row);
         $pdf->Cell(25,7,$client['total'],1,10,'R'); 
@@ -172,13 +176,21 @@
 
     }
 
-    $pdf->SetXY(150,235);
+    $pdf->SetXY(150,$row);
     $pdf->SetFont('Arial','B',10);
     $pdf->Cell(25,7,'Sub Total:',0,10,'C');
 
-    $pdf->SetXY(169,235);
+    $pdf->SetXY(169,$row);
     $pdf->SetFont('Arial','U',10);
     $pdf->Cell(25,7,$invoice_info->salary . ' USD',0,10,'C');
+
+    $pdf->SetXY(150,$row + 7);
+    $pdf->SetFont('Arial','B',10);
+    $pdf->Cell(25,7,'Total Hours:',0,10,'C');
+
+    $pdf->SetXY(169,$row + 7);
+    $pdf->SetFont('Arial','U',10);
+    $pdf->Cell(25,7,$invoice_info->total_hours . ' ',0,10,'C');
 
     $pdf->Output();
     // $pdf->Output('report.pdf', 'F');

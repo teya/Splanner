@@ -92,6 +92,7 @@
 				<input id="logged-in-person-name" type="hidden" value="<?php echo $current_user->display_name; ?>">
 				<input id="invoice-month" type="hidden" value="<?php echo $month_in_num; ?>">
 				<input id="invoice-year" type="hidden" value="<?php echo $year ?>">
+				<input id="invoice-dollar-per-hr" type="hidden" value="<?php echo ($invoice_info->salary / $invoice_info->total_hours); ?>">
 			</div>
 		</div>
 		<div>
@@ -108,7 +109,7 @@
 					<td><p>Gärdsåsgatan 55A</p><p>415 16 Gothenburg, Sweden</p></td>
 					<td></td>
 					<td>Salary for: <br />Date</td>
-					<td><p id="invoice_date"><?php echo date("M", mktime(0, 0, 0, $invoice_date[0], 10)) . ' ' . $invoice_date[1]; ?></p><p id="invoice_date_2"><?php echo $invoice_date[1] . '-' .$invoice_date[0].'-20'; ?></p></td>
+					<td><p id="invoice_date"><?php echo date("M", mktime(0, 0, 0, $invoice_date[0], 10)) . ' ' . $invoice_date[1]; ?></p><p id="invoice_date_2"><?php echo $invoice_info->date_created; ?></p></td>
 				</tr>
 			</table>
 		</div>
@@ -125,13 +126,14 @@
 			<tbody>
 				<?php foreach($client_list_table as $row){ ?>
 				<?php 
-					$total_price_per_hrs = $row['total_hours'] * $person_info->person_hourly_rate;
+					// $total_price_per_hrs = $row['total_hours'] * $person_info->person_hourly_rate;
+					$dollar_per_hr = $invoice_info->salary / $invoice_info->total_hours;
 				?>
 					<tr>
 						<td class="clientname"><?php echo $row['clientname']; ?></td>
 						<td><?php echo $row['project_name']; ?></td>
 						<td><span class="total_hours_edit"><?php echo $row['total_hours']; ?></span></td>
-						<td><?php echo $total_price_per_hrs; ?></td>
+						<td><?php echo number_format( $row['total_hours'] * $dollar_per_hr,2); ?></td>
 						<td><?php echo $row['total']; ?></td>
 					</tr>
 				<?php 
@@ -350,9 +352,10 @@
 					},
 					success: function (data) {
 						var parsed = jQuery.parseJSON(data);
-
+						var dollar_per_hr = jQuery('#invoice-dollar-per-hr').val();
+						var total_dollar_per_hr = parseFloat(parsed.hours) * parseFloat(dollar_per_hr);
 						if(parsed.editing_invoice_table_status == 'successfully_editing_invoice_table'){
-							jQuery('#invoice-table tbody tr:last').after('<tr><td class="clientname">'+parsed.clientname+'</td><td>'+parsed.project_name+'</td><td><span class="total_hours_edit">'+parsed.hours+'</span></td><td>'+parsed.price_per_hour+'</td><td>'+parsed.total+'</td></tr>');
+							jQuery('#invoice-table tbody tr:last').after('<tr><td class="clientname">'+parsed.clientname+'</td><td>'+parsed.project_name+'</td><td><span class="total_hours_edit">'+parsed.hours+'</span></td><td>'+total_dollar_per_hr.toFixed(2)+'</td><td>'+parsed.total+'</td></tr>');
 							jQuery('#bottom_person_total_salary').text(parsed.total_salary);
 							jQuery('#bottom_invoice_total_hours').text(parsed.total_hours);
 							jQuery('#new_entry_row').hide();
