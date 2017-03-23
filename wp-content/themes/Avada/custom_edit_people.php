@@ -27,6 +27,7 @@ if(isset($_POST['submit'])){
 	$person_address				= $_POST['person_address'];
 	$person_mobile				= $_POST['person_mobile'];
 	$person_email				= $_POST['person_email'];
+	$person_paypal_email		= $_POST['person_paypal_email'];
 	if(isset($_POST['person_email_notification'])){
 		$person_email_notification	= 1;
 		}else{
@@ -64,6 +65,7 @@ if(isset($_POST['submit'])){
 	'person_address'			=> $person_address,
 	'person_mobile'				=> $person_mobile,
 	'person_email'				=> $person_email,
+	'person_paypal_email'		=> $person_paypal_email,
 	'person_email_notification'	=> $person_email_notification,
 	'person_skype'				=> $person_skype,
 	'person_title'				=> $person_title,
@@ -187,6 +189,14 @@ if(isset($_POST['submit'])){
 			<div class="right">
 				<input type="text" class="person_email" name="person_email" value="<?php echo (isset($results_edit->person_email)) ? $results_edit->person_email : '';  ?>"/>
 				<input type="checkbox" name="person_email_notification" class="person_email_notification" <?php echo ($results_edit->person_email_notification == 1) ? "checked" : ''; ?> />Enable Notification
+			</div>
+		</div>
+		<div class="section">
+			<div class="left">
+				<p class="label">Paypal Email</p>
+			</div>
+			<div class="right">
+				<input type="text" class="person_paypal_email" name="person_paypal_email" value="<?php echo (isset($results_edit->person_paypal_email)) ? $results_edit->person_paypal_email : '';  ?>"/>
 			</div>
 		</div>
 		<div class="section">

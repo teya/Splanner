@@ -78,6 +78,14 @@ $birthmonths = array('January', 'February','March','April','May','June','July','
 		</div>
 		<div class="section">
 			<div class="left">
+				<p class="label">Paypal Email</p>
+			</div>
+			<div class="right">
+				<input type="text" class="person_paypal_email" name="person_paypal_email" />
+			</div>
+		</div>
+		<div class="section">
+			<div class="left">
 				<p class="label">Skype Name</p>
 			</div>
 			<div class="right">
@@ -223,6 +231,7 @@ if(isset($_POST['submit'])):
 	$person_address				= (isset($_POST['person_address']) ? $_POST['person_address'] : '');
 	$person_mobile				= (isset($_POST['person_mobile']) ? $_POST['person_mobile'] : '');
 	$person_email				= (isset($_POST['person_email']) ? $_POST['person_email'] : '');
+	$person_paypal_email		= (isset($_POST['person_paypal_email']) ? $_POST['person_paypal_email'] : '');
 	$person_email_notification 	= (isset($_POST['person_email_notification']) ? 1 : 0);
 	$person_skype				= (isset($_POST['person_skype']) ? $_POST['person_skype'] : '');
 	$person_title				= (isset($_POST['person_title']) ? $_POST['person_title'] : '');
@@ -249,6 +258,7 @@ if(isset($_POST['submit'])):
 	'person_address'			=> $person_address,
 	'person_mobile'				=> $person_mobile,
 	'person_email'				=> $person_email,
+	'person_paypal_email'		=> $person_paypal_email,
 	'person_email_notification'	=> $person_email_notification,
 	'person_skype'				=> $person_skype,
 	'person_kb_user_id'			=> $person_title,

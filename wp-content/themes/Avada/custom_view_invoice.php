@@ -86,7 +86,7 @@
 				<h1><?php echo $person_info->person_fullname; ?></h1>
 				<p class="person-address"><?php echo $person_info->person_address; ?></p>
 				<p>Contact Number: <?php echo $person_info->person_mobile ?></p>
-				<p>TIN: <span class="email pull-right">Email: <?php echo $person_info->person_email; ?></span></p>
+				<p>TIN: <span class="email pull-right">Email: <?php echo $person_info->person_paypal_email; ?></span></p>
 				<input id="invoice_id" type="hidden" value="<?php echo $invoice_info->id; ?>">
 				<input id="invoice_person_id" type="hidden" value="<?php echo $invoice_info->person_id; ?>">
 				<input id="logged-in-person-name" type="hidden" value="<?php echo $current_user->display_name; ?>">
@@ -127,17 +127,17 @@
 				<?php foreach($client_list_table as $row){ ?>
 				<?php 
 					// $total_price_per_hrs = $row['total_hours'] * $person_info->person_hourly_rate;
-					$dollar_per_hr = $invoice_info->salary / $invoice_info->total_hours;
+					$dollar_per_hr = round($invoice_info->salary / $invoice_info->total_hours, 2);
+					$total_column = (!empty($row['total']))? $row['total'] : number_format($row['total_hours'] * $dollar_per_hr,2);
 				?>
 					<tr>
 						<td class="clientname"><?php echo $row['clientname']; ?></td>
 						<td><?php echo $row['project_name']; ?></td>
-						<td><span class="total_hours_edit"><?php echo $row['total_hours']; ?></span></td>
-						<td><?php echo number_format( $row['total_hours'] * $dollar_per_hr,2); ?></td>
-						<td><?php echo $row['total']; ?></td>
+						<td><span class="total_hours_edit"><?php echo substr(convertTime($row['total_hours']), 0, -3); ?></span></td>
+						<td><?php echo $dollar_per_hr; ?></td>
+						<td><?php echo $total_column; ?></td>
 					</tr>
 				<?php 
-
 					// $total_client_hours += round($row['total_hours'], 2); 
 				} ?>
 
@@ -186,7 +186,7 @@
 				</ul>			
 			</div>
 			<div class="pull-right">
-				<p>Total Hours: <span id="bottom_invoice_total_hours"><?php echo $invoice_info->total_hours; ?></span></p>
+				<p>Total Hours: <span id="bottom_invoice_total_hours"><?php echo substr(convertTime($invoice_info->total_hours), 0, -3); ?></span></p>
 				<!-- <p>Total Non-Working Hours: <span id="bottom_person_total_no_work_hours"><?php // echo $invoice_info->non_working_hrs; ?></span></p> -->
 				<p>Total Salary: <span id="bottom_person_total_salary"><?php echo $invoice_info->salary; ?></span> USD</p>
 				<p class="hide">Invoice Status: <span id="bottom_person_invoice_status"><?php echo $invoice_info->status; ?></span></p>

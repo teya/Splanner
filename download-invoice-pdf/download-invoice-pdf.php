@@ -17,7 +17,7 @@
     global $wpdb;
     $invoice_info = $wpdb->get_row('SELECT * FROM '. SPLAN_INVOICE_TBL . ' WHERE id = '.$invoice_id);
     $approved_invoice = $invoice_info->person_approval + $invoice_info->admin_approval;
-    $dollar_per_hour = $invoice_info->salary / $invoice_info->total_hours;
+    $dollar_per_hour = round($invoice_info->salary / $invoice_info->total_hours, 2);
 
 
     if($approved_invoice < 2){
@@ -55,7 +55,7 @@
             $this->person_name = $person_info->person_fullname;
             $this->person_address = $person_info->person_address;
             $this->person_contact_no = $person_info->person_mobile;
-            $this->email = $person_info->person_email;
+            $this->email = $person_info->person_paypal_email;
             $this->person_id = $person_info->wp_user_id;
 
         }
@@ -157,6 +157,7 @@
     // $pdf->SetFont('Arial','',8);
 
     foreach($client_lists as $client){
+        $tolal_column = (!empty($client['total']))? $client['total'] : number_format($client['total_hours'] * $dollar_per_hour,2);
         $pdf->SetXY(15,$row);
         $pdf->Cell(60,7,iconv('UTF-8','windows-1252',$client['clientname']),1,10,'L');
 
@@ -164,13 +165,13 @@
         $pdf->Cell(45,7,iconv('UTF-8','windows-1252',$client['project_name']),1,10,'C');
 
         $pdf->SetXY(120,$row);
-        $pdf->Cell(20,7,$client['total_hours'],1,10,'R');   
+        $pdf->Cell(20,7,substr(convertTime($client['total_hours']), 0, -3),1,10,'R');   
 
         $pdf->SetXY(140,$row);
-        $pdf->Cell(20,7,number_format($client['total_hours'] * $dollar_per_hour,2) ,1,10,'R'); 
+        $pdf->Cell(20,7,$dollar_per_hour ,1,10,'R'); 
 
         $pdf->SetXY(160,$row);
-        $pdf->Cell(25,7,$client['total'],1,10,'R'); 
+        $pdf->Cell(25,7,$tolal_column,1,10,'R'); 
           
         $row = $row + 7;
 
