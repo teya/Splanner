@@ -902,7 +902,7 @@ figure.person_image{
 
 .task_name{	
 	float: left;	
-	width: 17%;
+	width: 14%;
 	/*margin-left: 25px !important;*/
 }
 .task_details{
@@ -927,7 +927,7 @@ figure.person_image{
 }
 .task_hour{	
 	float: left;    
-	width: 7%;
+	width: 10%;
 }
 
 .task_hour li{	
@@ -7204,4 +7204,53 @@ padding: 0px 5px;
 }
 .new_row_task_details{
 	width: 70%;
+}
+#update_salary_input{
+	width: 40px !important;
+}
+#update_salary_input_save{
+	background-image: url("img/check.png");
+	background-size: 20px auto;	
+	width: 20px;
+	height: 20px;
+	float: right;
+	cursor: pointer;
+}
+#update_salary_input_loader{
+	background-image: url("img/loader.gif");
+	background-size: 20px auto;	
+	width: 20px;
+	height: 20px;
+	float: right;
+}
+.input_box_err{
+	border: 1px solid red;
+}
+.update_hours_input{
+	width: 35px !important;
+}
+.update_hours_button{
+	background-image: url("img/check.png");
+	background-repeat: no-repeat;
+	cursor: pointer;
+	width: 20px;
+	height: 20px;
+	display: inline-block;
+	background-size: 20px 20px;
+	margin-left: 5px;
+	margin-bottom: -5px;
+}
+.update_hours_loader{
+	background: url('img/loader.gif');
+	background-repeat: no-repeat;
+	cursor: pointer;
+	width: 20px;
+	height: 20px;
+	display: inline-block;
+	background-size: 20px 20px;
+	margin-left: 5px;
+	margin-bottom: -5px;
+}
+.err_input_format{
+	border: 1px solid red;
 }

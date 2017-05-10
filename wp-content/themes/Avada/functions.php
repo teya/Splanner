@@ -6536,4 +6536,34 @@ function SendInvoicePDFtoAdmin($invoice_id){
 		// }	
 	}
 }
+function admin_default_page() {
+  return  get_site_url();
+}
+add_filter('login_redirect', 'admin_default_page');
+function UpdateInvoiceSalary($data){
+	global $wpdb;
+	extract($data);
+
+	$invoice_info = $wpdb->get_row("SELECT salary FROM ".SPLAN_TIMESHEET_INVOICE." WHERE id = ".$invoice_id);
+
+	if($invoice_info->salary == $new_value){
+		$update_invoice_salary = 1;
+	}else{
+		$update_invoice_salary = $wpdb->update(
+		 	SPLAN_TIMESHEET_INVOICE, 
+			array( 'salary' => $new_value), 
+			array( 'id' => $invoice_id ), 
+			array( '%d')
+	 	);
+	}
+	if($update_invoice_salary == 1){
+		$repsonse = array(
+			'new_value' => $new_value,
+			'invoice_id' => $invoice_id
+		);
+		return $repsonse;
+	}else{
+		die('FAILED UPDATE INVOICE SALARY');
+	}
+}
 ?>

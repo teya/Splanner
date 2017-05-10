@@ -1,4 +1,9 @@
-<?php /* Template Name: Edit People */ ?>
+<?php 
+	/* Template Name: Edit People */ 
+	if ( !is_user_logged_in() ) {
+	     header('Location: ' . get_site_url());
+	} 
+?>
 <?php get_header(); ?>
 <?php
 include('custom_timezones.php');

@@ -232,6 +232,7 @@ jQuery(document).on('click', '.add_new_row_entry_btn', function(){
 	var date = jQuery('#'+day).find('.tab_date').val();
 	var week =  jQuery('#'+day).find('.tab_week').val();
 	var person_id = jQuery('#current-person-id').val();
+	var hour_input = "";
 
 
 	if(description == ''){
@@ -244,32 +245,18 @@ jQuery(document).on('click', '.add_new_row_entry_btn', function(){
 	}
 
 	var remove_comma_hour = hours.replace(',','.');
-	if(hours != ""){
-		if(parseFloat(remove_comma_hour) < 1){
-			var new_hour = '0'+remove_comma_hour;
-		}else{
-			var new_hour = remove_comma_hour;
-		}
 
-		var task_description_count = description.length;
-		var isValidTime = /^([01]?[0-9]|2[0-3]):[0-5][0-9]$/.test(new_hour);
-		
-		//Convert and validation for time format. Convert Decimal to hour format.
-		if(isValidTime == true){
-			var hour_input =  timesheet_format(new_hour);
+	if(hours != ""){
+		var status_validation = validate_input_hours(remove_comma_hour);
+		if(status_validation.input_validation == false){
+			jQuery(".status_message").fadeIn( "slow", function() {
+				jQuery(".status_message p").html("<p class='error-msg'>Invalid Time Format.</p>");
+			});
+			jQuery(".status_message").delay(500).fadeOut('slow');
+			current_element.show().next().hide()
+			return false;			
 		}else{
-			var reg = /^\d+(\.\d{0,3})?$/.test(new_hour);
-			//If Decimal format
-			if(reg == true){
-				var hour_input = convertToHHMM(new_hour);
-			}else{
-				jQuery(".status_message").fadeIn( "slow", function() {
-					jQuery(".status_message p").html("<p class='error-msg'>Invalid Time Format.</p>");
-				});
-				jQuery(".status_message").delay(500).fadeOut('slow');
-				current_element.show().next().hide()
-				return false;
-			}
+			hour_input = status_validation.hour_value;
 		}
 	}else{
 		hour_input = "00:00";
@@ -332,7 +319,7 @@ jQuery(document).on('click', '.add_new_row_entry_btn', function(){
 			//New Insert Task details
 			jQuery("<li class='data_list_"+parsed.day_now+" timesheet_data_id_"+parsed.insert_id+"'>"+task_details+"</li>").insertBefore('#'+parsed.day_now+' .person_task_timesheet .task_details li:last');
 			//New Insert hours
-			jQuery("<li class='data_list_"+parsed.day_now+" timesheet_data_id_"+parsed.insert_id+"'>"+parsed.task_hour+"</li>").insertBefore('#'+parsed.day_now+' .person_task_timesheet .task_hour li:last');
+			jQuery("<li id='entry_timesheet_id_"+parsed.insert_id+"' class='data_list_"+parsed.day_now+" timesheet_data_id_"+parsed.insert_id+" edit_entry_hours'>"+parsed.task_hour+"</li>").insertBefore('#'+parsed.day_now+' .person_task_timesheet .task_hour li:last');
 			//New Insert Client
 			jQuery("<li class='data_list_"+parsed.day_now+" timesheet_data_id_"+parsed.insert_id+"'>"+parsed.task_label+"</li>").insertBefore('#'+parsed.day_now+' .person_task_timesheet .task_label li:last');
 			//New Insert Project
@@ -911,7 +898,7 @@ function day_sort(value, day, check_same_user){
 	//task details
 	jQuery('<li class="data_list_'+day+' timesheet_data_id_'+value.ID+'">'+task_details+'</li>').insertBefore('#'+day+' .task_details li:last');
 	//Hours
-	jQuery('<li class="client_info data_list_'+day+' timesheet_data_id_'+value.ID+'">'+task_hour+'</li>').insertBefore('#'+day+' .task_hour li:last');
+	jQuery('<li id="entry_timesheet_id_'+value.ID+'" class="client_info data_list_'+day+' timesheet_data_id_'+value.ID+' edit_entry_hours">'+task_hour+'</li>').insertBefore('#'+day+' .task_hour li:last');
 	//Client
 	jQuery('<li class="client_info data_list_'+day+' timesheet_data_id_'+value.ID+'">'+task_label+'</li>').insertBefore('#'+day+' .task_label li:last');
 	//Project
@@ -1704,5 +1691,93 @@ function convertToHHMM(info) {
   	return hrs+':'+mins;
   }
  
+}
+//Editing the hours input field
+jQuery(document).on('dblclick', '.edit_entry_hours', function(){
+	var this_element = jQuery(this);
+	this_element.removeClass('edit_entry_hours');
+	var id = this_element.attr('id').split('_')[3];
+	var value = this_element.text();
+
+	jQuery(this_element).html('<input id="new_hour_id_'+id+'" type="text" class="update_hours_input" value="'+value+'" /><div class="update_hours_button"></div><div class="update_hours_loader" style="display: none;"></div>');
+});	
+
+jQuery(document).on('click', '.update_hours_button', function(){
+	var this_element = jQuery(this);
+
+	var input_element = this_element.prev('.update_hours_input');
+	var id = input_element.attr('id').split('_')[3];;
+	var value = input_element.val();
+	var remove_comma_hour = value.replace(',','.');
+	var status_validation = validate_input_hours(remove_comma_hour);
+
+	if(status_validation.input_validation == true){
+		this_element.hide().next().show();
+
+		var data = {
+			'id' : id,
+			'value' : status_validation.hour_value
+		};
+
+		jQuery.ajax({
+			type: "POST",
+			url: '<?php bloginfo("template_directory"); ?>/custom_ajax-functions.php',
+			data:{
+				'type' : 'edit_hour_entry_timesheet',
+				'data_info' : data
+			},
+			success: function (data) {
+				var parsed = jQuery.parseJSON(data);
+				if(parsed.update_status == 'successfully-update-hour-entry'){
+					jQuery('#entry_timesheet_id_'+parsed.id).addClass('edit_entry_hours').html(parsed.new_hour);
+					jQuery('.tab_content.active .total_hours .task_total_hour h3').text(parsed.current_day_total_hours);
+					if(parsed.day_color == 'green'){
+						jQuery('.tabs_li.active a').removeClass('red-day').addClass('green-day');
+					}else{
+						jQuery('.tabs_li.active a').removeClass('green-day').addClass('red-day');
+					}
+					this_element.show().next().hide();
+				}
+			},
+			error: function (data) {
+				alert('error');
+			}
+		});
+	}else{
+		input_element.addClass('err_input_format');
+		return false;
+	}
+
+});
+function validate_input_hours(input){
+	var regexp = /^(([0|1][0-9])|([2][0-3])):([0-5][0-9])$/;
+	var validate_time_format = (input.search(regexp) >= 0) ? true : false;
+	var response = {};
+	
+	if(validate_time_format == true){
+		response = {
+			'input_validation' : true,
+			'hour_value' : input
+		}
+	}else{
+		if(jQuery.isNumeric(input) && input > 0){
+			response = {
+				'input_validation' : true,
+				'hour_value' : minTommss(input)
+			}
+		}else{
+			response = {
+				'input_validation' : false,
+				'hour_value' : input
+			}
+		}
+	}
+	return response;
+}
+function minTommss(minutes){
+ var sign = minutes < 0 ? "-" : "";
+ var min = Math.floor(Math.abs(minutes));
+ var sec = Math.floor((Math.abs(minutes) * 60) % 60);
+ return sign + (min < 10 ? "0" : "") + min + ":" + (sec < 10 ? "0" : "") + sec;
 }
 </script>

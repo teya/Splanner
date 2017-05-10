@@ -1,3 +1,13 @@
+<?php 
+	$homepage = home_url();
+	$page = home_url(add_query_arg(array(),$wp->request));
+
+	if( $homepage !=  $page ){
+		if ( !is_user_logged_in() ) {
+		     header('Location: ' . get_site_url());
+		}		
+	}
+?>
 <!DOCTYPE html>
 <html xmlns="http<?php echo (is_ssl())? 's' : ''; ?>://www.w3.org/1999/xhtml" <?php language_attributes(); ?>>
 <head>

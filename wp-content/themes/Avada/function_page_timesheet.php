@@ -90,9 +90,11 @@ function import_task_kanban($date_hour_day_week){
 			$task_details_full = $task_details['name'];	
 
 			foreach($tasklist as $task){
-				if (strpos($task_details_full, $task->task_name) !== false) {
+				if (strpos(strtolower($task_details_full), strtolower($task->task_name)) !== false) {
     				$task_name = $task->task_name;	
-    				$task_details_string = str_replace($task->task_name,"",$task_details_full);
+    				$string_count = strlen($task->task_name);
+    				// $task_details_string = str_replace($task->task_name,"",$task_details_full);
+    				$task_details_string = substr($task_details_full, $string_count); 
     				$task_details = substr($task_details_string, 3); 
 				}
 			}
@@ -945,6 +947,14 @@ function AddNoneWorkingEntry($data){
 		break;				
 	}
 
+	$sql_string = 'SELECT SUM(TIME_TO_SEC(task_hour)/3600) as totalhours FROM '.SPLAN_TIMESHEET.' WHERE user_id = '.$person_id.' AND date_now = "'.$date.'"';
+
+	$query = $wpdb->get_row($sql_string);
+
+	$total_hours_decimal = (8 - number_format($query->totalhours, 2));
+
+	$total_hours = ($total_hours_decimal <= 0)? '00:00' : substr(convertTime($total_hours_decimal), 0, -3);
+
 	$person = $wpdb->get_row('SELECT person_fullname, person_hours_per_day  FROM '.SPLAN_PERSONS.' WHERE wp_user_id = '. $person_id);	
 
 	$new_entry_array = array( 
@@ -953,7 +963,7 @@ function AddNoneWorkingEntry($data){
 		'date_now' => $date,
 		'day_now' => $day,
 		'week_number' => $week,		
-		'task_hour' => '08:00',
+		'task_hour' => $total_hours,
 		'task_label' => 'SEOWeb Solutions',	
 		'task_person' => $person->person_fullname,
 		'task_description' => '',
@@ -965,7 +975,6 @@ function AddNoneWorkingEntry($data){
 
 	$insert = $wpdb->insert( SPLAN_TIMESHEET , $new_entry_array, array( '%s', '%s' )); 
 
-
 	if($insert == 1){
 		$get_all_hours_current_day = $wpdb->get_row('SELECT SUM(TIME_TO_SEC(task_hour)/3600) as totalhours FROM '.SPLAN_TIMESHEET.' WHERE user_id = '.$person_id.' AND date_now = "'.$date.'"');
 		$new_entry_array['insert_id'] = $wpdb->insert_id;
@@ -975,6 +984,62 @@ function AddNoneWorkingEntry($data){
 		$response = $new_entry_array;
 	}else{
 		die('FAILED NEW ENTRY ROW TO DB!');
+	}
+	return $response;
+}
+function EditEntryHourTimesheet($data){
+	global $wpdb;
+	extract($data);
+
+	if(!preg_match('/^(?:[01][0-9]|2[0-3]):[0-5][0-9]$/',$value)) {
+	    die('INVALID TIME FORMAT');
+	}
+	if(empty($id)){
+		die('NO ID');
+	}	
+
+	$sql_string = "SELECT task_hour, user_id, task_person, date_now FROM ".SPLAN_TIMESHEET." WHERE id = ".$id;
+
+	$entry_info = $wpdb->get_row($sql_string);
+
+	$person_info = $wpdb->get_row("SELECT wp_user_id, person_fullname FROM ".SPLAN_PERSON_TBL." WHERE wp_user_id = ".$entry_info->user_id." AND person_fullname = '".$entry_info->task_person."'");
+
+	if($entry_info->task_hour == $value){
+		$get_current_day_info = $wpdb->get_row('SELECT SUM(TIME_TO_SEC(task_hour)/3600) as totalhours FROM '.SPLAN_TIMESHEET.' WHERE user_id = '.$person_info->wp_user_id.' AND task_person = "'.$person_info->person_fullname.'" AND date_now = "'.$entry_info->date_now.'"');
+
+		$day_color = ((float)$get_current_day_info->totalhours >= 8)? 'green' : 'red';
+
+		$response = array(
+			'update_status' => 'successfully-update-hour-entry', 
+			'new_hour' => $value,
+			'id' => $id,
+			'current_day_total_hours' => substr(convertTime($get_current_day_info->totalhours), 0, -3),
+			'day_color' => $day_color
+		);
+	}else{
+		$update_status = $wpdb->update(
+			SPLAN_TIMESHEET, 
+			array( 'task_hour' => $value), 
+			array( 'ID' => $id ), 
+			array( '%s' )
+		);
+		if($update_status == 1){
+
+			$get_current_day_info = $wpdb->get_row('SELECT SUM(TIME_TO_SEC(task_hour)/3600) as totalhours FROM '.SPLAN_TIMESHEET.' WHERE user_id = '.$person_info->wp_user_id.' AND task_person = "'.$person_info->person_fullname.'" AND date_now = "'.$entry_info->date_now.'"');
+
+
+			$day_color = ((float)$get_current_day_info->totalhours >= 8)? 'green' : 'red';
+		
+			$response = array(
+				'update_status' => 'successfully-update-hour-entry', 
+				'new_hour' => $value,
+				'id' => $id,
+				'current_day_total_hours' => substr(convertTime($get_current_day_info->totalhours), 0, -3),
+				'day_color' => $day_color
+			);
+		}else{
+			die('UPDATING TIMESHEET HOUR ERROR!');
+		}
 	}
 	return $response;
 }

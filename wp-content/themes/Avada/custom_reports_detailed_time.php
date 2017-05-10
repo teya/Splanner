@@ -196,7 +196,7 @@
 					?>						
 						<div class="info_div">						
 							<div id="client_name_<?php echo $task_id; ?>" class="first_column column edit_client_name">
-								<p class="client_info"><?php echo $client_name; ?></p>
+								<p class=""><?php echo $client_name; ?></p>
 								<div style="display:none;" class="client_name_edit_container">
 									<select name="client_name_edit" class="client_name_edit">
 										<option><?php echo $client_name; ?></option>

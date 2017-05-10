@@ -645,7 +645,7 @@ if(isset($_GET['deleteID'])) {
 									$task_hms = $import_item->task_hour;
 									$task_hour = time_format($task_hms);
 								?>
-								<li class="data_list_monday timesheet_data_id_<?php echo $import_item->ID?>"><?php echo (!empty($task_hour)) ? $task_hour : "--" ; ?></li>
+								<li id="entry_timesheet_id_<?php echo $import_item->ID; ?>" class="data_list_monday timesheet_data_id_<?php echo $import_item->ID; ?> edit_entry_hours"><?php echo (!empty($task_hour)) ? $task_hour : "--" ; ?></li>
 								<?php endforeach; ?>
 								<li class="">
 									<input type="text" class="new_row_entry_hours" placeholder="00:00">
@@ -907,7 +907,7 @@ if(isset($_GET['deleteID'])) {
 									$task_hms = $import_item->task_hour;
 									$task_hour = time_format($task_hms);
 								?>
-								<li class="data_list_tuesday timesheet_data_id_<?php echo $import_item->ID?>"><?php echo (!empty($task_hour)) ? $task_hour : "--" ; ?></li>
+								<li id="entry_timesheet_id_<?php echo $import_item->ID; ?>" class="data_list_tuesday timesheet_data_id_<?php echo $import_item->ID?> edit_entry_hours"><?php echo (!empty($task_hour)) ? $task_hour : "--" ; ?></li>
 								<?php endforeach; ?>
 								<li class="">
 									<input type="text" class="new_row_entry_hours" placeholder="00:00">
@@ -1168,7 +1168,7 @@ if(isset($_GET['deleteID'])) {
 									$task_hms = $import_item->task_hour;
 									$task_hour = time_format($task_hms);
 								?>
-								<li class="data_list_wednesday timesheet_data_id_<?php echo $import_item->ID?>"><?php echo (!empty($task_hour)) ? $task_hour : "--" ; ?></li>
+								<li id="entry_timesheet_id_<?php echo $import_item->ID; ?>" class="data_list_wednesday timesheet_data_id_<?php echo $import_item->ID?> edit_entry_hours"><?php echo (!empty($task_hour)) ? $task_hour : "--" ; ?></li>
 								<?php endforeach; ?>
 								<li class="">
 									<input type="text" class="new_row_entry_hours" placeholder="00:00">
@@ -1430,7 +1430,7 @@ if(isset($_GET['deleteID'])) {
 									$task_hms = $import_item->task_hour;
 									$task_hour = time_format($task_hms);
 								?>
-								<li class="data_list_thursday timesheet_data_id_<?php echo $import_item->ID?>"><?php echo (!empty($task_hour)) ? $task_hour : "--" ; ?></li>
+								<li id="entry_timesheet_id_<?php echo $import_item->ID; ?>" class="data_list_thursday timesheet_data_id_<?php echo $import_item->ID?> edit_entry_hours"><?php echo (!empty($task_hour)) ? $task_hour : "--" ; ?></li>
 								<?php endforeach; ?>
 								<li class="">
 									<input type="text" class="new_row_entry_hours" placeholder="00:00">
@@ -1692,7 +1692,7 @@ if(isset($_GET['deleteID'])) {
 									$task_hms = $import_item->task_hour;
 									$task_hour = time_format($task_hms);
 								?>
-								<li class="data_list_friday timesheet_data_id_<?php echo $import_item->ID?>"><?php echo (!empty($task_hour)) ? $task_hour : "--" ; ?></li>
+								<li id="entry_timesheet_id_<?php echo $import_item->ID; ?>" class="data_list_friday timesheet_data_id_<?php echo $import_item->ID?> edit_entry_hours"><?php echo (!empty($task_hour)) ? $task_hour : "--" ; ?></li>
 								<?php endforeach; ?>
 								<li class="">
 									<input type="text" class="new_row_entry_hours" placeholder="00:00">
@@ -1953,7 +1953,7 @@ if(isset($_GET['deleteID'])) {
 									$task_hms = $import_item->task_hour;
 									$task_hour = time_format($task_hms);
 								?>
-								<li class="data_list_saturday timesheet_data_id_<?php echo $import_item->ID?>"><?php echo (!empty($task_hour)) ? $task_hour : "--" ; ?></li>
+								<li id="entry_timesheet_id_<?php echo $import_item->ID; ?>" class="data_list_saturday timesheet_data_id_<?php echo $import_item->ID?> edit_entry_hours"><?php echo (!empty($task_hour)) ? $task_hour : "--" ; ?></li>
 								<?php endforeach; ?>
 								<li class="">
 									<input type="text" class="new_row_entry_hours" placeholder="00:00">
@@ -2214,7 +2214,7 @@ if(isset($_GET['deleteID'])) {
 									$task_hms = $import_item->task_hour;
 									$task_hour = time_format($task_hms);
 								?>
-								<li class="data_list_sunday timesheet_data_id_<?php echo $import_item->ID?>"><?php echo (!empty($task_hour)) ? $task_hour : "--" ; ?></li>
+								<li id="entry_timesheet_id_<?php echo $import_item->ID; ?>" class="data_list_sunday timesheet_data_id_<?php echo $import_item->ID?> edit_entry_hours"><?php echo (!empty($task_hour)) ? $task_hour : "--" ; ?></li>
 								<?php endforeach; ?>
 								<li class="">
 									<input type="text" class="new_row_entry_hours" placeholder="00:00">

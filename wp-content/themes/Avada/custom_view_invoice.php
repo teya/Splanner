@@ -128,7 +128,7 @@
 				<?php 
 					// $total_price_per_hrs = $row['total_hours'] * $person_info->person_hourly_rate;
 					$dollar_per_hr = round($invoice_info->salary / $invoice_info->total_hours, 2);
-					$total_column = (!empty($row['total']))? $row['total'] : number_format($row['total_hours'] * $dollar_per_hr,2);
+					$total_column = round((!empty($row['total']))? $row['total'] : number_format($row['total_hours'] * $dollar_per_hr,2));
 				?>
 					<tr>
 						<td class="clientname"><?php echo $row['clientname']; ?></td>
@@ -308,6 +308,51 @@
 		}
 	});	
 
+
+	<?php if($current_user->ID == 2):  ?>
+		//show input update total salary
+		jQuery(document).on('dblclick', '#bottom_person_total_salary', function(){
+			var invoice_id = jQuery('#invoice_id').val();
+			var value = jQuery(this).text();
+			jQuery(this).html('<input type="text" id="update_salary_input" value="'+value+'" /><div id="update_salary_input_save"></div><div id="update_salary_input_loader" style="display: none;"></div>');
+		});
+		//when click the update total salary button.
+		jQuery(document).on('click', '#update_salary_input_save', function(){
+			var this_element = jQuery(this);
+			this_element.hide().next().show();
+			var new_value = jQuery('#update_salary_input').val();
+			var invoice_id = jQuery('#invoice_id').val();
+
+			var update_invoice_salary_info = {
+				"invoice_id" : invoice_id,
+				"new_value" : new_value
+			}
+
+			if (isNaN(new_value / 1) == false) {
+				jQuery('#update_salary_input').removeClass('input_box_err');
+					jQuery.ajax({				
+						type: "POST",
+						url: '<?php bloginfo("template_directory"); ?>/custom_ajax-functions.php',
+						data: {
+								'data_info' : update_invoice_salary_info,
+								'type' : 'update_invoice_salary',
+						},
+						success: function (data) {
+							var parsed = jQuery.parseJSON(data);
+							this_element.show().next().hide();
+							jQuery('#bottom_person_total_salary').html(parsed.new_value);
+						},
+						error: function (data) {
+							alert('error');
+						}				
+					});			   
+			}else{
+				this_element.show().next().hide();
+				jQuery('#update_salary_input').addClass('input_box_err');
+				return false;
+			}
+		});
+	<?php endif; ?>
 	jQuery(document).ready(function(){
 		jQuery(document).on('change', '#add_new_project_category', function(){
 			var value = jQuery(this).val();
